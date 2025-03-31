@@ -9,3 +9,11 @@ export const redirecionarParaCadastro = () => {
 export const redirecionarParaMenu = () => {
     window.location.href = "html/menu.html";  
 };
+
+export const redirecionarParaCadastroEmpresa = () => {
+    window.location.href = "html/cadastroEmpresa.html"; 
+};
+
+export const redirecionarParaCadastroObra = () => {
+    window.location.href = "html/cadastroObra.html";  
+};

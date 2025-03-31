@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro Obra - SAEST</title>
+</head>
+<body>
+    <h2>Detalhes da Empresa</h2>
+    <form action="menu.html" method="POST">
+        <div>
+            <label for="endereco">Endereço:</label>
+            <textarea id="endereco" name="endereco" rows="3" required></textarea>
+        </div>
+        <div>
+            <label for="alvara">Alvará:</label>
+            <input type="text" id="alvara" name="alvara" required>
+        </div>
+        <div>
+            <label for="registro_crea">Registro no CREA:</label>
+            <input type="text" id="registro_crea" name="registro_crea" required>
+        </div>
+        <div>
+            <label for="registro_cal">Registro no CAL:</label>
+            <input type="text" id="registro_cal" name="registro_cal" required>
+        </div>
+        <div>
+            <label for="responsavel_tecnico">Nome do Responsável Técnico:</label>
+            <input type="text" id="responsavel_tecnico" name="responsavel_tecnico" required>
+        </div>
+        <div>
+            <button type="submit">Salvar Detalhes</button>
+        </div>
+    </form>
+    <script type="module">
+        import { redirecionarParaCadastroObra } from "../js/redirecionar.js";
+        
+        document.getElementById("link-login").addEventListener("click", (e) => {
+            e.preventDefault();
+            redirecionarParaLogin();
+        });
+    </script>
+    <!--<script type="module" src="../js/registro.js"></script> -->
+</body>
+</html>
