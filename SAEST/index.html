@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login SAEST</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Senha" required /> 
+        <button type="submit">Login</button>
+    </form>
+    <p>Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
+    <script type="module">
+        import { redirecionarParaCadastro } from "./js/redirecionar.js";
+        
+        document.getElementById("link-cadastro").addEventListener("click", (e) => {
+            e.preventDefault();
+            redirecionarParaCadastro();
+        });
+    </script>
+    <script type="module" src="./js/login.js"></script> 
+</body>
+</html>

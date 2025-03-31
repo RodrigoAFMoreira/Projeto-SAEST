@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - GameA</title>
+</head>
+<body>
+    <h2>Bem-vindo ao Menu!</h2>
+    <h3>Usuários Registrados</h3>
+    <ul id="users-list">
+        <li>Carregando...</li>
+    </ul>
+    <button id="logout-btn">Sair</button>
+
+    <script type="module">
+        import { app } from "./js/firebase-config.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                console.log("Usuário logado no menu.html:", user.uid);
+                try {
+                    // tem teoria buscar todos os users do firebase....
+                    const usersCollection = collection(db, "users");
+                    const usersSnapshot = await getDocs(usersCollection);
+                    const usersList = document.getElementById("users-list");
+                    usersList.innerHTML = ""; 
+
+                    if (usersSnapshot.empty) {
+                        usersList.innerHTML = "<li>Nenhum usuário encontrado.</li>";
+                    } else {
+                        usersSnapshot.forEach((doc) => {
+                            const userData = doc.data();
+                            const li = document.createElement("li");
+                            li.textContent = `Email: ${userData.email}, Nome: ${userData.username}, Criado Em: ${userData.criadoEm.toDate().toLocaleString()}`;
+                            usersList.appendChild(li);
+                        });
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar usuários:", error);
+                    document.getElementById("users-list").innerHTML = "<li>Erro ao carregar usuários: " + error.message + "</li>";
+                }
+            } else {
+                console.log("Nenhum usuário logado, redirecionando para index.html...");
+                window.location.href = "index.html";
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            signOut(auth).then(() => {
+                console.log("Usuário deslogado com sucesso");
+                window.location.href = "index.html";
+            }).catch((error) => {
+                console.error("Erro ao deslogar:", error);
+                alert("Erro ao deslogar: " + error.message);
+            });
+        });
+    </script>
+</body>
+</html>
