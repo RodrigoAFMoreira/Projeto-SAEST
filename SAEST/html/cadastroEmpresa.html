@@ -22,7 +22,7 @@
         </div>
         <div>
             <label for="telefone">Telefone:</label>
-            <input type="tel" id="telefone" name="telefone" placeholder="(11) 91234-5678" pattern="\(\d{2}\)\s\d{5}-\d{4}" required>
+            <input type="tel" id="telefone" name="telefone" placeholder="(11) 91234-5678" pattern="\(\d{2}\)\d{9}" required>
         </div>
         <div>
             <button type="submit">Cadastrar Empresa</button>
@@ -31,11 +31,11 @@
     <script type="module">
         import { redirecionarParaCadastroEmpresa } from "../js/redirecionar.js";
         
-        document.getElementById("link-login").addEventListener("click", (e) => {
+        document.getElementById("link-cadastroEmpresa").addEventListener("click", (e) => {
             e.preventDefault();
             redirecionarParaLogin();
         });
     </script>
-    <!--<script type="module" src="../js/registro.js"></script> -->
+    <script type="module" src="../js/registroEmpresa.js"></script>
 </body>
 </html>
