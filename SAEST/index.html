@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login SAEST</title>
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
-    <h2>Login</h2>
-    <form id="login-form">
-        <input type="email" id="email" placeholder="Email" required />
-        <input type="password" id="password" placeholder="Senha" required /> 
-        <button type="submit">Login</button>
-    </form>
-    <p>Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
-    <script type="module">
-        import { redirecionarParaCadastroUser } from "./js/redirecionar.js";
-        
-        document.getElementById("link-cadastro").addEventListener("click", (e) => {
-            e.preventDefault();
-            redirecionarParaCadastroUser();
-        });
-    </script>
-    <script type="module" src="./js/login.js"></script> 
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Email" required />
+            <input type="password" id="password" placeholder="Senha" required /> 
+            <button type="submit">Entrar</button>
+        </form>
+        <p class="register-link">Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="./js/firebase-config.js"></script>
+    <script type="module" src="./js/auth.js"></script>
+    <script type="module" src="./js/login.js"></script>
+    <script type="module" src="./js/redirecionar.js"></script>
 </body>
 </html>
