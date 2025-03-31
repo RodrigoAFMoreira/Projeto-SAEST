@@ -60,4 +60,7 @@ body {
 .register-link a {
     color: #3498db;
     text-decoration: none;
+    display: inline-block;
+    cursor: pointer; 
+    pointer-events: auto; 
 }
