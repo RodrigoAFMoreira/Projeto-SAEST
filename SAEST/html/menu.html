@@ -9,22 +9,35 @@
     <h2>Bem-vindo ao Menu!</h2>
     <h3>Usuários Registrados</h3>
     <div>
-        <a href="cadastroUser.html">Cadastrar Usuário</a>
+        <button onclick="redirecionarParaCadastroUser()">Cadastrar Usuário</button>
     </div>
     <div>
-        <a href="cadastroEmpresa.html">Cadastrar Empresa</a>
+        <button onclick="redirecionarParaCadastroEmpresa()">Cadastrar Empresa</button>
     </div>
     <div>
-        <a href="cadastroObra.html">Cadastrar Obra</a>
+        <button onclick="redirecionarParaCadastroObra()">Cadastrar Obra</button>
     </div>
     <div>
-        <a href="index.html">Voltar para a Página Inicial</a>
+        <button onclick="redirecionarParaLogin()">Voltar para a Página Inicial</button>
     </div>
     <ul id="users-list">
         <li>Carregando...</li>
     </ul>
     <button id="logout-btn">Sair</button>
     
-    <script type="module" src="./js/menu.js"></script>
+    <script type="module">
+        import { 
+            redirecionarParaLogin, 
+            redirecionarParaCadastroUser, 
+            redirecionarParaCadastroEmpresa, 
+            redirecionarParaCadastroObra 
+        } from '../js/redirecionar.js';
+
+        window.redirecionarParaLogin = redirecionarParaLogin;
+        window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
+        window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
+        window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
+    </script>
+    <script type="module" src="../js/menu.js"></script>
 </body>
 </html>

@@ -3,17 +3,17 @@ export const redirecionarParaLogin = () => {
 };
 
 export const redirecionarParaMenu = () => {
-    window.location.href = "html/menu.html";  
+    window.location.href = "../html/menu.html";  
 };
 
 export const redirecionarParaCadastroUser = () => {
-    window.location.href = "html/cadastroUser.html"; 
+    window.location.href = "../html/cadastroUser.html"; 
 };
 
 export const redirecionarParaCadastroEmpresa = () => {
-    window.location.href = "html/cadastroEmpresa.html"; 
+    window.location.href = "../html/cadastroEmpresa.html"; 
 };
 
 export const redirecionarParaCadastroObra = () => {
-    window.location.href = "./cadastroObra.html";  
+    window.location.href = "../html/cadastroObra.html";  //lembrar
 };
