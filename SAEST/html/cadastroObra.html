@@ -7,7 +7,7 @@
 </head>
 <body>
     <h2>Cadastro Obra</h2>
-    <form action="menu.html" method="POST">
+    <form id="obra-form" action="menu.html" method="POST">>
         <div>
             <label for="endereco">Endereço:</label>
             <textarea id="endereco" name="endereco" rows="3" required></textarea>
@@ -32,6 +32,8 @@
             <button type="submit">Salvar Detalhes</button>
         </div>
     </form>
+    <div id="error-message" style="color: red;"></div>
+    <div id="success-message" style="color: green;"></div>
     <script type="module">
         import { redirecionarParaCadastroObra } from "../js/redirecionar.js";
         

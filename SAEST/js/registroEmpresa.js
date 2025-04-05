@@ -25,7 +25,7 @@ const registrarEmpresa = async (nome, cnpj, email, telefone) => {
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM carregado, buscando formulário de empresa");
-    const companyForm = document.getElementById("company-form");
+    const companyForm = document.getElementById("empresa-form");
     const errorMessage = document.getElementById("error-message");
     const successMessage = document.getElementById("success-message");
 
@@ -56,12 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Validação falhou: email sem @");
                 return;
             }
-            if (!telefone.match(/^\(\d{2}\)\s\d{5}-\d{4}$/)) {
-                errorMessage.textContent = "Por favor, insira um telefone válido (formato: (11) 91234-5678).";
-                console.log("Validação falhou: telefone inválido");
-                return;
-            }
-
             try {
                 errorMessage.textContent = "";
                 successMessage.textContent = "";
