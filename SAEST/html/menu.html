@@ -4,10 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu - SAEST</title>
+    <!--style temporario] -->
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 </head>
 <body>
     <h2>Bem-vindo ao Menu!</h2>
-    <h3>Usuários Registrados</h3>
+    <h3>Dados Registrados</h3>
     <div>
         <button onclick="redirecionarParaCadastroUser()">Cadastrar Usuário</button>
     </div>
@@ -20,10 +37,22 @@
     <div>
         <button onclick="redirecionarParaLogin()">Voltar para a Página Inicial</button>
     </div>
-    <ul id="users-list">
-        <li>Carregando...</li>
-    </ul>
-    <button id="logout-btn">Sair</button>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Usuários Registrados</th>
+                <th>Empresas Registradas</th>
+                <th>Obras Registradas</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="users-list">Carregando...</td>
+                <td id="empresas-list">Carregando...</td>
+                <td id="obras-list">Carregando...</td>
+            </tr>
+        </tbody>
+    </table>
     
     <script type="module">
         import { 
@@ -32,7 +61,6 @@
             redirecionarParaCadastroEmpresa, 
             redirecionarParaCadastroObra 
         } from '../js/redirecionar.js';
-
         window.redirecionarParaLogin = redirecionarParaLogin;
         window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
         window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
