@@ -1,8 +1,6 @@
-import { app } from "./firebase-config.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+import { auth } from "./firebase-config.js";
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { redirecionarParaMenu } from "./redirecionar.js";
-
-const auth = getAuth(app);
 
 document.addEventListener("DOMContentLoaded", () => {
     console.log("login.js carregado com sucesso");
