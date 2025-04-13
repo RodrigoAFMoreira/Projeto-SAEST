@@ -1,68 +1,21 @@
-import { auth } from "./firebase-config.js";
-import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("recuperar-form");
-  const emailInput = document.getElementById("email");
+const firebaseConfig = {
+  apiKey: "AIzaSyD3Iuej48VfDT3KVF2m1-Gz3BSY5-bpvps",
+  authDomain: "saest-87e06.firebaseapp.com",
+  projectId: "saest-87e06",
+  storageBucket: "saest-87e06.firebasestorage.app",
+  messagingSenderId: "43278021134",
+  appId: "1:43278021134:web:6311f0e16924a3ae3dc25f",
+  measurementId: "G-W5E5NYVXF4"
+};
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-    const email = emailInput.value.trim();
-
-    if (!validateEmail(email)) {
-      showFeedback("Por favor, insira um e-mail válido.", true);
-      emailInput.focus();
-      return;
-    }
-
-    // Feedback de carregamento
-    const submitBtn = form.querySelector("button[type='submit']");
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Enviando...";
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showFeedback("✓ E-mail de recuperação enviado com sucesso!");
-      form.reset();
-
-      // Redireciona para o login após 3 segundos
-      setTimeout(() => {
-        window.location.href = "login.html";
-      }, 3000);
-    } catch (error) {
-      console.error("Erro ao enviar e-mail de recuperação:", error.code);
-      let msg = "Erro ao enviar o e-mail. Tente novamente.";
-
-      if (error.code === "auth/user-not-found") {
-        msg = "Este e-mail não está cadastrado.";
-      } else if (error.code === "auth/too-many-requests") {
-        msg = "Muitas tentativas. Tente mais tarde.";
-      }
-
-      showFeedback(msg, true);
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar link de Recuperação";
-    }
-  });
-
-  function validateEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
-
-  function showFeedback(message, isError = false) {
-
-    const existing = form.querySelector(".feedback");
-    if (existing) existing.remove();
-
-    const div = document.createElement("div");
-    div.className = `feedback ${isError ? "error" : "success"}`;
-    div.textContent = message;
-    form.appendChild(div);
-
-    if (!isError) {
-      setTimeout(() => div.remove(), 5000);
-    }
-  }
-});
+export { app, analytics, auth, db };
