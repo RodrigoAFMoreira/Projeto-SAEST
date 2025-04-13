@@ -3,56 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - SAEST</title>
-    <!--style temporario] -->
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+    <title>SAEST - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../css/menu.css">
 </head>
 <body>
-    <h2>Bem-vindo ao Menu!</h2>
-    <h3>Dados Registrados</h3>
-    <div>
-        <button onclick="redirecionarParaCadastroUser()">Cadastrar Usuário</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>SAEST</h1>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <h2>Dashboard</h2>
+                <a href="#" class="sidebar-link active">Empresas</a>
+                <a href="#" class="sidebar-link">Pendências</a>
+                <a href="#" class="sidebar-link">Relatórios</a>
+            </div>
+            
+            <div class="sidebar-section">
+                <h2>Configurações</h2>
+                <a href="#" class="sidebar-link">Suporte</a>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <p>Sofia Martins</p>
+                <p>sofiamartins@gmail.com</p>
+            </div>
+        </div>
     </div>
-    <div>
-        <button onclick="redirecionarParaCadastroEmpresa()">Cadastrar Empresa</button>
+    
+    <!-- Conteúdo Principal -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Empresas</h1>
+            <div class="button-container">
+                <button class="button-primary" onclick="redirecionarParaCadastroEmpresa()">+ Nova Empresa</button>
+                <button class="button-secondary" onclick="gerarRelatorio()">Gerar Relatório</button>
+            </div>
+        </div>
+        
+        <!-- Cards de Estatísticas -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon users">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Usuários Cadastrados</h3>
+                    <p class="value" id="users-list">0</p>
+                    <div class="change positive">
+                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon companies">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Empresas Registradas</h3>
+                    <p class="value" id="empresas-list">0</p>
+                    <div class="change positive">
+                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon projects">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Obras Registradas</h3>
+                    <p class="value" id="obras-list">0</p>
+                    <div class="change positive">
+                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select id="status">
+                    <option>Todas</option>
+                    <option>Ativas</option>
+                    <option>Inativas</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="risco">Nível de Risco</label>
+                <select id="risco">
+                    <option>Todos</option>
+                    <option>Baixo</option>
+                    <option>Médio</option>
+                    <option>Alto</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="busca">Buscar Empresa</label>
+                <input type="text" id="busca" placeholder="Digite o nome da empresa">
+            </div>
+        </div>
+        
+        <!-- Cards de Empresas -->
+        <div class="company-cards">
+            <div class="company-card">
+                <h2>São Pedro</h2>
+                <div class="company-stats">
+                    <div class="stat-item">
+                        <h3>Obras Relacionadas</h3>
+                        <p>10</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Nível de Risco</h3>
+                        <p class="risk-low">Baixo</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="company-card">
+                <h2>Vanguard</h2>
+                <div class="company-stats">
+                    <div class="stat-item">
+                        <h3>Obras Relacionadas</h3>
+                        <p>200</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Nível de Risco</h3>
+                        <p class="risk-high">Alto</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="company-card">
+                <h2>Plaenge</h2>
+                <div class="company-stats">
+                    <div class="stat-item">
+                        <h3>Obras Relacionadas</h3>
+                        <p>150</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Nível de Risco</h3>
+                        <p class="risk-high">Alto</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lista de Empresas -->
+        <div class="company-list">
+            <h2>Empresas ativas</h2>
+            <ul>
+                <li>Construtora</li>
+                <li>São Pedro</li>
+                <li>Vanguard</li>
+                <li>Insight</li>
+                <li>Arch Boa Vista</li>
+                <li>Auth</li>
+                <li>Nest</li>
+                <li>Pulse</li>
+                <li>Urbanit</li>
+                <li>Plaenge</li>
+            </ul>
+        </div>
     </div>
-    <div>
-        <button onclick="redirecionarParaCadastroObra()">Cadastrar Obra</button>
-    </div>
-    <div>
-        <button onclick="redirecionarParaLogin()">Voltar para a Página Inicial</button>
-    </div>
-    <table id="data-table">
-        <thead>
-            <tr>
-                <th>Usuários Registrados</th>
-                <th>Empresas Registradas</th>
-                <th>Obras Registradas</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="users-list">Carregando...</td>
-                <td id="empresas-list">Carregando...</td>
-                <td id="obras-list">Carregando...</td>
-            </tr>
-        </tbody>
-    </table>
     
     <script type="module">
         import { 
@@ -61,10 +184,31 @@
             redirecionarParaCadastroEmpresa, 
             redirecionarParaCadastroObra 
         } from '../js/redirecionar.js';
+        
         window.redirecionarParaLogin = redirecionarParaLogin;
         window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
         window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
         window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
+        
+        function gerarRelatorio() {
+            
+            console.log("Relatório gerado");
+        }
+        
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                
+                document.getElementById('users-list').textContent = '124';
+                document.getElementById('empresas-list').textContent = '42';
+                document.getElementById('obras-list').textContent = '187';
+                
+                
+                document.querySelectorAll('.change-text').forEach(el => {
+                    el.textContent = Math.floor(Math.random() * 15) + 5 + '% no último mês';
+                });
+            }, 800);
+        });
     </script>
     <script type="module" src="../js/menu.js"></script>
 </body>

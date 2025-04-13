@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAEST - Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="js/dashboard.js"></script>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">SAEST</div>
+    <ul class="menu">
+      <li class="active"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></li>
+      <li><i data-lucide="building-2"></i><span>Empresas</span></li>
+      <li><i data-lucide="calendar-clock"></i><span>Pendências</span></li>
+      <li><i data-lucide="file-text"></i><span>Relatórios</span></li>
+      <li><i data-lucide="settings"></i><span>Configurações</span></li>
+      <li><i data-lucide="help-circle"></i><span>Suporte</span></li>
+    </ul>
+    <div class="user-info">
+      <div class="avatar"></div>
+      <div>
+        <p>Sofia Martins</p>
+        <small>sofiamartins@gmail.com</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <header>
+      <input type="text" placeholder="Pesquisar..." />
+      <div class="notificacao">
+        <span>01</span>
+        <i data-lucide="bell"></i>
+      </div>
+    </header>
+
+    <section class="dashboard">
+      <h2>Overview</h2>
+      <div class="cards">
+        <div class="card">
+          <p>Obras em Conformidade</p>
+          <h3>100 <span class="positivo">+11.01%</span></h3>
+        </div>
+        <div class="card">
+          <p>EPIs Registrados</p>
+          <h3>3000 <span class="negativo">-0.03%</span></h3>
+        </div>
+        <div class="card">
+          <p>Substituir</p>
+          <h3>156 <span class="positivo">+15.03%</span></h3>
+        </div>
+        <div class="card">
+          <p>Incidentes Reportados</p>
+          <h3>2 <span class="positivo">+6.08%</span></h3>
+        </div>
+      </div>
+
+      <div class="grafico">
+        <h3>Obras</h3>
+        <canvas id="graficoObras"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const ctx = document.getElementById('graficoObras');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
+        datasets: [{
+          label: 'Obras',
+          data: [12000, 8000, 10000, 15000, 13000, 16000, 19000],
+          borderColor: '#1e3a8a',
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(30, 58, 138, 0.1)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            ticks: {
+              callback: (val) => val / 1000 + 'K'
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -15,5 +15,9 @@ export const redirecionarParaCadastroEmpresa = () => {
 };
 
 export const redirecionarParaCadastroObra = () => {
-    window.location.href = "../html/cadastroObra.html";  //lembrar
+    window.location.href = "../html/cadastroObra.html";
+};
+
+export const redirecionarParaVerificarEmail = () => {
+    window.location.href = "../html/verificarEmail.html";
 };
