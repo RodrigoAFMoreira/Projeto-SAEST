@@ -1,18 +1,5 @@
 import { getAuth, applyActionCode } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-
-// CONFIGURAÇÃO DO PROJETO FIREBASE
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "XXXXXX",
-  appId: "XXXXXX"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { auth, applyActionCode } from "./firebaseConfig.js"; 
 
 // PEGAR O CÓDIGO DA URL
 const urlParams = new URLSearchParams(window.location.search);
