@@ -66,7 +66,7 @@
                 </div>
                 <div class="stat-content">
                     <h3>Construtoras Registradas</h3>
-                    <p class="value">1</p> <!-- lembrar -->
+                    <p class="value">0</p>
                     <div class="change positive">
                         <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
                     </div>
@@ -155,42 +155,22 @@
             </div>
         </div>
         
+        <div class="users-list">
+            <h2>Usuários Cadastrados</h2>
+            <ul id="users-details-list"></ul>
+        </div>
+        
         <div class="company-list">
-            <h2>Construtoras ativas</h2>
-            <ul id="empresas-list"> 
-            </ul>
+            <h2>Construtoras Ativas</h2>
+            <ul id="empresas-list"></ul>
+        </div>
+        
+        <div class="obras-list">
+            <h2>Obras Registradas</h2>
+            <ul id="obras-details-list"></ul>
         </div>
     </div>
     
-    <script type="module">
-        import { 
-            redirecionarParaLogin, 
-            redirecionarParaCadastroUser, 
-            redirecionarParaCadastroEmpresa, 
-            redirecionarParaCadastroObra 
-        } from '../js/redirecionar.js';
-        
-        window.redirecionarParaLogin = redirecionarParaLogin;
-        window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
-        window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
-        window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
-        
-        function gerarRelatorio() {
-            console.log("Relatório gerado");
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                document.getElementById('users-list').textContent = '124';
-                document.querySelector('.stat-card .value:nth-child(2)').textContent = '42';
-                document.getElementById('obras-list').textContent = '187';
-                
-                document.querySelectorAll('.change-text').forEach(el => {
-                    el.textContent = Math.floor(Math.random() * 15) + 5 + '% no último mês';
-                });
-            }, 800);
-        });
-    </script>
     <script type="module" src="../js/menu.js"></script>
 </body>
 </html>
