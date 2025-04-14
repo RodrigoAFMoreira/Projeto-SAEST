@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Empresa - SAEST</title>
+    <style>
+        .form-container { max-width: 600px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; }
+        button { padding: 10px 20px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Editar Empresa</h2>
+        <form id="edit-empresa-form">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="cnpj">CNPJ:</label>
+                <input type="text" id="cnpj" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="telefone">Telefone:</label>
+                <input type="text" id="telefone" required>
+            </div>
+            <button type="submit">Salvar</button>
+            <button type="button" id="cancel-btn">Cancelar</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "../js/firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+        import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+        import { redirecionarParaMenu, redirecionarParaLogin } from "../js/redirecionar.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                redirecionarParaLogin();
+            } else {
+                loadData();
+            }
+        });
+
+        function loadData() {
+            const editData = JSON.parse(localStorage.getItem('editData'));
+            if (editData && editData.collectionName === "empresas") {
+                document.getElementById('nome').value = editData.data.nome || '';
+                document.getElementById('cnpj').value = editData.data.cnpj || '';
+                document.getElementById('email').value = editData.data.email || '';
+                document.getElementById('telefone').value = editData.data.telefone || '';
+            }
+        }
+
+        document.getElementById('edit-empresa-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const editData = JSON.parse(localStorage.getItem('editData'));
+            
+            if (editData && editData.collectionName === "empresas") {
+                try {
+                    const empresaRef = doc(db, "empresas", editData.docId);
+                    await updateDoc(empresaRef, {
+                        nome: document.getElementById('nome').value,
+                        cnpj: document.getElementById('cnpj').value,
+                        email: document.getElementById('email').value,
+                        telefone: document.getElementById('telefone').value
+                    });
+                    alert('Empresa atualizada com sucesso!');
+                    localStorage.removeItem('editData');
+                    redirecionarParaMenu();
+                } catch (error) {
+                    console.error('Erro ao atualizar empresa:', error);
+                    alert('Erro ao atualizar empresa: ' + error.message);
+                }
+            }
+        });
+
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            redirecionarParaMenu();
+        });
+    </script>
+</body>
+</html>

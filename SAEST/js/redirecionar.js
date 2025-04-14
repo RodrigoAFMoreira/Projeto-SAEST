@@ -15,5 +15,13 @@ export const redirecionarParaCadastroEmpresa = () => {
 };
 
 export const redirecionarParaCadastroObra = () => {
-    window.location.href = "../html/cadastroObra.html";  //lembrar
+    window.location.href = "../html/cadastroObra.html";  
+};
+
+export const redirecionarParaEditarEmpresa = () => {
+    window.location.href = "../html/editarEmpresa.html";  
+};
+
+export const redirecionarParaEditarObra = () => {
+    window.location.href = "../html/editarObra.html";  
 };

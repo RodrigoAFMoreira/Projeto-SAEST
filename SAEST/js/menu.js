@@ -2,6 +2,11 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
+import { 
+    redirecionarParaEditarEmpresa, 
+    redirecionarParaEditarObra 
+} from "./redirecionar.js";
+
 function formatCriadoEm(data) {
     return data.criadoEm && typeof data.criadoEm.toDate === "function" 
         ? data.criadoEm.toDate().toLocaleString() 
@@ -18,7 +23,7 @@ function createRemoveButton(collectionName, docId, identifier, refreshCallback) 
             try {
                 await deleteDoc(doc(db, collectionName, docId));
                 console.log(`${collectionName} ${docId} removido com sucesso`);
-                await refreshCallback(); //atualizar!!
+                await refreshCallback();
             } catch (error) {
                 console.error(`Erro ao remover ${collectionName}:`, error);
                 alert(`Erro ao remover ${collectionName}: ${error.message}`);
@@ -28,7 +33,27 @@ function createRemoveButton(collectionName, docId, identifier, refreshCallback) 
     return removeBtn;
 }
 
-async function fetchAndRenderData(collectionName, listId, renderFields, identifierField) {
+function createEditButton(collectionName, docId, data) {
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Editar";
+    editBtn.style.marginLeft = "10px";
+    editBtn.addEventListener("click", () => {
+        localStorage.setItem('editData', JSON.stringify({
+            collectionName,
+            docId,
+            data
+        }));
+
+        if (collectionName === "empresas") {
+            redirecionarParaEditarEmpresa();
+        } else if (collectionName === "obras") {
+            redirecionarParaEditarObra();
+        }
+    });
+    return editBtn;
+}
+
+async function fetchAndRenderMenuData(collectionName, listId, renderFields, identifierField) {
     const listElement = document.getElementById(listId);
     console.log(`Elemento ${listId}:`, listElement);
     if (!listElement) {
@@ -57,6 +82,12 @@ async function fetchAndRenderData(collectionName, listId, renderFields, identifi
             const identifier = `${identifierField}: ${data[identifierField] || "N/A"}`;
             const removeBtn = createRemoveButton(collectionName, docSnapshot.id, identifier, loadData);
             p.appendChild(removeBtn);
+
+            if (collectionName === "empresas" || collectionName === "obras") {
+                const editBtn = createEditButton(collectionName, docSnapshot.id, data);
+                p.appendChild(editBtn);
+            }
+            
             listElement.appendChild(p);
         });
     }
@@ -66,20 +97,20 @@ async function fetchAndRenderData(collectionName, listId, renderFields, identifi
 async function loadData() {
     try {
         console.log("Iniciando loadData...");
-        const usersResult = await fetchAndRenderData(
+        const usersResult = await fetchAndRenderMenuData(
             "users",
             "users-list",
             (data, criadoEm) => `Email: ${data.email || "N/A"}, Nome: ${data.username || "N/A"}, Criado Em: ${criadoEm}`,
             "email"
         );
-        const empresasResult = await fetchAndRenderData(
+        const empresasResult = await fetchAndRenderMenuData(
             "empresas",
             "empresas-list",
             (data, criadoEm) => `Nome: ${data.nome || "N/A"}, CNPJ: ${data.cnpj || "N/A"}, Email: ${data.email || "N/A"}, Telefone: ${data.telefone || "N/A"}, Criado Em: ${criadoEm}`,
             "nome"
         );
 
-        const obrasResult = await fetchAndRenderData(
+        const obrasResult = await fetchAndRenderMenuData(
             "obras",
             "obras-list",
             (data, criadoEm) => `Endereço: ${data.endereco || "N/A"}, Alvará: ${data.alvara || "N/A"}, Registro CREA: ${data.registro_crea || "N/A"}, Registro CAL: ${data.registro_cal || "N/A"}, Responsável Técnico: ${data.responsavel_tecnico || "N/A"}, Criado Em: ${criadoEm}`,
@@ -109,9 +140,9 @@ async function loadData() {
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.href = "login.html"; 
+        window.location.href = "login.html";
     } else {
         console.log("Usuário logado:", user.uid);
-        await loadData(); 
+        await loadData();
     }
 });
