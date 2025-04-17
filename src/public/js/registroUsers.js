@@ -1,8 +1,8 @@
-import { auth, db } from "./firebase-config.js";
+import { auth, db } from "../scripts/firebase/configuracoes.js";
 import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { createUserWithEmailAndPassword, signOut  } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-import { redirecionarParaLogin, redirecionarParaVerificarEmail } from "./redirecionar.js";
+import { redirecionarParaLogin, redirecionarParaVerificarEmail } from "../scripts/autenticacao/redirecionar.js";
 
 console.log("registro.js carregado");
 

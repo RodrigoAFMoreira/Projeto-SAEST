@@ -3,25 +3,18 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login SAEST</title>
-
-    <!-- Estilo -->
-    <link rel="stylesheet" href="./css/styles.css" />
-
-    <!-- Fonte Poppins + ícones -->
+    <link rel="stylesheet" href="css/styles.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <title>Login SAEST</title>
 </head>
 <body>
     <div class="container">
-        <!-- Lado esquerdo -->
         <div class="left-section">
             <h1>SAEST</h1>
             <p>Protegendo pessoas, fortalecendo negócios</p>
         </div>
-
-        <!-- Lado direito -->
         <div class="right-section">
             <div class="login-container">
                 <h2>Login</h2>
@@ -38,18 +31,18 @@
                     <button type="submit">Entrar</button>
                 </form>
                 <a href="#" class="forgot-password">Esqueceu sua senha?</a>
-                <p class="register-link">Não tem uma conta? <a href="../SAEST/html/cadastroUser.html" id="link-cadastro">Registre-se</a></p>
+                <p class="register-link">Não tem uma conta? <a href="../paginas/cadastroUser.html" id="link-cadastro">Registre-se</a></p>
             </div>
         </div>
     </div>
     <script type="module">
-        import { redirecionarParaCadastroUser } from "./js/redirecionar.js";
+        import { redirecionarParaCadastroUser } from "PROJETO-SAEST/src/scripts/autenticacao/redirecionar.js";
         
         document.getElementById("link-cadastro").addEventListener("click", (e) => {
             e.preventDefault();
             redirecionarParaCadastroUser();
         });
     </script>
-    <script type="module" src="./js/login.js"></script> 
+    <script type="module" src="./scripts/autentificacao/login.js"></script> 
 </body>
 </html>

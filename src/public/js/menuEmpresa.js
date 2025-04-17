@@ -1,4 +1,4 @@
-import { redirecionarParaMenu } from './redirecionar.js';
+import { redirecionarParaMenu } from '../scripts/autenticacao/redirecionar';
 
 document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menu-toggle');

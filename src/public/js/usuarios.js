@@ -1,4 +1,4 @@
-import { db } from "../firebase-config.js";
+import { db } from "../scripts/firebase/configuracoes";
 import { collection, getDocs } from "firebase/firestore";
 
 const carregarUsuarios = async () => {

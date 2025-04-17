@@ -1,4 +1,4 @@
-import { auth } from "./firebase-config.js";
+import { auth } from "../scripts/firebase/configuracoes";
 import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Feedback de carregamento
     const submitBtn = form.querySelector("button[type='submit']");
     submitBtn.disabled = true;
     submitBtn.textContent = "Enviando...";
@@ -25,8 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
       await sendPasswordResetEmail(auth, email);
       showFeedback("✓ E-mail de recuperação enviado com sucesso!");
       form.reset();
-
-      // Redireciona para o login após 3 segundos
       setTimeout(() => {
         window.location.href = "login.html";
       }, 3000);

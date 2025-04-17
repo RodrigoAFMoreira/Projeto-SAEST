@@ -1,4 +1,4 @@
-import { db } from "./firebase-config.js";
+import { db } from "../scripts/firebase/configuracoes";
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
 const formatarTelefone = (telefone) => {

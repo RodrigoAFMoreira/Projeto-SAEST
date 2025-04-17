@@ -1,4 +1,4 @@
-import { db } from "./firebase-config.js";
+import { db } from "../scripts/firebase/configuracoes";
 import { collection, addDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
 console.log("obra.js carregado");
