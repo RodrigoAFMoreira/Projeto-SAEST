@@ -1,4 +1,8 @@
-import { redirecionarParaMenu } from './redirecionar.js';
+import {
+    redirecionarParaCadastroEmpresa,
+    redirecionarParaCadastroObra,
+    redirecionarParaMenu
+} from './redirecionar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menu-toggle');
@@ -29,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.error("Dashboard link not found!");
     }
+
+    const btnCadastrarEmpresa = document.querySelector('.btn.primary');
+    const btnNovaObra = document.querySelector('.btn.secondary');
+
+    if (btnCadastrarEmpresa) {
+        btnCadastrarEmpresa.addEventListener('click', redirecionarParaCadastroEmpresa);
+    }
+
+    if (btnNovaObra) {
+        btnNovaObra.addEventListener('click', redirecionarParaCadastroObra);
+    }
+
     const empresas = [
         { nome: 'Construtora Alpha', obras: 4, risco: 'Alto' },
         { nome: 'Beta Engenharia', obras: 2, risco: 'Médio' },

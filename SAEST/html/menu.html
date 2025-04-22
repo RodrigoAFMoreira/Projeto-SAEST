@@ -1,176 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAEST - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="../css/menu.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard SAEST</title>
+  <link rel="stylesheet" href="../css/menu.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 <body>
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h1>SAEST</h1>
-        </div>
-        
-        <nav class="sidebar-nav">
-            <div class="sidebar-section">
-                <h2>Dashboard</h2>
-                <a href="#" class="sidebar-link active">Dashboard</a>
-                <a href="#" class="sidebar-link construtoras-link">Construtoras</a>
-                <a href="#" class="sidebar-link">Pendências</a>
-                <a href="#" class="sidebar-link">Relatórios</a>
-            </div>
-            
-            <div class="sidebar-section">
-                <h2>Configurações</h2>
-                <a href="#" class="sidebar-link">Suporte</a>
-            </div>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <p>Sofia Martins</p>
-                <p>sofiamartins@gmail.com</p>
-            </div>
-        </div>
+  <aside class="sidebar">
+    <div>
+      <div class="logo">SAEST</div>
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="active"><span class="material-icons">dashboard</span> Dashboard</li>
+          <li><a href="#" class="construtoras-link"><span class="material-icons">business</span> Empresas</a></li>
+          <li><span class="material-icons">assignment_late</span> Pendências</li>
+          <li><span class="material-icons">bar_chart</span> Relatórios</li>
+        </ul>
+      </nav>
     </div>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <p>Usuário</p>
+        <p>augusto.figueira@pucpr.edu.br</p>
+      </div>
+    </div>
+  </aside>
 
-    <div class="main-content">
-        <div class="page-header">
-            <h1>Empresas</h1>
-            <div class="button-container">
-                <button class="button-primary" onclick="redirecionarParaCadastroEmpresa()">+ Nova Construtora</button>
-                <button class="button-secondary" onclick="gerarRelatorio()">Gerar Relatório</button>
-            </div>
+  <main class="main-content">
+    <header class="page-header">
+      <button class="icon-btn" title="Notificações">
+        <span class="material-icons">notifications</span>
+      </button>
+    </header>
+
+    <!-- Estatísticas -->
+    <section class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon users"><span class="material-icons">group</span></div>
+        <div class="stat-content">
+          <h3>Usuários</h3>
+          <p id="users-list" class="value">0</p>
         </div>
-        
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon users">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Usuários Cadastrados</h3>
-                    <p class="value" id="users-list">0</p>
-                    <div class="change positive">
-                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon companies">
-                    <i class="fas fa-building"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Construtoras Registradas</h3>
-                    <p class="value">0</p>
-                    <div class="change positive">
-                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon projects">
-                    <i class="fas fa-hard-hat"></i>
-                </div>
-                <div class="stat-content">
-                    <h3>Obras Registradas</h3>
-                    <p class="value" id="obras-list">0</p>
-                    <div class="change positive">
-                        <i class="fas fa-arrow-up"></i> <span class="change-text">Carregando...</span>
-                    </div>
-                </div>
-            </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon companies"><span class="material-icons">business</span></div>
+        <div class="stat-content">
+          <h3>Construtoras</h3>
+          <p id="empresas-list" class="value">0</p>
         </div>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <label for="status">Status</label>
-                <select id="status">
-                    <option>Todas</option>
-                    <option>Ativas</option>
-                    <option>Inativas</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="risco">Nível de Risco</label>
-                <select id="risco">
-                    <option>Todos</option>
-                    <option>Baixo</option>
-                    <option>Médio</option>
-                    <option>Alto</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="busca">Buscar Construtora</label>
-                <input type="text" id="busca" placeholder="Digite o nome da empresa">
-            </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon projects"><span class="material-icons">engineering</span></div>
+        <div class="stat-content">
+          <h3>Obras</h3>
+          <p id="obras-list" class="value">0</p>
         </div>
-        
-        <div class="company-cards">
-            <div class="company-card">
-                <h2>São Pedro</h2>
-                <div class="company-stats">
-                    <div class="stat-item">
-                        <h3>Obras Relacionadas</h3>
-                        <p>10</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Nível de Risco</h3>
-                        <p class="risk-low">Baixo</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="company-card">
-                <h2>Vanguard</h2>
-                <div class="company-stats">
-                    <div class="stat-item">
-                        <h3>Obras Relacionadas</h3>
-                        <p>200</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Nível de Risco</h3>
-                        <p class="risk-high">Alto</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="company-card">
-                <h2>Plaenge</h2>
-                <div class="company-stats">
-                    <div class="stat-item">
-                        <h3>Obras Relacionadas</h3>
-                        <p>150</p>
-                    </div>
-                    <div class="stat-item">
-                        <h3>Nível de Risco</h3>
-                        <p class="risk-high">Alto</p>
-                    </div>
-                </div>
-            </div>
+      </div>
+    </section>
+
+    <!-- Construtoras -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Construtoras Registradas</h2>
+        <div class="section-actions">
+          <select>
+            <option>Ativas</option>
+            <option>Inativas</option>
+          </select>
         </div>
-        
-        <div class="users-list">
-            <h2>Usuários Cadastrados</h2>
-            <ul id="users-details-list"></ul>
-        </div>
-        
-        <div class="company-list">
-            <h2>Construtoras Ativas</h2>
-            <ul id="empresas-list"></ul>
-        </div>
-        
-        <div class="obras-list">
+      </div>
+      <div class="company-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Construtora</th>
+              <th>Obras Relacionadas</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="empresas-details-list">
+            <!-- Empresas serão carregadas via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+        <!-- Obras -->
+        <section class="section">
+          <div class="section-header">
             <h2>Obras Registradas</h2>
-            <ul id="obras-details-list"></ul>
+          </div>
+          <div id="obras-details-list" class="company-table">
+            <!-- Obras serão carregadas aqui -->
+          </div>
+        </section>
+
+    <!-- Usuários -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Usuários Registrados</h2>
+        <div class="section-actions">
+          <input type="text" placeholder="Pesquisar por nome" />
+          <select>
+            <option>Ativos</option>
+            <option>Inativos</option>
+          </select>
+          <button class="button-primary" onclick="abrirModalUsuario()">
+            <span class="material-icons">person_add</span> Novo Usuário
+          </button>
         </div>
-    </div>
-    
-    <script type="module" src="../js/menu.js"></script>
+      </div>
+      <div id="users-details-list" class="company-table">
+        <!-- Usuários serão carregados aqui -->
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="../js/menu.js"></script>
 </body>
 </html>
