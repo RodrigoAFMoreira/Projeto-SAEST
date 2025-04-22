@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Empresas</title>
+    <title>Obras</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="../css/menuEmpresa.css" rel="stylesheet" />
+    <link href="../css/menuObra.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
@@ -17,8 +17,8 @@
                 <nav class="sidebar-nav">
                     <ul>
                         <li class="dashboard-link"><i class="ri-home-line"></i> Dashboard</li>
-                        <li class="active"><i class="ri-building-line"></i> Empresas</li>
-                        <li><i class="ri-building-2-line"></i> Obras</li>
+                        <li><i class="ri-building-line"></i> Empresas</li>
+                        <li class="active"><i class="ri-building-2-line"></i> Obras</li>
                         <li><i class="ri-settings-3-line"></i> Configurações</li>
                     </ul>
                 </nav>
@@ -33,35 +33,34 @@
 
         <main class="main-content">
             <header class="main-header">
-                <div class="header-content">
-                    <!-- Removido o botão do menu hambúrguer -->
+                <div class="header-content" style="width: 100%; display: flex; justify-content: flex-end; align-items: center;">
                     <div class="header-icons">
-                        <i class="ri-notification-3-line"></i> <!-- Ícone de notificações à direita -->
+                        <i class="ri-notification-3-line"></i>
                     </div>
                 </div>
             </header>
 
             <section class="content-box">
                 <div class="content-header">
-                    <h2>Empresas</h2>
+                    <h2>Obras</h2>
                     <div class="actions">
                         <input type="text" placeholder="Pesquisar por nome" />
                         <select>
                             <option>Ativas</option>
                             <option>Inativas</option>
                         </select>
-                        <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Empresa</button>
+                        <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Obra</button>
                     </div>
                 </div>
                 <table>
                     <thead>
                         <tr>
-                            <th>Construtora</th>
+                            <th>Obras</th>
                             <th>Obras Relacionadas</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="empresa-lista">
+                    <tbody id="obra-lista">
                     </tbody>
                 </table>
             </section>
@@ -70,7 +69,7 @@
 
     <div class="overlay" id="overlay"></div>
 
-    <script type="module" src="../js/menuEmpresa.js"></script>
+    <script type="module" src="../js/menuObra.js"></script>
     <script type="module" src="../js/redirecionar.js"></script>
 </body>
 </html>

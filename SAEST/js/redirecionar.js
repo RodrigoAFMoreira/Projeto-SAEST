@@ -25,3 +25,11 @@ export const redirecionarParaVerificarEmail = () => {
 export const redirecionarParaMenuEmpresa = () => {
     window.location.href = "menuEmpresa.html";
 };
+
+export const redirecionarParaEditarEmpresa = () => {
+    window.location.href = "../html/editarEmpresa.html";  
+};
+
+export const redirecionarParaEditarObra = () => {
+    window.location.href = "../html/editarObra.html";  
+};

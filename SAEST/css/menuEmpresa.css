@@ -120,31 +120,17 @@ body {
   justify-content: space-between;
 }
 
-.hamburger {
-  display: none;
-  font-size: 24px;
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-.header-title {
-  flex: 1;
-  text-align: center;
-}
-
-.header-title h1 {
-  font-size: 18px;
-  color: #4b5563;
-  font-weight: 600;
-  margin: 0;
+.header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .header-icons {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-left: auto;
+  margin-left: auto; /* Garante que os ícones fiquem à direita */
 }
 
 .header-icons i {
@@ -280,27 +266,10 @@ td {
     padding: 16px;
   }
 
-  .hamburger {
-    display: block;
-  }
-
-  .sidebar + .overlay {
-    display: none;
-  }
-
-  .sidebar.show + .overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.2);
-    z-index: 50;
-  }
-
   .header-title h1 {
     font-size: 16px;
   }
 }
-
 
 /* Ícones de ação nas tabelas */
 .acoes {
