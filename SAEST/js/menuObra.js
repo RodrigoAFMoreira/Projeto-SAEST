@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Elemento obra-lista não encontrado!");
             return;
         }
-        lista.innerHTML = ""; // Clear the table without loading message
+        lista.innerHTML = ""; // Limpar a tabela sem a mensagem de carregamento
 
         try {
             const obrasSnapshot = await getDocs(collection(db, "obras"));
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 expandBtn.addEventListener('click', () => toggleExpandRow(obraId, obraData, expandBtn));
             });
 
-            // Add styles for expanded row
+            // Adicionar estilos para a linha expandida
             const style = document.createElement('style');
             style.textContent = `
                 .expanded-details {
@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = document.querySelector(`tr[data-id="${obraId}"]`);
         const existingExpandedRow = row.nextElementSibling;
 
-        // Close other expanded rows
+        // Fechar outras linhas expandidas
         document.querySelectorAll('.expanded-row').forEach((expandedRow) => {
             if (expandedRow !== existingExpandedRow) {
                 expandedRow.remove();

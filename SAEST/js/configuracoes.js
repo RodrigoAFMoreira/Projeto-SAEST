@@ -1,40 +1,53 @@
-import { auth } from './firebase-config.js';
-import { updateEmail, updateProfile, signOut } from 'firebase/auth';
 
-document.getElementById('settings-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
+document.getElementById("settings-form").addEventListener("submit", function(event) {
+  event.preventDefault();
 
-  const user = auth.currentUser;
-  const nome = document.getElementById('nome').value;
-  const telefone = document.getElementById('telefone').value;
-  const novoEmail = document.getElementById('email').value;
-  const senha = document.getElementById('senha').value;
+  const emailNovo = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
 
-  try {
-    if (user) {
-      if (user.email !== novoEmail) {
-        await updateEmail(user, novoEmail);
-      }
 
-      await updateProfile(user, {
-        displayName: nome,
-        phoneNumber: telefone
+  if (!validateEmail(emailNovo)) {
+    alert("Por favor, insira um e-mail válido.");
+    return;
+  }
+
+
+  const user = firebase.auth().currentUser;
+  
+  if (user) {
+    const credenciais = firebase.auth.EmailAuthProvider.credential(user.email, senha);
+
+    user.reauthenticateWithCredential(credenciais)
+      .then(() => {
+        user.updateEmail(emailNovo)
+          .then(() => {
+            alert("E-mail atualizado com sucesso!");
+            document.querySelector(".user-profile .email").textContent = emailNovo; // Atualiza o e-mail no perfil
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("Erro ao atualizar o e-mail.");
+          });
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Erro de autenticação. Verifique a senha.");
       });
-
-      alert('Informações atualizadas com sucesso!');
-    }
-  } catch (error) {
-    console.error('Erro ao atualizar:', error.message);
-    alert('Erro: ' + error.message);
   }
 });
 
-window.logout = function () {
-  signOut(auth)
-    .then(() => {
-      window.location.href = '../html/login.html';
-    })
-    .catch((error) => {
-      console.error('Erro ao sair:', error.message);
-    });
-};
+// Função para validar o formato do e-mail
+function validateEmail(email) {
+  const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  return re.test(String(email).toLowerCase());
+}
+
+// Função para logout
+function logout() {
+  firebase.auth().signOut().then(() => {
+    window.location.href = '/login'; 
+  }).catch((error) => {
+    console.error(error);
+    alert("Erro ao sair.");
+  });
+}

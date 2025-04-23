@@ -47,7 +47,7 @@
                             <option>Ativas</option>
                             <option>Inativas</option>
                         </select>
-                        <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Obra</button>
+                        <button class="btn primary" id="cadastrar-obra-btn"><i class="ri-add-line"></i> Cadastrar Obra</button>
                     </div>
                 </div>
                 <table>
@@ -63,7 +63,69 @@
             </section>
         </main>
     </div>
+
+ 
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h3>Confirmar Ação</h3>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja cadastrar a obra?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmYes" class="btn-confirm">Sim</button>
+                <button id="confirmNo" class="btn-cancel">Não</button>
+            </div>
+        </div>
+    </div>
+
     <div class="overlay" id="overlay"></div>
+
+    <script type="module">
+     
+        const modal = document.getElementById("confirmation-modal");
+        const overlay = document.getElementById("overlay");
+        const btnSalvar = document.getElementById("cadastrar-obra-btn");
+        const closeModal = document.querySelector(".close");
+        const confirmYes = document.getElementById("confirmYes");
+        const confirmNo = document.getElementById("confirmNo");
+
+       
+        btnSalvar.addEventListener("click", () => {
+            modal.style.display = "block";
+            overlay.style.display = "block";  
+        });
+
+      
+        confirmNo.addEventListener("click", () => {
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+
+        closeModal.addEventListener("click", () => {
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+
+       
+        window.onclick = function(event) {
+            if (event.target == overlay) {
+                modal.style.display = "none";
+                overlay.style.display = "none";  
+            }
+        };
+
+      
+        confirmYes.addEventListener("click", () => {
+            
+            alert("Obra cadastrada com sucesso!");
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+    </script>
+
     <script type="module" src="../js/menuObra.js"></script>
     <script type="module" src="../js/redirecionar.js"></script>
 </body>
