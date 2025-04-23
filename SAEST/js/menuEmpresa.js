@@ -1,10 +1,12 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import { collection, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"; // Added getDoc
 import {
     redirecionarParaCadastroEmpresa,
     redirecionarParaCadastroObra,
     redirecionarParaMenu,
+    redirecionarParaMenuEmpresa,
+    redirecionarParaObras,
     redirecionarParaEditarEmpresa
 } from './redirecionar.js';
 
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Redirecionamento para Dashboard
     const dashboardLink = document.querySelector('.dashboard-link');
     if (dashboardLink) {
         console.log("Dashboard link found:", dashboardLink);
@@ -38,15 +41,63 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Dashboard link not found!");
     }
 
-    const btnCadastrarEmpresa = document.querySelector('.btn.primary');
-    const btnNovaObra = document.querySelector('.btn.secondary');
+    // Redirecionamento para Empresas
+    const empresasLink = document.querySelector('.empresas-link');
+    if (empresasLink) {
+        console.log("Empresas link found:", empresasLink);
+        empresasLink.addEventListener('click', () => {
+            console.log("Empresas link clicked, redirecting to menuEmpresa.html");
+            redirecionarParaMenuEmpresa();
+        });
+    } else {
+        console.error("Empresas link not found!");
+    }
 
+    // Redirecionamento para Obras
+    const obrasLink = document.querySelector('.obras-link');
+    if (obrasLink) {
+        console.log("Obras link found:", obrasLink);
+        obrasLink.addEventListener('click', () => {
+            console.log("Obras link clicked, redirecting to menuObra.html");
+            redirecionarParaObras();
+        });
+    } else {
+        console.error("Obras link not found!");
+    }
+
+    // Redirecionamento para Configurações (placeholder)
+    const configuracoesLink = document.querySelector('.configuracoes-link');
+    if (configuracoesLink) {
+        console.log("Configurações link found:", configuracoesLink);
+        configuracoesLink.addEventListener('click', () => {
+            console.log("Configurações link clicked, no redirect defined");
+        });
+    } else {
+        console.error("Configurações link not found!");
+    }
+
+    // Botão Cadastrar Empresa
+    const btnCadastrarEmpresa = document.querySelector('.btn.primary');
     if (btnCadastrarEmpresa) {
         btnCadastrarEmpresa.addEventListener('click', redirecionarParaCadastroEmpresa);
     }
 
+    // Botão Nova Obra
+    const btnNovaObra = document.querySelector('.btn.secondary');
     if (btnNovaObra) {
         btnNovaObra.addEventListener('click', redirecionarParaCadastroObra);
+    }
+
+    // Botão Go to Obras
+    const btnGoToObras = document.getElementById('Para Obras'); // Fixed ID
+    if (btnGoToObras) {
+        console.log("Go to Obras button found:", btnGoToObras);
+        btnGoToObras.addEventListener('click', () => {
+            console.log("Go to Obras button clicked, redirecting to menuObra.html");
+            redirecionarParaObras();
+        });
+    } else {
+        console.error("Go to Obras button not found!");
     }
 
     async function renderEmpresasTable() {
@@ -55,12 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Elemento empresa-lista não encontrado!");
             return;
         }
-        lista.innerHTML = "";
+        lista.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
 
         try {
-            // Buscar todas as empresas
             const empresasSnapshot = await getDocs(collection(db, "empresas"));
-            // Buscar todas as obras
             const obrasSnapshot = await getDocs(collection(db, "obras"));
 
             if (empresasSnapshot.empty) {
@@ -72,16 +121,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const empresaData = docSnapshot.data();
                 const empresaId = docSnapshot.id;
 
-                // Filtrar obras relacionadas a esta empresa
                 const obrasRelacionadas = obrasSnapshot.docs.filter(
                     (obraDoc) => obraDoc.data().empresaId === empresaId
                 );
 
-                // Escapar razaoSocial para evitar quebras de string no onclick
                 const escapedRazaoSocial = (empresaData.razaoSocial || "Nome não disponível").replace(/'/g, "\\'");
 
                 const tr = document.createElement('tr');
-                tr.setAttribute('data-id', empresaId); // Para identificar a linha
+                tr.setAttribute('data-id', empresaId);
                 tr.innerHTML = `
                     <td>${empresaData.razaoSocial || "Nome não disponível"}</td>
                     <td>${
@@ -100,12 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 lista.appendChild(tr);
 
-                // Adicionar evento ao botão Expandir
                 const expandBtn = tr.querySelector('.expand-btn');
                 expandBtn.addEventListener('click', () => toggleExpandRow(empresaId, empresaData, expandBtn));
             });
 
-            // Estilo para a seção expandida
             const style = document.createElement('style');
             style.textContent = `
                 .expanded-details {
@@ -127,12 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Função para alternar a expansão da linha
     function toggleExpandRow(empresaId, empresaData, expandBtn) {
         const row = document.querySelector(`tr[data-id="${empresaId}"]`);
         const existingExpandedRow = row.nextElementSibling;
 
-        // Fechar qualquer linha expandida existente
         document.querySelectorAll('.expanded-row').forEach((expandedRow) => {
             if (expandedRow !== existingExpandedRow) {
                 expandedRow.remove();
@@ -142,11 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (existingExpandedRow && existingExpandedRow.classList.contains('expanded-row')) {
-            // Fechar a linha expandida
             existingExpandedRow.remove();
             expandBtn.querySelector('i').className = 'ri-arrow-down-s-line';
         } else {
-            // Criar nova linha expandida
             const expandedRow = document.createElement('tr');
             expandedRow.classList.add('expanded-row');
             expandedRow.dataset.id = empresaId;
@@ -157,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p><strong>E-mail:</strong> ${empresaData.email || 'N/A'}</p>
                         <p><strong>Porte da Empresa:</strong> ${empresaData.porte || 'N/A'}</p>
                         <p><strong>Telefone:</strong> ${empresaData.telefone || 'N/A'}</p>
+                        <p><strong>Responsável Técnico:</strong> ${empresaData.responsavelTecnico || 'N/A'}</p>
                     </div>
                 </td>
             `;
@@ -165,11 +207,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Função para editar uma empresa
-    window.editEmpresa = function(empresaId, razaoSocial) {
-        getDocs(collection(db, "empresas")).then((snapshot) => {
-            const empresaDoc = snapshot.docs.find(doc => doc.id === empresaId);
-            if (empresaDoc) {
+    window.editEmpresa = async function(empresaId, razaoSocial) {
+        try {
+            const empresaRef = doc(db, "empresas", empresaId);
+            const empresaDoc = await getDoc(empresaRef);
+            if (empresaDoc.exists()) {
                 const empresaData = empresaDoc.data();
                 localStorage.setItem('editData', JSON.stringify({
                     collectionName: "empresas",
@@ -179,7 +221,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         nomeFantasia: empresaData.nomeFantasia || '',
                         email: empresaData.email || '',
                         porte: empresaData.porte || '',
-                        telefone: empresaData.telefone || ''
+                        telefone: empresaData.telefone || '',
+                        responsavelTecnico: empresaData.responsavelTecnico || '' // Added
                     }
                 }));
                 console.log(`Dados da empresa ${razaoSocial} armazenados no localStorage:`, empresaData);
@@ -188,20 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error(`Empresa com ID ${empresaId} não encontrada!`);
                 alert("Erro: Empresa não encontrada para edição.");
             }
-        }).catch((error) => {
+        } catch (error) {
             console.error("Erro ao buscar dados da empresa para edição:", error);
             alert(`Erro ao preparar edição: ${error.message}`);
-        });
+        }
     };
 
-    // Função para deletar uma empresa
     window.deleteEmpresa = async function(empresaId, razaoSocial) {
         const confirmDelete = confirm(`Tem certeza que deseja remover a empresa "${razaoSocial}"?`);
         if (confirmDelete) {
             try {
                 await deleteDoc(doc(db, "empresas", empresaId));
                 console.log(`Empresa ${empresaId} removida com sucesso`);
-                await renderEmpresasTable(); // Refresh table
+                await renderEmpresasTable();
             } catch (error) {
                 console.error("Erro ao remover empresa:", error);
                 alert(`Erro ao remover empresa: ${error.message}`);
@@ -209,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Verificar autenticação e carregar dados
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             const userNameElement = document.querySelector(".user-profile .name");

@@ -42,6 +42,10 @@
                 <label for="telefone">Telefone:</label>
                 <input type="text" id="telefone" required>
             </div>
+            <div class="form-group">
+                <label for="responsavelTecnico">Responsável Técnico:</label>
+                <input type="text" id="responsavelTecnico" required>
+            </div>
             <button type="submit">Salvar</button>
             <button type="button" id="cancel-btn">Cancelar</button>
         </form>
@@ -69,6 +73,7 @@
                 document.getElementById('email').value = editData.data.email || '';
                 document.getElementById('porte').value = editData.data.porte || '';
                 document.getElementById('telefone').value = editData.data.telefone || '';
+                document.getElementById('responsavelTecnico').value = editData.data.responsavelTecnico || ''; // Added
             }
         }
 
@@ -84,7 +89,8 @@
                         nomeFantasia: document.getElementById('nomeFantasia').value,
                         email: document.getElementById('email').value,
                         porte: document.getElementById('porte').value,
-                        telefone: document.getElementById('telefone').value
+                        telefone: document.getElementById('telefone').value,
+                        responsavelTecnico: document.getElementById('responsavelTecnico').value // Added
                     });
                     alert('Empresa atualizada com sucesso!');
                     localStorage.removeItem('editData');
