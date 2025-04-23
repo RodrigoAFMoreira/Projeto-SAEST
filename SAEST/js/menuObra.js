@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Elemento obra-lista não encontrado!");
             return;
         }
-        lista.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
+        lista.innerHTML = ""; // Clear the table without loading message
 
         try {
             const obrasSnapshot = await getDocs(collection(db, "obras"));
@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         status: obraData.status || '',
                         dataInicio: obraData.dataInicio || '',
                         dataTermino: obraData.dataTermino || '',
-                        responsavelTecnico: obraData.responsavelTechnico || '', // Added
+                        responsavelTecnico: obraData.responsavelTecnico || '',
                         empresaId: obraData.empresaId || ''
                     }
                 }));
