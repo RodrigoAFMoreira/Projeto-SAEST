@@ -1,0 +1,110 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fonte geral */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
+    color: #1f2937;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Container do formulário */
+.form-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Título */
+.form-container h2 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* Grupo dos campos */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+/* Labels */
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+/* Inputs e Selects */
+input, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+/* Botões */
+button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+    border: none;
+}
+
+/* Botão de Salvar */
+button[type="submit"] {
+    background-color: #6366f1;
+    color: #ffffff;
+    margin-right: 1rem;
+}
+
+button[type="submit"]:hover {
+    background-color: #4f46e5;
+    transform: translateY(-2px);
+}
+
+/* Botão de Cancelar */
+#cancel-btn {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+#cancel-btn:hover {
+    background-color: #d1d5db;
+    transform: translateY(-2px);
+}
+
+/* Responsividade */
+@media (max-width: 500px) {
+    .form-container {
+        padding: 1.5rem;
+    }
+
+    button {
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+}

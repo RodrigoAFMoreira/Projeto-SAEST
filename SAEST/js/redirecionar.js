@@ -1,3 +1,4 @@
+
 export const redirecionarParaLogin = () => {
     window.location.href = "../index.html";
 };
@@ -36,4 +37,8 @@ export const redirecionarParaEditarObra = () => {
 
 export const redirecionarParaObras = () => {
     window.location.href = "../html/menuObra.html";
+};
+
+export const redirecionarParaConfiguracoes = () => {
+    window.location.href = "../html/configuracoes.html";
 };

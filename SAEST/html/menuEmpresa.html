@@ -7,6 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
   <link href="../css/menuEmpresa.css" rel="stylesheet" />
 </head>
+
 <body>
   <div class="container">
     <aside class="sidebar" id="sidebar">
@@ -49,10 +50,11 @@
               <option>Ativas</option>
               <option>Inativas</option>
             </select>
-            <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Empresa</button>
-            <button class="btn secondary" id="Para Obras"><i class="ri-building-2-line"></i> Ir para Obras</button>
+            <button class="btn primary" id="btnCadastrarEmpresa"><i class="ri-add-line"></i> Cadastrar Empresa</button>
+            <button class="btn secondary" id="ParaObras"><i class="ri-building-2-line"></i> Ir para Obras</button>
           </div>
         </div>
+
         <table>
           <thead>
             <tr>
@@ -62,13 +64,14 @@
             </tr>
           </thead>
           <tbody id="empresa-lista">
+            <!-- Empresas serão carregadas aqui -->
           </tbody>
         </table>
       </section>
     </main>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal Cadastrar Construtora -->
   <div class="modal-overlay" id="modalConstrutora">
     <div class="modal">
       <button class="modal-close" onclick="fecharModal()">×</button>
@@ -110,20 +113,66 @@
     </div>
   </div>
 
+  <!-- Modal Editar Empresa -->
+  <div class="modal-overlay" id="modalEditarEmpresa">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModalEditar()">×</button>
+      <h2>Editar Empresa</h2>
+      <form id="editar-empresa-form">
+        <div class="form-group">
+          <label for="edit-razao-social">Razão Social</label>
+          <input type="text" id="edit-razao-social" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-nome-fantasia">Nome Fantasia</label>
+          <input type="text" id="edit-nome-fantasia" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-email">E-mail</label>
+          <input type="email" id="edit-email" required>
+        </div>
+        <div class="form-group">
+          <label for="edit-porte">Porte da Empresa</label>
+          <select id="edit-porte" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="Micro">Micro</option>
+            <option value="Pequena">Pequena</option>
+            <option value="Média">Média</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-telefone">Telefone</label>
+          <input type="tel" id="edit-telefone" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="fecharModalEditar()">Cancelar</button>
+          <button id="salvar-edicao" type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script type="module" src="../js/menuEmpresa.js"></script>
   <script type="module" src="../js/redirecionar.js"></script>
 
-  <!-- Script para modal -->
+  <!-- Scripts extras para modais -->
   <script>
-    const botaoAbrirModal = document.querySelector('.btn.primary');
-    const modal = document.getElementById('modalConstrutora');
+    // Abrir modal cadastrar
+    const btnCadastrarEmpresa = document.getElementById('btnCadastrarEmpresa');
+    const modalCadastrar = document.getElementById('modalConstrutora');
 
-    botaoAbrirModal.addEventListener('click', () => {
-      modal.style.display = 'flex';
+    btnCadastrarEmpresa.addEventListener('click', () => {
+      modalCadastrar.style.display = 'flex';
     });
 
     function fecharModal() {
-      modal.style.display = 'none';
+      modalCadastrar.style.display = 'none';
+    }
+
+    function fecharModalEditar() {
+      document.getElementById('modalEditarEmpresa').style.display = 'none';
     }
   </script>
 </body>
