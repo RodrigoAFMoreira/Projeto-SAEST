@@ -1,29 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login SAEST</title>
-    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css" />
+
+    <!-- Fonte Poppins + ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form id="login-form">
-            <input type="email" id="email" placeholder="Email" required />
-            <input type="password" id="password" placeholder="Senha" required /> 
-            <button type="submit">Entrar</button>
-        </form>
-        <p class="register-link">Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
+    <div class="container">
+        <!-- Lado esquerdo -->
+        <div class="left-section">
+            <h1>SAEST</h1>
+            <p>Protegendo pessoas, fortalecendo negócios</p>
+        </div>
+
+        <!-- Lado direito -->
+        <div class="right-section">
+            <div class="login-container">
+                <h2>Login</h2>
+                <p>Acesse sua conta para continuar</p>
+                <form id="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" placeholder="E-mail" required />
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Senha" required />
+                    </div>
+                    <button type="submit">Entrar</button>
+                </form>
+                <a href="#" class="forgot-password" id="link-esqueci-senha">Esqueceu sua senha?</a>
+                <p class="register-link">Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
+            </div>
+        </div>
     </div>
-    <script type="module">
-        import { redirecionarParaCadastroUser } from "./js/redirecionar.js";
-        
-        document.getElementById("link-cadastro").addEventListener("click", (e) => {
-            e.preventDefault();
-            redirecionarParaCadastroUser();
-        });
-    </script>
-    <script type="module" src="./js/login.js"></script> 
+    <script type="module" src="./js/login.js"></script>
 </body>
 </html>

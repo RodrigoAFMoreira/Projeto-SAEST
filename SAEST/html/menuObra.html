@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Obras</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="../css/menuObra.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div>
+                <div class="sidebar-header">
+                    <div class="logo">SAEST</div>
+                </div>
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li class="dashboard-link"><i class="ri-home-line"></i> Dashboard</li>
+                        <li class="empresas-link"><i class="ri-building-line"></i> Empresas</li>
+                        <li class="obras-link"><i class="ri-building-2-line"></i> Obras</li>
+                        <li class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="user-profile">
+                <div class="user-info">
+                    <div class="name">Usuário</div>
+                    <div class="email">usuario@email.com</div>
+                </div>
+            </div>
+        </aside>
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-content" style="width: 100%; display: flex; justify-content: flex-end; align-items: center;">
+                    <div class="header-icons">
+                        <i class="ri-notification-3-line"></i>
+                    </div>
+                </div>
+            </header>
+            <section class="content-box">
+                <div class="content-header">
+                    <h2>Obras</h2>
+                    <div class="actions">
+                        <input type="text" placeholder="Pesquisar por nome" />
+                        <select>
+                            <option>Ativas</option>
+                            <option>Inativas</option>
+                        </select>
+                        <button class="btn primary" id="cadastrar-obra-btn"><i class="ri-add-line"></i> Cadastrar Obra</button>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Obras</th>
+                            <th>Obras Relacionadas</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="obra-lista"></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+ 
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close">&times;</span>
+                <h3>Confirmar Ação</h3>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja cadastrar a obra?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmYes" class="btn-confirm">Sim</button>
+                <button id="confirmNo" class="btn-cancel">Não</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script type="module">
+     
+        const modal = document.getElementById("confirmation-modal");
+        const overlay = document.getElementById("overlay");
+        const btnSalvar = document.getElementById("cadastrar-obra-btn");
+        const closeModal = document.querySelector(".close");
+        const confirmYes = document.getElementById("confirmYes");
+        const confirmNo = document.getElementById("confirmNo");
+
+       
+        btnSalvar.addEventListener("click", () => {
+            modal.style.display = "block";
+            overlay.style.display = "block";  
+        });
+
+      
+        confirmNo.addEventListener("click", () => {
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+
+        closeModal.addEventListener("click", () => {
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+
+       
+        window.onclick = function(event) {
+            if (event.target == overlay) {
+                modal.style.display = "none";
+                overlay.style.display = "none";  
+            }
+        };
+
+      
+        confirmYes.addEventListener("click", () => {
+            
+            alert("Obra cadastrada com sucesso!");
+            modal.style.display = "none";
+            overlay.style.display = "none";  
+        });
+    </script>
+
+    <script type="module" src="../js/menuObra.js"></script>
+    <script type="module" src="../js/redirecionar.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import { collection, getDocs } from "firebase/firestore";
 
 const carregarUsuarios = async () => {
     const corpoTabela = document.getElementById("users-table-body");
-    corpoTabela.innerHTML = ""; // Limpar dados anteriores!!!
+    corpoTabela.innerHTML = ""; 
 
     try {
         const consultaSnapshot = await getDocs(collection(db, "users"));
@@ -21,5 +21,4 @@ const carregarUsuarios = async () => {
     }
 };
 
-// Carregar usuários quando a página for carregada...
 document.addEventListener("DOMContentLoaded", carregarUsuarios);

@@ -1,71 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - SAEST</title>
-    <!--style temporario] -->
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard SAEST</title>
+  <link rel="stylesheet" href="../css/menu.css" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 <body>
-    <h2>Bem-vindo ao Menu!</h2>
-    <h3>Dados Registrados</h3>
+  <aside class="sidebar">
     <div>
-        <button onclick="redirecionarParaCadastroUser()">Cadastrar Usuário</button>
+      <div class="logo">SAEST</div>
+      <nav class="sidebar-nav">
+        <ul>
+          <li class="active"><span class="material-icons">dashboard</span> Dashboard</li>
+          <li><a href="#" class="construtoras-link"><span class="material-icons">business</span> Empresas</a></li>
+          <li><span class="material-icons">assignment_late</span> Pendências</li>
+          <li><span class="material-icons">bar_chart</span> Relatórios</li>
+        </ul>
+      </nav>
     </div>
-    <div>
-        <button onclick="redirecionarParaCadastroEmpresa()">Cadastrar Empresa</button>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <p>Usuário</p>
+        <p>augusto.figueira@pucpr.edu.br</p>
+      </div>
     </div>
-    <div>
-        <button onclick="redirecionarParaCadastroObra()">Cadastrar Obra</button>
-    </div>
-    <div>
-        <button onclick="redirecionarParaLogin()">Voltar para a Página Inicial</button>
-    </div>
-    <table id="data-table">
-        <thead>
+  </aside>
+
+  <main class="main-content">
+    <header class="page-header">
+      <button class="icon-btn" title="Notificações">
+        <span class="material-icons">notifications</span>
+      </button>
+    </header>
+
+    <!-- Estatísticas -->
+    <section class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon users"><span class="material-icons">group</span></div>
+        <div class="stat-content">
+          <h3>Usuários</h3>
+          <p id="users-list" class="value">0</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon companies"><span class="material-icons">business</span></div>
+        <div class="stat-content">
+          <h3>Construtoras</h3>
+          <p id="empresas-list" class="value">0</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon projects"><span class="material-icons">engineering</span></div>
+        <div class="stat-content">
+          <h3>Obras</h3>
+          <p id="obras-list" class="value">0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Construtoras -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Construtoras Registradas</h2>
+        <div class="section-actions">
+          <select>
+            <option>Ativas</option>
+            <option>Inativas</option>
+          </select>
+        </div>
+      </div>
+      <div class="company-table">
+        <table>
+          <thead>
             <tr>
-                <th>Usuários Registrados</th>
-                <th>Empresas Registradas</th>
-                <th>Obras Registradas</th>
+              <th>Construtora</th>
+              <th>Obras Relacionadas</th>
+              <th>Status</th>
+              <th>Ações</th>
             </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="users-list">Carregando...</td>
-                <td id="empresas-list">Carregando...</td>
-                <td id="obras-list">Carregando...</td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <script type="module">
-        import { 
-            redirecionarParaLogin, 
-            redirecionarParaCadastroUser, 
-            redirecionarParaCadastroEmpresa, 
-            redirecionarParaCadastroObra 
-        } from '../js/redirecionar.js';
-        window.redirecionarParaLogin = redirecionarParaLogin;
-        window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
-        window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
-        window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
-    </script>
-    <script type="module" src="../js/menu.js"></script>
+          </thead>
+          <tbody id="empresas-details-list">
+            <!-- Empresas serão carregadas via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+        <!-- Obras -->
+        <section class="section">
+          <div class="section-header">
+            <h2>Obras Registradas</h2>
+          </div>
+          <div id="obras-details-list" class="company-table">
+            <!-- Obras serão carregadas aqui -->
+          </div>
+        </section>
+
+    <!-- Usuários -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Usuários Registrados</h2>
+        <div class="section-actions">
+          <input type="text" placeholder="Pesquisar por nome" />
+          <select>
+            <option>Ativos</option>
+            <option>Inativos</option>
+          </select>
+          <button class="button-primary" onclick="abrirModalUsuario()">
+            <span class="material-icons">person_add</span> Novo Usuário
+          </button>
+        </div>
+      </div>
+      <div id="users-details-list" class="company-table">
+        <!-- Usuários serão carregados aqui -->
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="../js/menu.js"></script>
 </body>
 </html>

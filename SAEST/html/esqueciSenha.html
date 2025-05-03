@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recuperar Senha - SAEST</title>
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/esqueciSenha.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="left-side">
+      <h1><strong>SAEST</strong></h1>
+      <p>Protegendo pessoas, fortalecendo negócios</p>
+    </div>
+    <div class="right-side">
+      <form id="resetForm">
+        <h2>Recuperar Senha</h2>
+        <p>Informe seu e-mail para redefinir a senha</p>
+
+        <div class="input-group">
+          <input type="email" id="email" placeholder="E-mail" required />
+        </div>
+
+        <button type="submit" id="btnEnviar">Enviar</button>
+        <p class="voltar"><a id="voltar-login" href="#">Voltar ao login</a></p>
+        <p id="mensagem" class="mensagem"></p>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/esqueciSenha.js"></script>
+</body>
+</html>
+
+

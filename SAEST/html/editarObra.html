@@ -8,7 +8,7 @@
         .form-container { max-width: 600px; margin: 20px auto; padding: 20px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; }
-        input { width: 100%; padding: 8px; }
+        input, select { width: 100%; padding: 8px; }
         button { padding: 10px 20px; margin-right: 10px; }
     </style>
 </head>
@@ -21,20 +21,32 @@
                 <input type="text" id="endereco" required>
             </div>
             <div class="form-group">
-                <label for="alvara">Alvará:</label>
-                <input type="text" id="alvara" required>
+                <label for="status">Status:</label>
+                <select id="status" required>
+                    <option value="">Selecione</option>
+                    <option value="Ativa">Ativa</option>
+                    <option value="Inativa">Inativa</option>
+                    <option value="Concluída">Concluída</option>
+                </select>
             </div>
             <div class="form-group">
-                <label for="registro_crea">Registro CREA:</label>
-                <input type="text" id="registro_crea" required>
+                <label for="dataInicio">Data de Início:</label>
+                <input type="date" id="dataInicio" required>
             </div>
             <div class="form-group">
-                <label for="registro_cal">Registro CAL:</label>
-                <input type="text" id="registro_cal" required>
+                <label for="dataTermino">Data de Término:</label>
+                <input type="date" id="dataTermino">
             </div>
             <div class="form-group">
-                <label for="responsavel_tecnico">Responsável Técnico:</label>
-                <input type="text" id="responsavel_tecnico" required>
+                <label for="responsavelTecnico">Responsável Técnico:</label>
+                <input type="text" id="responsavelTecnico" required>
+            </div>
+            <div class="form-group">
+                <label for="empresaId">Empresa:</label>
+                <select id="empresaId" required>
+                    <option value="">Selecione uma empresa</option>
+                    <!-- Options will be populated dynamically -->
+                </select>
             </div>
             <button type="submit">Salvar</button>
             <button type="button" id="cancel-btn">Cancelar</button>
@@ -44,7 +56,7 @@
     <script type="module">
         import { auth, db } from "../js/firebase-config.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-        import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+        import { doc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
         import { redirecionarParaMenu, redirecionarParaLogin } from "../js/redirecionar.js";
 
         onAuthStateChanged(auth, (user) => {
@@ -52,33 +64,53 @@
                 redirecionarParaLogin();
             } else {
                 loadData();
+                populateEmpresas();
             }
         });
+
+        async function populateEmpresas() {
+            const empresaSelect = document.getElementById('empresaId');
+            try {
+                const empresasSnapshot = await getDocs(collection(db, "empresas"));
+                empresasSnapshot.forEach((empresaDoc) => {
+                    const empresaData = empresaDoc.data();
+                    const option = document.createElement('option');
+                    option.value = empresaDoc.id;
+                    option.textContent = empresaData.razaoSocial || "Empresa sem nome";
+                    empresaSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar empresas:", error);
+                alert("Erro ao carregar empresas: " + error.message);
+            }
+        }
 
         function loadData() {
             const editData = JSON.parse(localStorage.getItem('editData'));
             if (editData && editData.collectionName === "obras") {
                 document.getElementById('endereco').value = editData.data.endereco || '';
-                document.getElementById('alvara').value = editData.data.alvara || '';
-                document.getElementById('registro_crea').value = editData.data.registro_crea || '';
-                document.getElementById('registro_cal').value = editData.data.registro_cal || '';
-                document.getElementById('responsavel_tecnico').value = editData.data.responsavel_tecnico || '';
+                document.getElementById('status').value = editData.data.status || '';
+                document.getElementById('dataInicio').value = editData.data.dataInicio || '';
+                document.getElementById('dataTermino').value = editData.data.dataTermino || '';
+                document.getElementById('responsavelTecnico').value = editData.data.responsavelTecnico || ''; // Added
+                document.getElementById('empresaId').value = editData.data.empresaId || '';
             }
         }
 
         document.getElementById('edit-obra-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editData = JSON.parse(localStorage.getItem('editData'));
-            
+
             if (editData && editData.collectionName === "obras") {
                 try {
                     const obraRef = doc(db, "obras", editData.docId);
                     await updateDoc(obraRef, {
                         endereco: document.getElementById('endereco').value,
-                        alvara: document.getElementById('alvara').value,
-                        registro_crea: document.getElementById('registro_crea').value,
-                        registro_cal: document.getElementById('registro_cal').value,
-                        responsavel_tecnico: document.getElementById('responsavel_tecnico').value
+                        status: document.getElementById('status').value,
+                        dataInicio: document.getElementById('dataInicio').value,
+                        dataTermino: document.getElementById('dataTermino').value || null,
+                        responsavelTecnico: document.getElementById('responsavelTecnico').value, // Added
+                        empresaId: document.getElementById('empresaId').value
                     });
                     alert('Obra atualizada com sucesso!');
                     localStorage.removeItem('editData');
@@ -91,6 +123,7 @@
         });
 
         document.getElementById('cancel-btn').addEventListener('click', () => {
+            localStorage.removeItem('editData');
             redirecionarParaMenu();
         });
     </script>

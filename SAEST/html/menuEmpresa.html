@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Empresas</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link href="../css/menuEmpresa.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="logo">SAEST</div>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="dashboard-link"><i class="ri-home-line"></i> Dashboard</li>
+            <li class="empresas-link active"><i class="ri-building-line"></i> Empresas</li>
+            <li class="obras-link"><i class="ri-building-2-line"></i> Obras</li>
+            <li class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</li>
+          </ul>
+        </nav>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="name">Usuário</div>
+          <div class="email">usuario@email.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-content">
+          <div class="header-icons">
+            <i class="ri-notification-3-line"></i>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-box">
+        <div class="content-header">
+          <h2>Empresas</h2>
+          <div class="actions">
+            <input type="text" placeholder="Pesquisar por nome" />
+            <select>
+              <option>Ativas</option>
+              <option>Inativas</option>
+            </select>
+            <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Empresa</button>
+            <button class="btn secondary" id="Para Obras"><i class="ri-building-2-line"></i> Ir para Obras</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Construtora</th>
+              <th>Obras Relacionadas</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="empresa-lista">
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalConstrutora">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModal()">×</button>
+      <h2>Cadastrar Construtora</h2>
+      <form id="construtora-form">
+        <div class="form-group">
+          <label for="razao-social">Razão Social</label>
+          <input type="text" id="razao-social" name="razao-social" />
+        </div>
+        <div class="form-group">
+          <label for="nome-fantasia">Nome Fantasia</label>
+          <input type="text" id="nome-fantasia" name="nome-fantasia" />
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" />
+        </div>
+        <div class="form-group">
+          <label for="porte">Porte da Empresa</label>
+          <select id="porte" name="porte">
+            <option value="" disabled selected>Selecione</option>
+            <option value="mei">MEI</option>
+            <option value="epp">EPP</option>
+            <option value="medio">Médio Porte</option>
+            <option value="grande">Grande Porte</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="telefone">Telefone</label>
+          <input type="tel" id="telefone" name="telefone" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+          <button id="construtora" type="submit" class="btn-primary">Cadastrar</button>
+        </div>
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/menuEmpresa.js"></script>
+  <script type="module" src="../js/redirecionar.js"></script>
+
+  <!-- Script para modal -->
+  <script>
+    const botaoAbrirModal = document.querySelector('.btn.primary');
+    const modal = document.getElementById('modalConstrutora');
+
+    botaoAbrirModal.addEventListener('click', () => {
+      modal.style.display = 'flex';
+    });
+
+    function fecharModal() {
+      modal.style.display = 'none';
+    }
+  </script>
+</body>
+</html>

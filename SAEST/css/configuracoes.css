@@ -1,0 +1,251 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background-color: #f5f7fa;
+  color: #2d3748;
+  min-height: 100vh;
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #4f46e5;
+  font-style: italic;
+  padding-left: 4px;
+  margin-bottom: 24px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+}
+
+.sidebar-nav li {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  gap: 12px;
+  font-size: 15px;
+  color: #374151;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-nav li:hover {
+  background-color: #f3f4f6;
+}
+
+.sidebar-nav li.active {
+  background-color: #e7edff;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.user-profile {
+  background: #f3f4f6;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.user-info .name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #111827;
+}
+
+.user-info .email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Main Content */
+.main-content {
+  margin-left: 260px;
+  padding: 32px;
+  width: calc(100% - 260px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Header */
+.main-header {
+    background: #ffffff;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 24px;
+    width: 100%;         /* 👈 ESSENCIAL */
+    box-sizing: border-box;
+}
+  
+
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: #4b5563;
+  font-size: 20px;
+}
+
+/* Configurações */
+.settings-box {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  flex: 1;
+}
+
+.settings-box h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4f46e5;
+  margin-bottom: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  background-color: #f9fafb;
+}
+
+/* Botões */
+.buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn.primary {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.btn.logout {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.btn.primary:hover {
+  background-color: #4338ca;
+}
+
+.btn.logout:hover {
+  background-color: #e5e7eb;
+}
+
+.danger-zone {
+  margin-top: 24px;
+}
+
+.delete {
+  background: none;
+  color: #ef4444;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.delete:hover {
+  text-decoration: underline;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 24px 16px;
+  }
+
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .sidebar-nav ul {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .sidebar-nav li {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  .user-profile {
+    display: none;
+  }
+}

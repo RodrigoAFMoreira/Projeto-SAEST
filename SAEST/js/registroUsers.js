@@ -1,66 +1,78 @@
 import { auth, db } from "./firebase-config.js";
-import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+import { sendEmailVerification, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-import { redirecionarParaLogin } from "./redirecionar.js";
+import { redirecionarParaLogin, redirecionarParaVerificarEmail } from "./redirecionar.js";
 
 console.log("registro.js carregado");
 
 const registrarUsuario = async (email, senha, nomeDeUsuario) => {
-    try {
-        console.log("Tentando registrar:", email);
-        const credenciaisUsuario = await createUserWithEmailAndPassword(auth, email, senha);
-        const usuario = credenciaisUsuario.user;
-        console.log("Usuário autenticado com UID:", usuario.uid);
-        
-        console.log("Salvando dados no Firestore para UID:", usuario.uid);
-        await setDoc(doc(db, "users", usuario.uid), {
-            email: usuario.email,
-            username: nomeDeUsuario,
-            criadoEm: new Date()
-        });
-        console.log("Dados salvos no Firestore com sucesso");
+  try {
+    console.log("Tentando registrar:", email);
+    const credenciaisUsuario = await createUserWithEmailAndPassword(auth, email, senha);
+    console.log(credenciaisUsuario);
+    const user = credenciaisUsuario.user;
+    await sendEmailVerification(user);
+    console.log("Usuário autenticado com UID:", user.uid);
 
-        console.log("Usuário registrado e salvo no Firestore!");
-        redirecionarParaLogin();
-    } catch (erro) {
-        console.error("Erro no registro:", erro.code, erro.message);
-        alert("Erro ao registrar: " + erro.message);
-        throw erro;
-    }
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      username: nomeDeUsuario,
+      criadoEm: new Date(),
+    });
+
+    await signOut(auth);
+    redirecionarParaVerificarEmail();
+  } catch (erro) {
+    console.error("Erro no registro:", erro.code, erro.message);
+    alert("Erro ao registrar: " + erro.message);
+  }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM carregado, buscando formulário");
-    const registerForm = document.getElementById("register-form");
-    if (registerForm) {
-        console.log("Formulário encontrado, adicionando listener");
-        registerForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const email = document.getElementById("email").value;
-            const senha = document.getElementById("password").value;
-            const nomeDeUsuario = document.getElementById("username").value;
+  const registerForm = document.getElementById("cadastro-form");
 
-            console.log("Formulário enviado com:", email, senha, nomeDeUsuario);
+  if (registerForm) {
+    registerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
 
-            if (!email.includes("@")) {
-                alert("Por favor, inclua um '@' no endereço de e-mail.");
-                console.log("Validação falhou: email sem @");
-                return;
-            }
-            if (senha.length < 6) {
-                alert("A senha deve ter pelo menos 6 caracteres.");
-                console.log("Validação falhou: senha muito curta");
-                return;
-            }
-            if (nomeDeUsuario.trim() === "") {
-                alert("Por favor, insira um nome de usuário.");
-                console.log("Validação falhou: username vazio");
-                return;
-            }
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      const nomeDeUsuario = document.getElementById("nome").value;
+      const partesEmail = email.split("@");
 
-            registrarUsuario(email, senha, nomeDeUsuario);
-        });
-    } else {
-        console.error("Formulário de registro não encontrado!");
-    }
+      if (!email.includes("@")) {
+        alert("Por favor, insira um e-mail válido.");
+        return;
+      }
+
+      if (partesEmail.length !== 2 || partesEmail[1].trim() === "") {
+        alert("Por favor, insira um domínio após o '@'. Exemplo: usuario@exemplo.com");
+        return;
+      }
+
+      if (senha.length < 6) {
+        alert("A senha deve ter pelo menos 6 caracteres.");
+        return;
+      }
+
+      if (nomeDeUsuario.trim() === "") {
+        alert("Por favor, insira um nome.");
+        return;
+      }
+
+      registrarUsuario(email, senha, nomeDeUsuario);
+    });
+  } else {
+    console.error("Formulário de cadastro não encontrado!");
+  }
+  
+  const loginLink = document.getElementById("login-link");
+  if (loginLink) {
+    loginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      redirecionarParaLogin();
+    });
+  } else {
+    console.error("Link de 'Faça login' não encontrado!");
+  }
 });
