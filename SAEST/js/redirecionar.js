@@ -41,14 +41,3 @@ export const redirecionarParaObras = () => {
 export const redirecionarParaEsqueciSenha = () => {
     window.location.href = "../html/esqueciSenha.html";
 };
-
-    window.location.href = "../html/cadastroObra.html";  
-};
-
-export const redirecionarParaEditarEmpresa = () => {
-    window.location.href = "../html/editarEmpresa.html";  
-};
-
-export const redirecionarParaEditarObra = () => {
-    window.location.href = "../html/editarObra.html";  
-};
