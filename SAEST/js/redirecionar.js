@@ -37,3 +37,7 @@ export const redirecionarParaEditarObra = () => {
 export const redirecionarParaObras = () => {
     window.location.href = "../html/menuObra.html";
 };
+
+export const redirecionarParaEsqueciSenha = () => {
+    window.location.href = "../html/esqueciSenha.html";
+};

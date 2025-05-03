@@ -1,8 +1,9 @@
 import { auth } from "./firebase-config.js";
 import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+import { redirecionarParaLogin } from "./redirecionar.js"; 
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("recuperar-form");
+  const form = document.getElementById("resetForm"); 
   const emailInput = document.getElementById("email");
 
   form.addEventListener("submit", async (e) => {
@@ -16,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Feedback de carregamento
     const submitBtn = form.querySelector("button[type='submit']");
     submitBtn.disabled = true;
     submitBtn.textContent = "Enviando...";
@@ -26,9 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
       showFeedback("✓ E-mail de recuperação enviado com sucesso!");
       form.reset();
 
-      // Redireciona para o login após 3 segundos
       setTimeout(() => {
-        window.location.href = "login.html";
+        redirecionarParaLogin(); 
       }, 3000);
     } catch (error) {
       console.error("Erro ao enviar e-mail de recuperação:", error.code);
@@ -43,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showFeedback(msg, true);
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar link de Recuperação";
+      submitBtn.textContent = "Enviar";
     }
   });
 
@@ -52,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showFeedback(message, isError = false) {
-
     const existing = form.querySelector(".feedback");
     if (existing) existing.remove();
 
@@ -64,5 +62,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isError) {
       setTimeout(() => div.remove(), 5000);
     }
+  }
+
+  const voltarLoginLink = document.getElementById("voltar-login");
+  if (voltarLoginLink) {
+    voltarLoginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      redirecionarParaLogin();
+    });
+  } else {
+    console.error("Link de 'Voltar ao login' não encontrado!");
   }
 });

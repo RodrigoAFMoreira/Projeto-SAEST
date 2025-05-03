@@ -4,8 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login SAEST</title>
-
-    <!-- Estilo -->
     <link rel="stylesheet" href="./css/styles.css" />
 
     <!-- Fonte Poppins + ícones -->
@@ -37,19 +35,11 @@
                     </div>
                     <button type="submit">Entrar</button>
                 </form>
-                <a href="#" class="forgot-password">Esqueceu sua senha?</a>
-                <p class="register-link">Não tem uma conta? <a href="../SAEST/html/cadastroUser.html" id="link-cadastro">Registre-se</a></p>
+                <a href="#" class="forgot-password" id="link-esqueci-senha">Esqueceu sua senha?</a>
+                <p class="register-link">Não tem uma conta? <a href="#" id="link-cadastro">Registre-se</a></p>
             </div>
         </div>
     </div>
-    <script type="module">
-        import { redirecionarParaCadastroUser } from "./js/redirecionar.js";
-        
-        document.getElementById("link-cadastro").addEventListener("click", (e) => {
-            e.preventDefault();
-            redirecionarParaCadastroUser();
-        });
-    </script>
-    <script type="module" src="./js/login.js"></script> 
+    <script type="module" src="./js/login.js"></script>
 </body>
 </html>
