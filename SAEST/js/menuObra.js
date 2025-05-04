@@ -1,8 +1,7 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import { collection, getDocs, deleteDoc, doc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
-    redirecionarParaCadastroObra,
     redirecionarParaMenu,
     redirecionarParaMenuEmpresa,
     redirecionarParaObras,
@@ -10,66 +9,139 @@ import {
 } from './redirecionar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const menuToggle = document.getElementById('sidebar');
     const sidebar = document.getElementById('sidebar');
+    const obraForm = document.getElementById('obra-form');
 
-    // Configurar toggle da sidebar
-    const sidebarItems = sidebar.querySelectorAll('li:not(.dashboard-link)');
-    sidebarItems.forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        const sidebarItems = sidebar.querySelectorAll('li:not(.dashboard-link)');
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+    }
+
+    const carregarEmpresas = async () => {
+        const selectEmpresa = document.getElementById("empresa");
+        try {
+            const querySnapshot = await getDocs(collection(db, "empresas"));
+            if (querySnapshot.empty) {
+                console.warn("Nenhuma empresa encontrada no Firestore.");
+                selectEmpresa.innerHTML = '<option value="" disabled selected>Nenhuma empresa disponível</option>';
+            }
+            querySnapshot.forEach((doc) => {
+                const dados = doc.data();
+                const option = document.createElement("option");
+                option.value = doc.id;
+                option.textContent = dados.razaoSocial;
+                selectEmpresa.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Erro ao carregar empresas:", error);
+            document.getElementById("error-message").textContent = "Erro ao carregar empresas.";
+        }
+    };
+
+    // Form submission 
+    if (obraForm) {
+        carregarEmpresas();
+        obraForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            const modal = document.getElementById('modalObra');
+            errorMessage.textContent = '';
+            successMessage.textContent = '';
+
+            const obraData = {
+                endereco: document.getElementById('endereco').value.trim(),
+                status: document.getElementById('status').value,
+                dataInicio: document.getElementById('data-inicio').value,
+                dataTermino: document.getElementById('data-termino').value || null,
+                responsavelTecnico: document.getElementById('responsavel-tecnico').value.trim(),
+                alvara: document.getElementById('alvara').value.trim(),
+                registroCrea: document.getElementById('registro-crea').value.trim(),
+                registroCal: document.getElementById('registro-cal').value.trim(),
+                empresaId: document.getElementById('empresa').value,
+                criadoEm: new Date()
+            };
+
+            if (!obraData.endereco) {
+                errorMessage.textContent = "Por favor, insira o endereço.";
+                return;
+            }
+            if (!obraData.status) {
+                errorMessage.textContent = "Por favor, selecione o status.";
+                return;
+            }
+            if (!obraData.dataInicio) {
+                errorMessage.textContent = "Por favor, insira a data de início.";
+                return;
+            }
+            if (!obraData.responsavelTecnico) {
+                errorMessage.textContent = "Por favor, insira o responsável técnico.";
+                return;
+            }
+            if (!obraData.alvara) {
+                errorMessage.textContent = "Por favor, insira o alvará.";
+                return;
+            }
+            if (!obraData.registroCrea) {
+                errorMessage.textContent = "Por favor, insira o registro no CREA.";
+                return;
+            }
+            if (!obraData.registroCal) {
+                errorMessage.textContent = "Por favor, insira o registro no CAL.";
+                return;
+            }
+            if (!obraData.empresaId) {
+                errorMessage.textContent = "Por favor, selecione uma construtora.";
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "obras"), obraData);
+                successMessage.textContent = 'Obra cadastrada com sucesso!';
+                obraForm.reset();
+                await renderObrasTable();
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    successMessage.textContent = '';
+                }, 2000);
+            } catch (error) {
+                errorMessage.textContent = `Erro ao cadastrar obra: ${error.message}`;
             }
         });
-    });
+    }
 
-    // Redirecionamento para Dashboard
+    // l inks
     const dashboardLink = document.querySelector('.dashboard-link');
     if (dashboardLink) {
         dashboardLink.addEventListener('click', () => {
-            console.log("Dashboard link clicked, redirecting to menu.html");
             redirecionarParaMenu();
         });
-    } else {
-        console.error("Dashboard link not found!");
     }
 
-    // Redirecionamento para Empresas
     const empresasLink = document.querySelector('.empresas-link');
     if (empresasLink) {
         empresasLink.addEventListener('click', () => {
-            console.log("Empresas link clicked, redirecting to menuEmpresa.html");
             redirecionarParaMenuEmpresa();
         });
-    } else {
-        console.error("Empresas link not found!");
     }
 
-    // Redirecionamento para Obras
     const obrasLink = document.querySelector('.obras-link');
     if (obrasLink) {
-        obrasLink.addEventListener('click', (event) => {
-            console.log("Obras link clicked, redirecting to menuObra.html");
-            event.stopPropagation();
+        obrasLink.addEventListener('click', () => {
             redirecionarParaObras();
         });
-    } else {
-        console.error("Obras link not found!");
-    }
-
-    // Redirecionamento para Configurações (placeholder)
-    const configuracoesLink = document.querySelector('.configuracoes-link');
-    if (configuracoesLink) {
-        configuracoesLink.addEventListener('click', () => {
-            console.log("Configurações link clicked, no redirect defined");
-        });
-    } else {
-        console.error("Configurações link not found!");
-    }
-
-    // Configurar botão Cadastrar Obra
-    const btnCadastrarObra = document.querySelector('.btn.primary');
-    if (btnCadastrarObra) {
-        btnCadastrarObra.addEventListener('click', redirecionarParaCadastroObra);
     }
 
     async function renderObrasTable() {
@@ -78,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Elemento obra-lista não encontrado!");
             return;
         }
-        lista.innerHTML = ""; // Limpar a tabela sem a mensagem de carregamento
+        lista.innerHTML = '<tr><td colspan="3">Carregando...</td></tr>';
 
         try {
             const obrasSnapshot = await getDocs(collection(db, "obras"));
@@ -89,20 +161,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            obrasSnapshot.forEach((obraDoc) => {
-                const obraData = obraDoc.data();
-                const obraId = obraDoc.id;
-                const empresa = empresasSnapshot.docs.find(
-                    (empresaDoc) => empresaDoc.id === obraData.empresaId
-                );
-                const empresaNome = empresa ? empresa.data().razaoSocial : "Empresa não encontrada";
+            lista.innerHTML = '';
+            for (const docSnapshot of obrasSnapshot.docs) {
+                const obraData = docSnapshot.data();
+                const obraId = docSnapshot.id;
 
-                const escapedEndereco = (obraData.endereco || "Sem endereço").replace(/'/g, "\\'");
+                const empresaDoc = empresasSnapshot.docs.find(doc => doc.id === obraData.empresaId);
+                const empresaNome = empresaDoc ? empresaDoc.data().razaoSocial : "Empresa não encontrada";
+
+                const escapedEndereco = (obraData.endereco || "Endereço não disponível").replace(/'/g, "\\'");
 
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-id', obraId);
                 tr.innerHTML = `
-                    <td>${obraData.endereco || "Sem endereço"}</td>
+                    <td>${obraData.endereco || "Endereço não disponível"}</td>
                     <td>${empresaNome}</td>
                     <td>
                         <button title="Editar" onclick="editObra('${obraId}', '${escapedEndereco}')"><i class="ri-edit-line"></i></button>
@@ -114,9 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const expandBtn = tr.querySelector('.expand-btn');
                 expandBtn.addEventListener('click', () => toggleExpandRow(obraId, obraData, expandBtn));
-            });
+            }
 
-            // Adicionar estilos para a linha expandida
             const style = document.createElement('style');
             style.textContent = `
                 .expanded-details {
@@ -142,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = document.querySelector(`tr[data-id="${obraId}"]`);
         const existingExpandedRow = row.nextElementSibling;
 
-        // Fechar outras linhas expandidas
         document.querySelectorAll('.expanded-row').forEach((expandedRow) => {
             if (expandedRow !== existingExpandedRow) {
                 expandedRow.remove();
@@ -161,11 +231,13 @@ document.addEventListener('DOMContentLoaded', () => {
             expandedRow.innerHTML = `
                 <td colspan="3">
                     <div class="expanded-details">
-                        <p><strong>Endereço:</strong> ${obraData.endereco || 'N/A'}</p>
                         <p><strong>Status:</strong> ${obraData.status || 'N/A'}</p>
                         <p><strong>Data de Início:</strong> ${obraData.dataInicio || 'N/A'}</p>
                         <p><strong>Data de Término:</strong> ${obraData.dataTermino || 'N/A'}</p>
                         <p><strong>Responsável Técnico:</strong> ${obraData.responsavelTecnico || 'N/A'}</p>
+                        <p><strong>Alvará:</strong> ${obraData.alvara || 'N/A'}</p>
+                        <p><strong>Registro CREA:</strong> ${obraData.registroCrea || 'N/A'}</p>
+                        <p><strong>Registro CAL:</strong> ${obraData.registroCal || 'N/A'}</p>
                     </div>
                 </td>
             `;
@@ -189,13 +261,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         dataInicio: obraData.dataInicio || '',
                         dataTermino: obraData.dataTermino || '',
                         responsavelTecnico: obraData.responsavelTecnico || '',
+                        alvara: obraData.alvara || '',
+                        registroCrea: obraData.registroCrea || '',
+                        registroCal: obraData.registroCal || '',
                         empresaId: obraData.empresaId || ''
                     }
                 }));
-                console.log(`Dados da obra ${endereco} armazenados no localStorage:`, obraData);
                 redirecionarParaEditarObra();
             } else {
-                console.error(`Obra com ID ${obraId} não encontrada!`);
                 alert("Erro: Obra não encontrada para edição.");
             }
         } catch (error) {
@@ -209,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmDelete) {
             try {
                 await deleteDoc(doc(db, "obras", obraId));
-                console.log(`Obra ${obraId} removida com sucesso`);
                 await renderObrasTable();
             } catch (error) {
                 console.error("Erro ao remover obra:", error);
@@ -226,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userEmailElement) userEmailElement.textContent = user.email || "email@não.disponível";
             await renderObrasTable();
         } else {
-            console.log("Usuário não está logado, redirecionando para login.html");
             window.location.href = "login.html";
         }
     });

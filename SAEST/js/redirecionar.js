@@ -10,24 +10,16 @@ export const redirecionarParaCadastroUser = () => {
     window.location.href = "../html/cadastroUser.html";
 };
 
-export const redirecionarParaCadastroEmpresa = () => {
-    window.location.href = "../html/cadastroEmpresa.html";
-};
-
-export const redirecionarParaCadastroObra = () => {
-    window.location.href = "../html/cadastroObra.html";
-};
-
 export const redirecionarParaVerificarEmail = () => {
     window.location.href = "../html/verificarEmail.html";
 };
 
 export const redirecionarParaMenuEmpresa = () => {
-    window.location.href = "../html/menuEmpresa.html";
+    window.location.href = "../html/menuConstrutora.html";
 };
 
 export const redirecionarParaEditarEmpresa = () => {
-    window.location.href = "../html/editarEmpresa.html";
+    window.location.href = "../html/editarConstrutora.html";
 };
 
 export const redirecionarParaEditarObra = () => {

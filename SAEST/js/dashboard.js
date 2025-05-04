@@ -1,31 +1,30 @@
-import Chart from 'chart.js/auto';
-
 document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
   const ctx = document.getElementById('graficoObras').getContext('2d');
-
   new Chart(ctx, {
     type: 'line',
     data: {
       labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
       datasets: [{
         label: 'Obras',
-        data: [10000, 7000, 11000, 20000, 15000, 17000, 20000],
-        fill: true,
-        borderColor: '#2c7ef8',
+        data: [12000, 8000, 10000, 15000, 13000, 16000, 19000],
+        borderColor: '#1e3a8a',
         tension: 0.4,
-        backgroundColor: 'rgba(44, 126, 248, 0.1)'
+        fill: true,
+        backgroundColor: 'rgba(30, 58, 138, 0.1)'
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          display: false
-        }
+        legend: { display: false }
       },
       scales: {
         y: {
-          beginAtZero: true
+          beginAtZero: true,
+          ticks: {
+            callback: (val) => val / 1000 + 'K'
+          }
         }
       }
     }

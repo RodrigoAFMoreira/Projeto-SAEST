@@ -1,18 +1,19 @@
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"; // Added getDoc
+import { collection, getDocs, deleteDoc, doc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
-    redirecionarParaCadastroEmpresa,
-    redirecionarParaCadastroObra,
     redirecionarParaMenu,
     redirecionarParaMenuEmpresa,
     redirecionarParaObras,
-    redirecionarParaEditarEmpresa
+    redirecionarParaEditarEmpresa,
+    redirecionarParaCadastroObra
 } from './redirecionar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
+    const construtoraForm = document.getElementById('construtora-form');
+    const modal = document.getElementById('modalConstrutora');
 
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', () => {
@@ -29,75 +30,71 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Redirecionamento para Dashboard
+    if (construtoraForm) {
+        construtoraForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('error-message');
+            const successMessage = document.getElementById('success-message');
+            errorMessage.textContent = '';
+            successMessage.textContent = '';
+
+            const empresaData = {
+                razaoSocial: document.getElementById('razao-social').value,
+                nomeFantasia: document.getElementById('nome-fantasia').value,
+                email: document.getElementById('email').value,
+                porte: document.getElementById('porte').value,
+                telefone: document.getElementById('telefone').value,
+                responsavelTecnico: document.getElementById('responsavel-tecnico').value
+            };
+
+            try {
+                await addDoc(collection(db, "empresas"), empresaData);
+                successMessage.textContent = 'Empresa cadastrada com sucesso!';
+                construtoraForm.reset();
+                await renderEmpresasTable();
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    successMessage.textContent = '';
+                }, 2000);
+            } catch (error) {
+                errorMessage.textContent = `Erro ao cadastrar empresa: ${error.message}`;
+            }
+        });
+    }
+
+    //links
     const dashboardLink = document.querySelector('.dashboard-link');
     if (dashboardLink) {
-        console.log("Dashboard link found:", dashboardLink);
         dashboardLink.addEventListener('click', () => {
-            console.log("Dashboard link clicked, redirecting to menu.html");
             redirecionarParaMenu();
         });
-    } else {
-        console.error("Dashboard link not found!");
     }
 
-    // Redirecionamento para Empresas
     const empresasLink = document.querySelector('.empresas-link');
     if (empresasLink) {
-        console.log("Empresas link found:", empresasLink);
         empresasLink.addEventListener('click', () => {
-            console.log("Empresas link clicked, redirecting to menuEmpresa.html");
             redirecionarParaMenuEmpresa();
         });
-    } else {
-        console.error("Empresas link not found!");
     }
 
-    // Redirecionamento para Obras
     const obrasLink = document.querySelector('.obras-link');
     if (obrasLink) {
-        console.log("Obras link found:", obrasLink);
         obrasLink.addEventListener('click', () => {
-            console.log("Obras link clicked, redirecting to menuObra.html");
             redirecionarParaObras();
         });
-    } else {
-        console.error("Obras link not found!");
     }
 
-    // Redirecionamento para Configurações (placeholder)
-    const configuracoesLink = document.querySelector('.configuracoes-link');
-    if (configuracoesLink) {
-        console.log("Configurações link found:", configuracoesLink);
-        configuracoesLink.addEventListener('click', () => {
-            console.log("Configurações link clicked, no redirect defined");
-        });
-    } else {
-        console.error("Configurações link not found!");
-    }
-
-    // Botão Cadastrar Empresa
-    const btnCadastrarEmpresa = document.querySelector('.btn.primary');
-    if (btnCadastrarEmpresa) {
-        btnCadastrarEmpresa.addEventListener('click', redirecionarParaCadastroEmpresa);
-    }
-
-    // Botão Nova Obra
     const btnNovaObra = document.querySelector('.btn.secondary');
     if (btnNovaObra) {
         btnNovaObra.addEventListener('click', redirecionarParaCadastroObra);
     }
 
-    // Botão Go to Obras
-    const btnGoToObras = document.getElementById('Para Obras'); // Fixed ID
+    const btnGoToObras = document.getElementById('Para Obras');
     if (btnGoToObras) {
-        console.log("Go to Obras button found:", btnGoToObras);
         btnGoToObras.addEventListener('click', () => {
-            console.log("Go to Obras button clicked, redirecting to menuObra.html");
             redirecionarParaObras();
         });
-    } else {
-        console.error("Go to Obras button not found!");
     }
 
     async function renderEmpresasTable() {
@@ -117,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            lista.innerHTML = '';
             empresasSnapshot.forEach((docSnapshot) => {
                 const empresaData = docSnapshot.data();
                 const empresaId = docSnapshot.id;
@@ -222,13 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         email: empresaData.email || '',
                         porte: empresaData.porte || '',
                         telefone: empresaData.telefone || '',
-                        responsavelTecnico: empresaData.responsavelTecnico || '' // Added
+                        responsavelTecnico: empresaData.responsavelTecnico || ''
                     }
                 }));
-                console.log(`Dados da empresa ${razaoSocial} armazenados no localStorage:`, empresaData);
                 redirecionarParaEditarEmpresa();
             } else {
-                console.error(`Empresa com ID ${empresaId} não encontrada!`);
                 alert("Erro: Empresa não encontrada para edição.");
             }
         } catch (error) {
@@ -242,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmDelete) {
             try {
                 await deleteDoc(doc(db, "empresas", empresaId));
-                console.log(`Empresa ${empresaId} removida com sucesso`);
                 await renderEmpresasTable();
             } catch (error) {
                 console.error("Erro ao remover empresa:", error);
@@ -257,10 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const userEmailElement = document.querySelector(".user-profile .email");
             if (userNameElement) userNameElement.textContent = user.displayName || "Usuário";
             if (userEmailElement) userEmailElement.textContent = user.email || "email@não.disponível";
-            console.log("Usuário logado:", user.uid);
             await renderEmpresasTable();
         } else {
-            console.log("Usuário não está logado, redirecionando para login.html");
             window.location.href = "login.html";
         }
     });
