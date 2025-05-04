@@ -5,19 +5,21 @@ import {
     addDoc
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
+// check
 console.log("obra.js carregado");
 
 const carregarEmpresas = async () => {
-    const selectEmpresa = document.getElementById("empresa");
-    try {
+    const selectEmpresa = document.getElementById("empresa"); // Seleciona o elemento <select> para empresas
+    try { // Obtém todos os documentos da coleção "empresas" no Firestore
         const querySnapshot = await getDocs(collection(db, "empresas"));
         if (querySnapshot.empty) {
             console.warn("Nenhuma empresa encontrada no Firestore.");
         }
+        // Itera sobre os documentos e cria opções para o <select>
         querySnapshot.forEach((doc) => {
             const dados = doc.data();
             const option = document.createElement("option");
-            option.value = doc.id;
+            option.value = doc.id; // Define o ID do documento como valor !!!
             option.textContent = dados.razaoSocial;
             selectEmpresa.appendChild(option);
         });
@@ -30,7 +32,7 @@ const carregarEmpresas = async () => {
 const registrarObra = async (endereco, alvara, registro_crea, registro_cal, responsavel_tecnico, empresaId) => {
     try {
         console.log("Tentando registrar obra:", endereco, alvara, registro_crea, registro_cal, responsavel_tecnico, empresaId);
-        await addDoc(collection(db, "obras"), {
+        await addDoc(collection(db, "obras"), { //adiciona um novo documento à coleção obras no Firestore
             endereco,
             alvara,
             registro_crea,
@@ -48,6 +50,7 @@ const registrarObra = async (endereco, alvara, registro_crea, registro_cal, resp
     }
 };
 
+// Aguarda o carregamento completo do DOM antes de executar o código !!!
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM carregado, buscando formulário de obra");
     carregarEmpresas();
@@ -61,36 +64,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnSalvar = document.getElementById("confirmar-salvar");
     const closeModal = document.querySelector(".close");
 
-    if (obraForm) {
+     // Verifica se o formulário existe
+     if (obraForm) {
+        //Checkagem
         console.log("Formulário de obra encontrado, adicionando listeners");
 
-        // Show modal when "Salvar Detalhes" is clicked
+        // Exibe o modal de confirmação quando o botão "Salvar Detalhes" é clicado
         btnSalvar.addEventListener("click", () => {
-            modal.style.display = "block";
+            modal.style.display = "block"; // Mostra o modal !!!
         });
 
-        // Submit form when "Sim" is clicked
+        // Envia o formulário quando o botão "Sim" do modal é clicado
         confirmYes.addEventListener("click", () => {
-            modal.style.display = "none";
-            obraForm.dispatchEvent(new Event("submit", { cancelable: true }));
+            modal.style.display = "none"; // Esconde o modal !!!
+            obraForm.dispatchEvent(new Event("submit", { cancelable: true })); // Dispara o evento de submissão
         });
-
-        // Close modal when "Não" or "X" is clicked
         confirmNo.addEventListener("click", () => {
-            modal.style.display = "none";
-        });
-        closeModal.addEventListener("click", () => {
-            modal.style.display = "none";
+            modal.style.display = "none"; 
         });
 
-        // Close modal when clicking outside
+        closeModal.addEventListener("click", () => {
+            modal.style.display = "none"; 
+        });
+
+        // Fecha o modal quando o usuário clica fora dele
         window.addEventListener("click", (event) => {
             if (event.target === modal) {
-                modal.style.display = "none";
+                modal.style.display = "none"; // Esconde o modal
             }
         });
-
-        // Form submission logic
+        // logica de coleta de dados
         obraForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 

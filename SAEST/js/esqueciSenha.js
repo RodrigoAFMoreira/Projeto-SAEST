@@ -2,6 +2,7 @@ import { auth } from "./firebase-config.js";
 import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { redirecionarParaLogin } from "./redirecionar.js"; 
 
+// Executa após o carregamento do DOM !!
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("resetForm"); 
   const emailInput = document.getElementById("email");
@@ -21,12 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
     submitBtn.disabled = true;
     submitBtn.textContent = "Enviando...";
 
-    try {
+    try {//envia e-mail de redefinição de senha
       await sendPasswordResetEmail(auth, email);
       showFeedback("✓ E-mail de recuperação enviado com sucesso!");
       form.reset();
 
-      setTimeout(() => {
+      setTimeout(() => {// Redireciona para login após 3 segundos
         redirecionarParaLogin(); 
       }, 3000);
     } catch (error) {
@@ -45,11 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
       submitBtn.textContent = "Enviar";
     }
   });
-
+//validacão
   function validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
-
+//remove menssagem de sucesso apos 5 seg
   function showFeedback(message, isError = false) {
     const existing = form.querySelector(".feedback");
     if (existing) existing.remove();
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => div.remove(), 5000);
     }
   }
-
+// Redireciona para página de login ao clicar no link
   const voltarLoginLink = document.getElementById("voltar-login");
   if (voltarLoginLink) {
     voltarLoginLink.addEventListener("click", (e) => {

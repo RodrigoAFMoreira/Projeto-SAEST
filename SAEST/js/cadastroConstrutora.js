@@ -1,10 +1,12 @@
 import { db } from "./firebase-config.js";
 import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
+// Função para formatar números de telefone, removendo caracteres não numéricos
 const formatarTelefone = (telefone) => {
   return telefone.replace(/\D/g, '');
 };
 
+// Adiciona um novo documento à coleção empresas(construtoras) no Firestore
 const registrarEmpresa = async (dados) => {
   try {
     await addDoc(collection(db, "empresas"), {
@@ -22,7 +24,9 @@ const registrarEmpresa = async (dados) => {
   }
 };
 
+// Aguarda o carregamento completo do DOM antes de executar o código
 document.addEventListener("DOMContentLoaded", () => {
+  //seleciona elementos do DOM para interação
   const companyForm = document.getElementById("company-form");
   const errorMessage = document.getElementById("error-message");
   const successMessage = document.getElementById("success-message");
@@ -53,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       telefone: document.getElementById("telefone").value
     };
 
+    // Validações gerais 
     if (!dados.razaoSocial || !dados.nomeFantasia) {
       errorMessage.textContent = "Razão Social e Nome Fantasia são obrigatórios";
       return;

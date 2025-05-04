@@ -68,51 +68,98 @@
     </main>
   </div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalConstrutora">
-  <div class="modal">
-    <button class="modal-close" onclick="fecharModal()">×</button>
-    <h2>Cadastrar Construtora</h2>
-    <form id="construtora-form">
-      <div class="form-group">
-        <label for="razao-social">Razão Social</label>
-        <input type="text" id="razao-social" name="razao-social" required />
-      </div>
-      <div class="form-group">
-        <label for="nome-fantasia">Nome Fantasia</label>
-        <input type="text" id="nome-fantasia" name="nome-fantasia" required />
-      </div>
-      <div class="form-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" required />
-      </div>
-      <div class="form-group">
-        <label for="porte">Porte da Empresa</label>
-        <select id="porte" name="porte" required>
-          <option value="" disabled selected>Selecione</option>
-          <option value="mei">MEI</option>
-          <option value="epp">EPP</option>
-          <option value="medio">Médio Porte</option>
-          <option value="grande">Grande Porte</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="telefone">Telefone</label>
-        <input type="tel" id="telefone" name="telefone" required />
-      </div>
-      <div class="form-group">
-        <label for="responsavel-tecnico">Responsável Técnico</label>
-        <input type="text" id="responsavel-tecnico" name="responsavel-tecnico" required />
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
-        <button id="construtora" type="submit" class="btn-primary">Cadastrar</button>
-      </div>
-      <div id="error-message" class="error-message"></div>
-      <div id="success-message" class="success-message"></div>
-    </form>
+  <!-- Create Modal -->
+  <div class="modal-overlay" id="modalConstrutora" role="dialog" aria-labelledby="modal-create-title">
+    <div class="modal">
+      <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalConstrutora')">×</button>
+      <h2 id="modal-create-title">Cadastrar Construtora</h2>
+      <form id="construtora-form">
+        <div class="form-group">
+          <label for="razao-social">Razão Social</label>
+          <input type="text" id="razao-social" name="razao-social" required />
+        </div>
+        <div class="form-group">
+          <label for="nome-fantasia">Nome Fantasia</label>
+          <input type="text" id="nome-fantasia" name="nome-fantasia" required />
+        </div>
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="porte">Porte da Empresa</label>
+          <select id="porte" name="porte" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="mei">MEI</option>
+            <option value="epp">EPP</option>
+            <option value="medio">Médio Porte</option>
+            <option value="grande">Grande Porte</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="telefone">Telefone</label>
+          <input type="tel" id="telefone" name="telefone" required />
+        </div>
+        <div class="form-group">
+          <label for="responsavel-tecnico">Responsável Técnico</label>
+          <input type="text" id="responsavel-tecnico" name="responsavel-tecnico" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="fecharModal('modalConstrutora')">Cancelar</button>
+          <button id="construtora" type="submit" class="btn-primary">Cadastrar</button>
+        </div>
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+      </form>
+    </div>
   </div>
-</div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="modalEditarConstrutora" role="dialog" aria-labelledby="modal-edit-title">
+    <div class="modal">
+      <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarConstrutora')">×</button>
+      <h2 id="modal-edit-title">Editar Construtora</h2>
+      <form id="edit-construtora-form">
+        <input type="hidden" id="edit-empresa-id" name="empresa-id" />
+        <div class="form-group">
+          <label for="edit-razao-social">Razão Social</label>
+          <input type="text" id="edit-razao-social" name="razao-social" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-nome-fantasia">Nome Fantasia</label>
+          <input type="text" id="edit-nome-fantasia" name="nome-fantasia" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-email">E-mail</label>
+          <input type="email" id="edit-email" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-porte">Porte da Empresa</label>
+          <select id="edit-porte" name="porte" required>
+            <option value="" disabled>Selecione</option>
+            <option value="mei">MEI</option>
+            <option value="epp">EPP</option>
+            <option value="medio">Médio Porte</option>
+            <option value="grande">Grande Porte</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-telefone">Telefone</label>
+          <input type="tel" id="edit-telefone" name="telefone" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-responsavel-tecnico">Responsável Técnico</label>
+          <input type="text" id="edit-responsavel-tecnico" name="responsavel-tecnico" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="fecharModal('modalEditarConstrutora')">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+        <div id="edit-error-message" class="error-message"></div>
+        <div id="edit-success-message" class="success-message"></div>
+      </form>
+    </div>
+  </div>
 
   <script type="module" src="../js/menuConstrutora.js"></script>
   <script type="module" src="../js/redirecionar.js"></script>
@@ -126,8 +173,15 @@
       modal.style.display = 'flex';
     });
 
-    function fecharModal() {
+    function fecharModal(modalId) {
+      const modal = document.getElementById(modalId);
       modal.style.display = 'none';
+      const form = modal.querySelector('form');
+      if (form) form.reset();
+      const errorMessage = modal.querySelector('.error-message');
+      const successMessage = modal.querySelector('.success-message');
+      if (errorMessage) errorMessage.textContent = '';
+      if (successMessage) successMessage.textContent = '';
     }
   </script>
 </body>

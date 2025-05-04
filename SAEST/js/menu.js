@@ -1,3 +1,6 @@
+// O menu.js gerencia um dashboard que exibe e manipula dados de usuários, construtoras e obras; 
+// também monitora o estado de autenticação, carrega dados de coleções, renderiza uma tabela de empresas com obras relacionadas;
+// permite alternar o status de obras e suporta navegação para outras páginas. Logs de depuração rastreiam o carregamento e erros.
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
@@ -9,6 +12,7 @@ import {
     redirecionarParaMenuEmpresa
 } from "./redirecionar.js";
 
+// Expondo funções de redirecionamento no objeto window para uso global
 window.redirecionarParaLogin = redirecionarParaLogin;
 window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
 window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
@@ -18,7 +22,7 @@ window.gerarRelatorio = function () {
     console.log("Relatório gerado");
 };
 
-// Função para alternar o status de uma obra no Firestore
+// Função para alternar o status (ativo e inativo) de uma obra 
 async function toggleObraStatus(obraId, currentStatus) {
     try {
         const obraRef = doc(db, "obras", obraId);
@@ -31,7 +35,7 @@ async function toggleObraStatus(obraId, currentStatus) {
         throw error;
     }
 }
-
+// Formata data de criação para exibição
 function formatCriadoEm(data) {
     if (data.criadoEm && typeof data.criadoEm.toDate === "function") {
         const date = data.criadoEm.toDate();
@@ -48,7 +52,7 @@ function formatCriadoEm(data) {
     }
     return "Data não disponível";
 }
-
+// Busca e renderiza dados de uma coleção no Firestore
 async function fetchAndRenderData(collectionName, listId, renderFields) {
     const listElement = document.getElementById(listId);
     if (!listElement) {
@@ -72,7 +76,7 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
     }
     return { element: listElement, error: false };
 }
-
+// Renderiza tabela de empresas com obras relacionadas
 async function renderEmpresasTable() {
     const empresasListElement = document.getElementById("empresas-details-list");
     if (!empresasListElement) {
@@ -97,7 +101,7 @@ async function renderEmpresasTable() {
             const empresaData = docSnapshot.data();
             const empresaId = docSnapshot.id;
 
-            // Contar obras relacionadas a esta empresa
+            // Filtra obras relacionadas à empresa !!!
             const obrasRelacionadas = obrasSnapshot.docs.filter(
                 (obraDoc) => obraDoc.data().empresaId === empresaId
             );
@@ -134,7 +138,7 @@ async function renderEmpresasTable() {
             }
             tr.appendChild(tdObras);
 
-            // Coluna: Status (da empresa)
+            // Coluna: Status (construtora)
             const tdStatus = document.createElement("td");
             tdStatus.textContent = empresaData.status || "Ativo"; // Ajuste conforme o campo de status da empresa
             tr.appendChild(tdStatus);
@@ -234,7 +238,7 @@ async function loadData() {
         }
     }
 }
-
+// Monitora estado de autenticação do usuário
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const userNameElement = document.querySelector(".sidebar-footer .user-info p:first-child");
@@ -250,7 +254,7 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
-
+// Configura link de navegação para menu construtora
 document.addEventListener('DOMContentLoaded', () => {
     const construtorasLink = document.querySelector('.construtoras-link');
     if (construtorasLink) {

@@ -5,7 +5,7 @@ document.getElementById("settings-form").addEventListener("submit", function(eve
   const emailNovo = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
-
+//Validação
   if (!validateEmail(emailNovo)) {
     alert("Por favor, insira um e-mail válido.");
     return;

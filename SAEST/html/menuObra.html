@@ -64,11 +64,11 @@
         </main>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalObra">
+    <!-- Create Modal -->
+    <div class="modal-overlay" id="modalObra" role="dialog" aria-labelledby="modal-create-title">
         <div class="modal">
-            <button class="modal-close" onclick="fecharModal()">×</button>
-            <h2>Cadastrar Obra</h2>
+            <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalObra')">&times;</button>
+            <h2 id="modal-create-title">Cadastrar Obra</h2>
             <form id="obra-form">
                 <div class="form-group">
                     <label for="endereco">Endereço</label>
@@ -78,8 +78,9 @@
                     <label for="status">Status</label>
                     <select id="status" name="status" required>
                         <option value="" disabled selected>Selecione</option>
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
+                        <option value="Ativa">Ativa</option>
+                        <option value="Inativa">Inativa</option>
+                        <option value="Concluída">Concluída</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -109,11 +110,11 @@
                 <div class="form-group">
                     <label for="empresa">Construtora</label>
                     <select id="empresa" name="empresa" required>
-                        <option value="" disabled selected>Selecione uma empresa</option>
+                        <option value="" disabled selected>Carregando empresas...</option>
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                    <button type="button" class="btn-secondary" onclick="fecharModal('modalObra')">Cancelar</button>
                     <button type="submit" class="btn-primary">Cadastrar</button>
                 </div>
                 <div id="error-message" class="error-message"></div>
@@ -122,20 +123,81 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="modalEditarObra" role="dialog" aria-labelledby="modal-edit-title">
+        <div class="modal">
+            <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarObra')">&times;</button>
+            <h2 id="modal-edit-title">Editar Obra</h2>
+            <form id="edit-obra-form">
+                <input type="hidden" id="edit-obra-id" name="obra-id" />
+                <div class="form-group">
+                    <label for="edit-endereco">Endereço</label>
+                    <textarea id="edit-endereco" name="endereco" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status" name="status" required>
+                        <option value="" disabled>Selecione</option>
+                        <option value="Ativa">Ativa</option>
+                        <option value="Inativa">Inativa</option>
+                        <option value="Concluída">Concluída</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-data-inicio">Data de Início</label>
+                    <input type="date" id="edit-data-inicio" name="data-inicio" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-data-termino">Data de Término</label>
+                    <input type="date" id="edit-data-termino" name="data-termino" />
+                </div>
+                <div class="form-group">
+                    <label for="edit-responsavel-tecnico">Responsável Técnico</label>
+                    <input type="text" id="edit-responsavel-tecnico" name="responsavel-tecnico" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-alvara">Alvará</label>
+                    <input type="text" id="edit-alvara" name="alvara" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-registro-crea">Registro no CREA</label>
+                    <input type="text" id="edit-registro-crea" name="registro-crea" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-registro-cal">Registro no CAL</label>
+                    <input type="text" id="edit-registro-cal" name="registro-cal" required />
+                </div>
+                <div class="form-group">
+                    <label for="edit-empresa">Construtora</label>
+                    <select id="edit-empresa" name="empresa" required>
+                        <option value="" disabled>Carregando empresas...</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="fecharModal('modalEditarObra')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </div>
+                <div id="edit-error-message" class="error-message"></div>
+                <div id="edit-success-message" class="success-message"></div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        const botaoAbrirModal = document.getElementById('cadastrar-obra-btn');
-        const modal = document.getElementById('modalObra');
-
-        botaoAbrirModal.addEventListener('click', () => {
-            modal.style.display = 'flex';
-        });
-
-        function fecharModal() {
+        function fecharModal(modalId) {
+            const modal = document.getElementById(modalId);
             modal.style.display = 'none';
-            document.getElementById('obra-form').reset();
-            document.getElementById('error-message').textContent = '';
-            document.getElementById('success-message').textContent = '';
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+            const errorMessage = modal.querySelector('.error-message');
+            const successMessage = modal.querySelector('.success-message');
+            if (errorMessage) errorMessage.textContent = '';
+            if (successMessage) successMessage.textContent = '';
         }
+
+        document.getElementById('cadastrar-obra-btn').addEventListener('click', () => {
+            document.getElementById('modalObra').style.display = 'flex';
+        });
     </script>
 
     <script type="module" src="../js/menuObra.js"></script>
