@@ -5,7 +5,8 @@ import {
     redirecionarParaMenu,
     redirecionarParaMenuEmpresa,
     redirecionarParaObras,
-    redirecionarParaEditarObra
+    redirecionarParaEditarObra,
+    redirecionarParaConfiguracoes 
 } from './redirecionar.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -123,26 +124,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // l inks
-    const dashboardLink = document.querySelector('.dashboard-link');
-    if (dashboardLink) {
-        dashboardLink.addEventListener('click', () => {
-            redirecionarParaMenu();
-        });
-    }
+const dashboardLink = document.querySelector('.dashboard-link');
+if (dashboardLink) {
+    dashboardLink.addEventListener('click', () => {
+        redirecionarParaMenu();
+    });
+}
 
-    const empresasLink = document.querySelector('.empresas-link');
-    if (empresasLink) {
-        empresasLink.addEventListener('click', () => {
-            redirecionarParaMenuEmpresa();
-        });
-    }
+const empresasLink = document.querySelector('.empresas-link');
+if (empresasLink) {
+    empresasLink.addEventListener('click', () => {
+        redirecionarParaMenuEmpresa();
+    });
+}
 
-    const obrasLink = document.querySelector('.obras-link');
-    if (obrasLink) {
-        obrasLink.addEventListener('click', () => {
-            redirecionarParaObras();
-        });
-    }
+const obrasLink = document.querySelector('.obras-link');
+if (obrasLink) {
+    obrasLink.addEventListener('click', () => {
+        redirecionarParaObras();
+    });
+}
+
+const configuracoesLink = document.querySelector('.configuracoes-link');
+if (configuracoesLink) {
+    configuracoesLink.addEventListener('click', () => {
+        redirecionarParaConfiguracoes();
+    });
+}
 
     async function renderObrasTable() {
         const lista = document.getElementById('obra-lista');
