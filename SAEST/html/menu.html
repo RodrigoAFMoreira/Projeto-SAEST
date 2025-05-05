@@ -4,55 +4,67 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard SAEST</title>
+
+  <!-- Ícones RemixIcon -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- CSS Principal -->
   <link rel="stylesheet" href="../css/menu.css" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 </head>
 <body>
-  <aside class="sidebar">
+
+<div class="container">
+  <aside class="sidebar" id="sidebar">
     <div>
-      <div class="logo">SAEST</div>
+      <div class="sidebar-header">
+        <div class="logo">SAEST</div>
+      </div>
       <nav class="sidebar-nav">
         <ul>
-          <li class="active"><span class="material-icons">dashboard</span> Dashboard</li>
-          <li><a href="#" class="construtoras-link"><span class="material-icons">business</span> Construtoras</a></li>
-          <li><span class="material-icons">assignment_late</span> Obras</li>
-          <li><span class="material-icons">bar_chart</span> Configurações</li>
+          <li><a href="../html/menu.html" class="dashboard-link"><i class="ri-home-line"></i> Dashboard</a></li>
+          <li><a href="../html/menuConstrutora.html" class="empresas-link"><i class="ri-building-line"></i> Construtoras</a></li>
+          <li><a href="../html/menuObra.html" class="obras-link"><i class="ri-building-2-line"></i> Obras</a></li>
+          <li><a href="../html/configuracoes.html" class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</a></li>
+          
         </ul>
       </nav>
     </div>
-    <div class="sidebar-footer">
+    <div class="user-profile">
       <div class="user-info">
-        <p>Usuário</p>
-        <p>augusto.figueira@pucpr.edu.br</p>
+        <div class="name">Usuário</div>
+        <div class="email">usuario@email.com</div>
       </div>
     </div>
+    
   </aside>
 
   <main class="main-content">
-    <header class="page-header">
-      <button class="icon-btn" title="Notificações">
-        <span class="material-icons">notifications</span>
-      </button>
+    <header class="main-header">
+      <div class="header-content">
+        <div class="header-icons">
+          <i class="ri-notification-3-line"></i>
+        </div>
+      </div>
     </header>
 
     <!-- Estatísticas -->
     <section class="stats-container">
       <div class="stat-card">
-        <div class="stat-icon users"><span class="material-icons">group</span></div>
+        <div class="stat-icon users"><i class="ri-group-line"></i></div>
         <div class="stat-content">
           <h3>Usuários</h3>
           <p id="users-list" class="value">0</p>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon companies"><span class="material-icons">business</span></div>
+        <div class="stat-icon companies"><i class="ri-building-line"></i></div>
         <div class="stat-content">
           <h3>Construtoras</h3>
           <p id="empresas-list" class="value">0</p>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon projects"><span class="material-icons">engineering</span></div>
+        <div class="stat-icon projects"><i class="ri-building-2-line"></i></div>
         <div class="stat-content">
           <h3>Obras</h3>
           <p id="obras-list" class="value">0</p>
@@ -60,16 +72,10 @@
       </div>
     </section>
 
-    <!-- Construtoras -->
+    <!-- Seção Construtoras Registradas -->
     <section class="section">
       <div class="section-header">
         <h2>Construtoras Registradas</h2>
-        <div class="section-actions">
-          <select>
-            <option>Ativas</option>
-            <option>Inativas</option>
-          </select>
-        </div>
       </div>
       <div class="company-table">
         <table>
@@ -82,23 +88,35 @@
             </tr>
           </thead>
           <tbody id="empresas-details-list">
-            <!-- Empresas serão carregadas via JS -->
+            <!-- Empresas carregadas via JS -->
           </tbody>
         </table>
       </div>
     </section>
 
-        <!-- Obras -->
-        <section class="section">
-          <div class="section-header">
-            <h2>Obras Registradas</h2>
-          </div>
-          <div id="obras-details-list" class="company-table">
-            <!-- Obras serão carregadas aqui -->
-          </div>
-        </section>
+    <!-- Seção Obras Registradas -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Obras Registradas</h2>
+      </div>
+      <div class="company-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Endereço da Obra</th>
+              <th>Responsável Técnico</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="obras-details-list">
+            <!-- Obras carregadas via JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <!-- Usuários -->
+    <!-- Seção Usuários Registrados -->
     <section class="section">
       <div class="section-header">
         <h2>Usuários Registrados</h2>
@@ -108,17 +126,91 @@
             <option>Ativos</option>
             <option>Inativos</option>
           </select>
-          <button class="button-primary" onclick="abrirModalUsuario()">
-            <span class="material-icons">person_add</span> Novo Usuário
+          <button class="btn primary" onclick="abrirModalUsuario()">
+            <i class="ri-user-add-line"></i> Novo Usuário
           </button>
         </div>
       </div>
       <div id="users-details-list" class="company-table">
-        <!-- Usuários serão carregados aqui -->
+        
+        <!-- Usuários carregados via JS -->
       </div>
     </section>
   </main>
+</div>
 
-  <script type="module" src="../js/menu.js"></script>
+<!-- Modal Editar Empresa -->
+<div class="modal-overlay" id="modalEditarEmpresa">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModalEditar()">×</button>
+    <h2>Editar Empresa</h2>
+    <form id="editar-empresa-form">
+      <div class="form-group">
+        <label for="edit-razao-social">Razão Social</label>
+        <input type="text" id="edit-razao-social" required />
+      </div>
+      <div class="form-group">
+        <label for="edit-nome-fantasia">Nome Fantasia</label>
+        <input type="text" id="edit-nome-fantasia" required />
+      </div>
+      <div class="form-group">
+        <label for="edit-email">E-mail</label>
+        <input type="email" id="edit-email" required />
+      </div>
+      <div class="form-group">
+        <label for="edit-porte">Porte da Empresa</label>
+        <select id="edit-porte" required>
+          <option value="" disabled selected>Selecione</option>
+          <option value="Micro">Micro</option>
+          <option value="Pequena">Pequena</option>
+          <option value="Média">Média</option>
+          <option value="Grande">Grande</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="edit-telefone">Telefone</label>
+        <input type="tel" id="edit-telefone" required />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" onclick="fecharModalEditar()">Cancelar</button>
+        <button id="salvar-edicao" type="submit" class="btn primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Editar Obra -->
+<div class="modal-overlay" id="modalEditarObra">
+  <div class="modal">
+    <button class="modal-close" onclick="fecharModalEditarObra()">×</button>
+    <h2>Editar Obra</h2>
+    <form id="editar-obra-form">
+      <div class="form-group">
+        <label for="edit-endereco">Endereço da Obra</label>
+        <input type="text" id="edit-endereco" required />
+      </div>
+      <div class="form-group">
+        <label for="edit-responsavel-tecnico">Responsável Técnico</label>
+        <input type="text" id="edit-responsavel-tecnico" required />
+      </div>
+      <div class="form-group">
+        <label for="edit-status">Status da Obra</label>
+        <select id="edit-status" required>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" onclick="fecharModalEditarObra()">Cancelar</button>
+        <button id="salvar-edicao-obra" type="submit" class="btn primary">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script type="module" src="../js/menu.js"></script>
+
 </body>
 </html>

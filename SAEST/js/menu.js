@@ -241,12 +241,12 @@ async function loadData() {
 // Monitora estado de autenticação do usuário
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        const userNameElement = document.querySelector(".sidebar-footer .user-info p:first-child");
-        const userEmailElement = document.querySelector(".sidebar-footer .user-info p:last-child");
-        
+        const userNameElement = document.querySelector(".user-info .name");
+        const userEmailElement = document.querySelector(".user-info .email");
+
         if (userNameElement) userNameElement.textContent = user.displayName || "Usuário";
         if (userEmailElement) userEmailElement.textContent = user.email || "email@não.disponível";
-        
+
         console.log("Usuário logado:", user.uid);
         await loadData();
     } else {
@@ -254,6 +254,8 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
+
+
 // Configura link de navegação para menu construtora
 document.addEventListener('DOMContentLoaded', () => {
     const construtorasLink = document.querySelector('.construtoras-link');

@@ -51,3 +51,16 @@ function logout() {
     alert("Erro ao sair.");
   });
 }
+
+// Importando o email do firebase
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const emailDiv = document.querySelector(".user-profile .email");
+    if (emailDiv) {
+      emailDiv.textContent = user.email;
+    }
+  }
+});

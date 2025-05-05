@@ -64,125 +64,159 @@
         </main>
     </div>
 
-    <!-- Create Modal -->
-    <div class="modal-overlay" id="modalObra" role="dialog" aria-labelledby="modal-create-title">
-        <div class="modal">
-            <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalObra')">&times;</button>
-            <h2 id="modal-create-title">Cadastrar Obra</h2>
-            <form id="obra-form">
-                <div class="form-group">
-                    <label for="endereco">Endereço</label>
-                    <textarea id="endereco" name="endereco" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="status">Status</label>
-                    <select id="status" name="status" required>
-                        <option value="" disabled selected>Selecione</option>
-                        <option value="Ativa">Ativa</option>
-                        <option value="Inativa">Inativa</option>
-                        <option value="Concluída">Concluída</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="data-inicio">Data de Início</label>
-                    <input type="date" id="data-inicio" name="data-inicio" required />
-                </div>
-                <div class="form-group">
-                    <label for="data-termino">Data de Término</label>
-                    <input type="date" id="data-termino" name="data-termino" />
-                </div>
-                <div class="form-group">
-                    <label for="responsavel-tecnico">Responsável Técnico</label>
-                    <input type="text" id="responsavel-tecnico" name="responsavel-tecnico" required />
-                </div>
-                <div class="form-group">
-                    <label for="alvara">Alvará</label>
-                    <input type="text" id="alvara" name="alvara" required />
-                </div>
-                <div class="form-group">
-                    <label for="registro-crea">Registro no CREA</label>
-                    <input type="text" id="registro-crea" name="registro-crea" required />
-                </div>
-                <div class="form-group">
-                    <label for="registro-cal">Registro no CAL</label>
-                    <input type="text" id="registro-cal" name="registro-cal" required />
-                </div>
-                <div class="form-group">
-                    <label for="empresa">Construtora</label>
-                    <select id="empresa" name="empresa" required>
-                        <option value="" disabled selected>Carregando empresas...</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="fecharModal('modalObra')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Cadastrar</button>
-                </div>
-                <div id="error-message" class="error-message"></div>
-                <div id="success-message" class="success-message"></div>
-            </form>
+<!-- Modal: Cadastrar Obra -->
+ 
+<div class="modal-overlay" id="modalObra" role="dialog" aria-labelledby="modal-create-title">
+    <div class="modal">
+      <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalObra')">
+        <i class="ri-close-line"></i>
+      </button>
+      <h2 id="modal-create-title">Cadastrar Obra</h2>
+      <form id="obra-form">
+        <div class="form-group">
+          <label for="endereco">Endereço</label>
+          <textarea id="endereco" name="endereco" rows="3" required></textarea>
         </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div class="modal-overlay" id="modalEditarObra" role="dialog" aria-labelledby="modal-edit-title">
-        <div class="modal">
-            <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarObra')">&times;</button>
-            <h2 id="modal-edit-title">Editar Obra</h2>
-            <form id="edit-obra-form">
-                <input type="hidden" id="edit-obra-id" name="obra-id" />
-                <div class="form-group">
-                    <label for="edit-endereco">Endereço</label>
-                    <textarea id="edit-endereco" name="endereco" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="edit-status">Status</label>
-                    <select id="edit-status" name="status" required>
-                        <option value="" disabled>Selecione</option>
-                        <option value="Ativa">Ativa</option>
-                        <option value="Inativa">Inativa</option>
-                        <option value="Concluída">Concluída</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="edit-data-inicio">Data de Início</label>
-                    <input type="date" id="edit-data-inicio" name="data-inicio" required />
-                </div>
-                <div class="form-group">
-                    <label for="edit-data-termino">Data de Término</label>
-                    <input type="date" id="edit-data-termino" name="data-termino" />
-                </div>
-                <div class="form-group">
-                    <label for="edit-responsavel-tecnico">Responsável Técnico</label>
-                    <input type="text" id="edit-responsavel-tecnico" name="responsavel-tecnico" required />
-                </div>
-                <div class="form-group">
-                    <label for="edit-alvara">Alvará</label>
-                    <input type="text" id="edit-alvara" name="alvara" required />
-                </div>
-                <div class="form-group">
-                    <label for="edit-registro-crea">Registro no CREA</label>
-                    <input type="text" id="edit-registro-crea" name="registro-crea" required />
-                </div>
-                <div class="form-group">
-                    <label for="edit-registro-cal">Registro no CAL</label>
-                    <input type="text" id="edit-registro-cal" name="registro-cal" required />
-                </div>
-                <div class="form-group">
-                    <label for="edit-empresa">Construtora</label>
-                    <select id="edit-empresa" name="empresa" required>
-                        <option value="" disabled>Carregando empresas...</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="fecharModal('modalEditarObra')">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar</button>
-                </div>
-                <div id="edit-error-message" class="error-message"></div>
-                <div id="edit-success-message" class="success-message"></div>
-            </form>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Ativa">Ativa</option>
+              <option value="Inativa">Inativa</option>
+              <option value="Concluída">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="data-inicio">Data de Início</label>
+            <input type="date" id="data-inicio" name="data-inicio" required />
+          </div>
         </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="data-termino">Data de Término</label>
+            <input type="date" id="data-termino" name="data-termino" />
+          </div>
+          <div class="form-group">
+            <label for="responsavel-tecnico">Responsável Técnico</label>
+            <input type="text" id="responsavel-tecnico" name="responsavel-tecnico" required />
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="alvara">Alvará</label>
+            <input type="text" id="alvara" name="alvara" required />
+          </div>
+          <div class="form-group">
+            <label for="registro-crea">Registro no CREA</label>
+            <input type="text" id="registro-crea" name="registro-crea" required />
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="registro-cal">Registro no CAL</label>
+            <input type="text" id="registro-cal" name="registro-cal" required />
+          </div>
+          <div class="form-group">
+            <label for="empresa">Construtora</label>
+            <select id="empresa" name="empresa" required>
+              <option value="" disabled selected>Carregando empresas...</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="modal-buttons">
+          <button type="button" class="cancel-btn" onclick="fecharModal('modalObra')">Cancelar</button>
+          <button type="submit" class="save-btn">Cadastrar</button>
+        </div>
+  
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+      </form>
     </div>
-
+  </div>
+  
+  <!-- Modal: Editar Obra -->
+  <div class="modal-overlay" id="modalEditarObra" role="dialog" aria-labelledby="modal-edit-title">
+    <div class="modal">
+      <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarObra')">
+        <i class="ri-close-line"></i>
+      </button>
+      <h2 id="modal-edit-title">Editar Obra</h2>
+      <form id="edit-obra-form">
+        <input type="hidden" id="edit-obra-id" name="obra-id" />
+  
+        <div class="form-group">
+          <label for="edit-endereco">Endereço</label>
+          <textarea id="edit-endereco" name="endereco" rows="3" required></textarea>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-status">Status</label>
+            <select id="edit-status" name="status" required>
+              <option value="" disabled>Selecione</option>
+              <option value="Ativa">Ativa</option>
+              <option value="Inativa">Inativa</option>
+              <option value="Concluída">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-data-inicio">Data de Início</label>
+            <input type="date" id="edit-data-inicio" name="data-inicio" required />
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-data-termino">Data de Término</label>
+            <input type="date" id="edit-data-termino" name="data-termino" />
+          </div>
+          <div class="form-group">
+            <label for="edit-responsavel-tecnico">Responsável Técnico</label>
+            <input type="text" id="edit-responsavel-tecnico" name="responsavel-tecnico" required />
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-alvara">Alvará</label>
+            <input type="text" id="edit-alvara" name="alvara" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-registro-crea">Registro no CREA</label>
+            <input type="text" id="edit-registro-crea" name="registro-crea" required />
+          </div>
+        </div>
+  
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-registro-cal">Registro no CAL</label>
+            <input type="text" id="edit-registro-cal" name="registro-cal" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-empresa">Construtora</label>
+            <select id="edit-empresa" name="empresa" required>
+              <option value="" disabled>Carregando empresas...</option>
+            </select>
+          </div>
+        </div>
+  
+        <div class="modal-buttons">
+          <button type="button" class="cancel-btn" onclick="fecharModal('modalEditarObra')">Cancelar</button>
+          <button type="submit" class="save-btn">Salvar</button>
+        </div>
+  
+        <div id="edit-error-message" class="error-message"></div>
+        <div id="edit-success-message" class="success-message"></div>
+      </form>
+    </div>
+  </div>
+  
     <script>
         function fecharModal(modalId) {
             const modal = document.getElementById(modalId);

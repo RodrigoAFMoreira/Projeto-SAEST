@@ -130,7 +130,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-left: auto; /* Garante que os ícones fiquem à direita */
+  margin-left: auto;
 }
 
 .header-icons i {
@@ -189,11 +189,16 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .btn.primary {
   background-color: #4f46e5;
   color: #fff;
+}
+
+.btn.primary:hover {
+  background-color: #4338ca;
 }
 
 .btn.secondary {
@@ -221,25 +226,216 @@ td {
   font-size: 13px;
 }
 
-/* Badges */
-.badge {
-  padding: 6px 12px;
+/* ÍCONES DE AÇÃO - PADRONIZADOS */
+.acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button i {
+  font-size: 18px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+/* Efeito hover */
+.icon-button:hover {
+  background-color: #f3f4f6;
+  transform: scale(1.05);
+}
+
+.icon-button:hover i {
+  color: #4f46e5;
+}
+
+/* Cor vermelha para delete */
+.icon-button.delete:hover i {
+  color: #ef4444 !important;
+}
+
+/* Tamanho da seta */
+.icon-button.arrow i {
+  font-size: 16px;
+}
+
+/* MODAL ESTILIZADO */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 40px 32px;
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 640px;
+  animation: fadeIn 0.25s ease-out;
+  position: relative;
+  font-family: 'Poppins', sans-serif;
+}
+
+.modal h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #4f46e5;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.modal-close i {
+  font-size: 24px;
+  color: #9ca3af;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+}
+
+.modal-close:hover i {
+  color: #4f46e5;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  font-size: 14px;
+  background-color: #f9fafb;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* Botões modernos */
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.modal-buttons button {
+  padding: 12px 22px;
+  border: none;
   border-radius: 999px;
-  font-size: 12px;
-  color: white;
-  display: inline-block;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.badge.green {
-  background-color: #10b981;
+.modal-buttons .save-btn {
+  background-color: #4f46e5;
+  color: #fff;
 }
 
-.badge.red {
-  background-color: #ef4444;
+.modal-buttons .cancel-btn {
+  background-color: #f3f4f6;
+  color: #374151;
 }
 
-.badge.yellow {
-  background-color: #f59e0b;
+.modal-buttons .save-btn:hover {
+  background-color: #4338ca;
+  transform: scale(1.02);
+}
+
+.modal-buttons .cancel-btn:hover {
+  background-color: #e5e7eb;
+  transform: scale(1.02);
+}
+
+/* Feedback */
+.error-message {
+  color: #dc2626;
+  margin-top: 12px;
+  font-size: 13px;
+  text-align: right;
+}
+
+.success-message {
+  color: #16a34a;
+  margin-top: 12px;
+  font-size: 13px;
+  text-align: right;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsividade */
@@ -269,103 +465,18 @@ td {
   .header-title h1 {
     font-size: 16px;
   }
-}
 
-/* Ícones de ação nas tabelas */
-.acoes {
-  display: flex;
-  gap: 8px;
-}
+  .modal {
+    padding: 24px;
+    max-width: 90%;
+  }
 
-.icon-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
-}
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.icon-button i {
-  font-size: 18px;
-  color: #4b5563;
-  transition: color 0.2s ease;
-}
-
-.icon-button:hover {
-  background-color: #f3f4f6;
-}
-
-.icon-button:hover i {
-  color: #4f46e5;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal {
-  background-color: #fff;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  position: relative;
-}
-
-.modal-close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.error-message {
-  color: red;
-  margin-top: 0.5rem;
-}
-
-.success-message {
-  color: green;
-  margin-top: 0.5rem;
+  .form-row .form-group {
+    min-width: 100%;
+  }
 }

@@ -1,3 +1,4 @@
+/* Reset geral */
 * {
     margin: 0;
     padding: 0;
@@ -5,260 +6,126 @@
     font-family: 'Poppins', sans-serif;
 }
 
-body, html {
+html, body {
     height: 100%;
     width: 100%;
     background-color: #f5f7fa;
     overflow-x: hidden;
 }
 
+/* Container principal */
 .container {
-    display: flex;
-    min-height: 100vh;
-    width: 100%;
-    margin: 0 auto;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-    flex-wrap: wrap;
-}
-
-.left-section {
-    flex: 1 1 50%;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0077ff 0%, #002a80 100%);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 5vw;
-    position: relative;
-    overflow: hidden;
-    min-width: 300px;
-}
-
-.left-section::before {
-    content: '';
-    position: absolute;
-    top: -10vw;
-    right: -10vw;
-    width: 30vw;
-    height: 30vw;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.left-section::after {
-    content: '';
-    position: absolute;
-    bottom: -15vw;
-    right: -5vw;
-    width: 40vw;
-    height: 40vw;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.left-section h1 {
-    font-size: clamp(28px, 4vw, 42px);
-    font-weight: 700;
-    font-style: italic;
-    margin-bottom: 2vh;
-    position: relative;
-    z-index: 1;
-}
-
-.left-section p {
-    font-size: clamp(14px, 1.8vw, 16px);
-    max-width: 100%;
-    line-height: 1.6;
-    opacity: 0.9;
-    position: relative;
-    z-index: 1;
-}
-
-.right-section {
-    flex: 1 1 50%;
     min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Caixa do formulário */
+.form-container {
     background: #ffffff;
-    padding: 5vw;
-    min-width: 300px;
-}
-
-.login-container {
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px;
-    animation: fadeIn 0.5s ease-out;
+    max-width: 500px;
+    animation: fadeIn 0.6s ease-out;
 }
 
+/* Animação */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.login-container h2 {
+/* Título */
+.form-container h2 {
     font-size: clamp(24px, 3vw, 28px);
-    margin-bottom: 2vh;
+    margin-bottom: 2rem;
     color: #002a80;
-    font-weight: 600;
+    text-align: center;
+    font-weight: 700;
 }
 
-.login-container p {
-    color: #666;
-    margin-bottom: 4vh;
-    font-size: clamp(12px, 1.5vw, 14px);
-    line-height: 1.5;
+/* Grupo de inputs */
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
-.input-group {
-    margin-bottom: 3vh;
-    position: relative;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 2vh 3vw;
-    border: 2px solid #e0e5ec;
-    border-radius: 30px;
-    font-size: clamp(14px, 1.8vw, 15px);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background-color: #f9fbfd;
+/* Label */
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
     color: #333;
 }
 
-.input-group input:focus {
+/* Inputs e selects */
+input, select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e5ec;
+    border-radius: 999px;
+    background-color: #f9fbfd;
+    font-size: clamp(14px, 1.8vw, 15px);
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
     outline: none;
     border-color: #0077ff;
     background-color: #fff;
     box-shadow: 0 5px 15px rgba(0, 119, 255, 0.1);
 }
 
-.input-group input::placeholder {
-    color: #aaa;
-    font-weight: 300;
-}
-
-.login-button {
-    width: 100%;
-    padding: 15px 0;
-    background-color: #0077FF;
-    color: white;
-    border: none;
-    border-radius: 999px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    margin: 24px 0 16px;
-    transition: background-color 0.3s ease;
-    text-transform: none;
-    box-shadow: none;
-    letter-spacing: normal;
-}
-
-.login-button:hover {
-    background-color: #0066dd;
-}
-
-/* Esqueci minha senha */
-.forgot-password {
-    display: block;
-    text-align: center;
-    color: #666;
-    text-decoration: none;
-    font-size: clamp(12px, 1.5vw, 14px);
-    transition: color 0.3s ease;
-    margin-top: 2vh;
-}
-
-.forgot-password:hover {
-    color: #0077ff;
-    text-decoration: underline;
-}
-
-/* Media Queries para ajustes responsivos */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-
-    .left-section, .right-section {
-        min-height: 50vh;
-        flex: 1 1 100%;
-    }
-
-    .left-section {
-        padding: 8vh 8vw;
-        text-align: center;
-    }
-
-    .right-section {
-        padding: 8vh 8vw;
-    }
-
-    .login-container {
-        max-width: 100%;
-    }
-
-    .input-group input {
-        padding: 2vh 5vw;
-    }
-}
-
-@media (max-width: 480px) {
-    .left-section h1 {
-        font-size: 24px;
-    }
-
-    .left-section p {
-        font-size: 14px;
-    }
-
-    .login-container h2 {
-        font-size: 22px;
-    }
-
-    .login-button {
-        padding: 1.8vh;
-    }
-}
-
-/* Botão voltar padrão */
-.back-button {
+/* Botões */
+button {
     width: 100%;
     padding: 1rem;
-    border-radius: 2rem;
-    background: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    font-weight: 500;
     font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 999px;
     cursor: pointer;
-    transition: var(--transition-fast);
+    transition: background-color 0.3s, transform 0.3s;
+    margin-top: 1rem;
 }
 
-.back-button:hover {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: var(--shadow-blue);
+/* Botão Salvar */
+button[type="submit"] {
+    background-color: #0077ff;
+    color: #fff;
 }
 
-/* Link para criar conta */
-.register-link {
-    display: block;
-    margin-top: 10px;
-    text-align: center;
+button[type="submit"]:hover {
+    background-color: #0066dd;
+    transform: translateY(-2px);
+}
+
+/* Botão Cancelar */
+#cancel-btn {
+    background-color: #e0e5ec;
     color: #333;
-    text-decoration: none;
-    font-size: 14px;
 }
 
-.register-link .login-highlight {
-    color: #007bff;
-    font-weight: bold;
-    transition: color 0.3s;
+#cancel-btn:hover {
+    background-color: #d1d5db;
+    transform: translateY(-2px);
 }
 
-.register-link:hover .login-highlight {
-    color: #0056b3;
+/* Responsividade */
+@media (max-width: 480px) {
+    .form-container {
+        padding: 2rem;
+    }
+
+    input, select {
+        padding: 0.65rem 1rem;
+    }
+
+    button {
+        padding: 0.9rem;
+    }
 }
