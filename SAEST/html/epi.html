@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Equipamentos de Proteção Individual - SAEST</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/menuEsquerdo.css" />
+  <link rel="stylesheet" href="../css/epi.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="logo">SAEST</div>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li><a href="../html/menu.html" class="dashboard-link"><i class="ri-home-line"></i> Dashboard</a></li>
+            <li><a href="../html/menuConstrutora.html" class="empresas-link"><i class="ri-building-line"></i> Construtoras</a></li>
+            <li><a href="../html/menuObra.html" class="obras-link"><i class="ri-building-2-line"></i> Obras</a></li>
+            <li><a href="../html/epi.html" class="epis-link active"><i class="ri-shield-line"></i> Equipamentos de Proteção Individual</a></li>
+            <li><a href="../html/configuracoes.html" class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="name">Usuário</div>
+          <div class="email">usuario@email.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-content">
+          <div class="header-icons">
+            <i class="ri-notification-3-line"></i>
+          </div>
+        </div>
+      </header>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Equipamentos de Proteção Individual</h2>
+          <div class="section-actions">
+            <select>
+              <option>Tipo de EPI</option>
+              <option>Capacete</option>
+              <option>Luvas</option>
+              <option>Óculos de Proteção</option>
+              <option>Botas</option>
+            </select>
+            <select>
+              <option>Condição</option>
+              <option>Novo</option>
+              <option>Usado</option>
+              <option>Danificado</option>
+            </select>
+            <select>
+              <option>Local de Uso</option>
+              <option>Canteiro</option>
+              <option>Escritório</option>
+              <option>Armazém</option>
+            </select>
+            <select>
+              <option>Disponibilidade</option>
+              <option>Em Estoque</option>
+              <option>Em Uso</option>
+              <option>Indisponível</option>
+            </select>
+            <button class="btn primary" onclick="abrirModalEpi()">
+              <i class="ri-add-line"></i> Adicionar Novo EPI
+            </button>
+            <button class="btn secondary">Cancelar</button>
+          </div>
+        </div>
+        <div class="company-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo de EPI</th>
+                <th>Obra Associada</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="epi-lista">
+              <!--carregados por JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- modal adicionar epi -->
+  <div class="modal-overlay" id="modalEpi">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModalEpi()">×</button>
+      <h2>Adicionar EPI</h2>
+      <form id="epi-form">
+        <div class="form-group">
+          <label for="tipo">Tipo de EPI</label>
+          <input type="text" id="tipo" required />
+        </div>
+        <div class="form-group">
+          <label for="condicao">Condição</label>
+          <select id="condicao" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="Novo">Novo</option>
+            <option value="Usado">Usado</option>
+            <option value="Danificado">Danificado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="local-uso">Local de Uso</label>
+          <select id="local-uso" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="Canteiro">Canteiro</option>
+            <option value="Escritório">Escritório</option>
+            <option value="Armazém">Armazém</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="disponibilidade">Disponibilidade</label>
+          <select id="disponibilidade" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="Em Estoque">Em Estoque</option>
+            <option value="Em Uso">Em Uso</option>
+            <option value="Indisponível">Indisponível</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="data-aquisicao">Data de Aquisição</label>
+          <input type="date" id="data-aquisicao" required />
+        </div>
+        <div class="form-group">
+          <label for="quantidade">Quantidade</label>
+          <input type="number" id="quantidade" min="1" required />
+        </div>
+        <div class="form-group">
+          <label for="obra">Obra Associada</label>
+          <select id="obra" required></select>
+        </div>
+        <div id="error-message" style="color: red;"></div>
+        <div id="success-message" style="color: green;"></div>
+        <div class="form-actions">
+          <button type="button" class="btn secondary" onclick="fecharModalEpi()">Cancelar</button>
+          <button type="submit" class="btn primary">Adicionar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- modal editar epi -->
+  <div class="modal-overlay" id="modalEditarEpi">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModalEditarEpi()">×</button>
+      <h2>Editar EPI</h2>
+      <form id="edit-epi-form">
+        <input type="hidden" id="edit-epi-id" />
+        <div class="form-group">
+          <label for="edit-tipo">Tipo de EPI</label>
+          <input type="text" id="edit-tipo" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-condicao">Condição</label>
+          <select id="edit-condicao" required>
+            <option value="" disabled>Selecione</option>
+            <option value="Novo">Novo</option>
+            <option value="Usado">Usado</option>
+            <option value="Danificado">Danificado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-local-uso">Local de Uso</label>
+          <select id="edit-local-uso" required>
+            <option value="" disabled>Selecione</option>
+            <option value="Canteiro">Canteiro</option>
+            <option value="Escritório">Escritório</option>
+            <option value="Armazém">Armazém</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-disponibilidade">Disponibilidade</label>
+          <select id="edit-disponibilidade" required>
+            <option value="" disabled>Selecione</option>
+            <option value="Em Estoque">Em Estoque</option>
+            <option value="Em Uso">Em Uso</option>
+            <option value="Indisponível">Indisponível</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="edit-data-aquisicao">Data de Aquisição</label>
+          <input type="date" id="edit-data-aquisicao" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-quantidade">Quantidade</label>
+          <input type="number" id="edit-quantidade" min="1" required />
+        </div>
+        <div class="form-group">
+          <label for="edit-obra">Obra Associada</label>
+          <select id="edit-obra" required></select>
+        </div>
+        <div id="edit-error-message" style="color: red;"></div>
+        <div id="edit-success-message" style="color: green;"></div>
+        <div class="form-actions">
+          <button type="button" class="btn secondary" onclick="fecharModalEditarEpi()">Cancelar</button>
+          <button type="submit" class="btn primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function abrirModalEpi() {
+      document.getElementById('modalEpi').style.display = 'flex';
+    }
+    function fecharModalEpi() {
+      document.getElementById('modalEpi').style.display = 'none';
+      document.getElementById('epi-form').reset();
+      document.getElementById('error-message').textContent = '';
+      document.getElementById('success-message').textContent = '';
+    }
+    function fecharModalEditarEpi() {
+      document.getElementById('modalEditarEpi').style.display = 'none';
+      document.getElementById('edit-epi-form').reset();
+      document.getElementById('edit-error-message').textContent = '';
+      document.getElementById('edit-success-message').textContent = '';
+    }
+  </script>
+  <script type="module" src="../js/epi.js"></script>
+</body>
+</html>

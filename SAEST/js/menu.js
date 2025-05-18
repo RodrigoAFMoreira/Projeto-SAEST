@@ -1,13 +1,13 @@
-// O menu.js gerencia um dashboard que exibe e manipula dados de usuários, construtoras e obras; 
+// O menu.js gerencia um dashboard que exibe e manipula dados de usuários, construtoras e obras;
 // também monitora o estado de autenticação, carrega dados de coleções, renderiza uma tabela de empresas com obras relacionadas;
 // permite alternar o status de obras e suporta navegação para outras páginas. Logs de depuração rastreiam o carregamento e erros.
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
-import { 
-    redirecionarParaLogin, 
-    redirecionarParaCadastroUser, 
-    redirecionarParaCadastroEmpresa, 
+import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import {
+    redirecionarParaLogin,
+    redirecionarParaCadastroUser,
+    redirecionarParaCadastroEmpresa,
     redirecionarParaCadastroObra,
     redirecionarParaMenuEmpresa
 } from "./redirecionar.js";
@@ -17,12 +17,11 @@ window.redirecionarParaLogin = redirecionarParaLogin;
 window.redirecionarParaCadastroUser = redirecionarParaCadastroUser;
 window.redirecionarParaCadastroEmpresa = redirecionarParaCadastroEmpresa;
 window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
-
 window.gerarRelatorio = function () {
     console.log("Relatório gerado");
 };
 
-// Função para alternar o status (ativo e inativo) de uma obra 
+// Função para alternar o status (ativo e inativo) de uma obra
 async function toggleObraStatus(obraId, currentStatus) {
     try {
         const obraRef = doc(db, "obras", obraId);
@@ -35,6 +34,7 @@ async function toggleObraStatus(obraId, currentStatus) {
         throw error;
     }
 }
+
 // Formata data de criação para exibição
 function formatCriadoEm(data) {
     if (data.criadoEm && typeof data.criadoEm.toDate === "function") {
@@ -52,6 +52,7 @@ function formatCriadoEm(data) {
     }
     return "Data não disponível";
 }
+
 // Busca e renderiza dados de uma coleção no Firestore
 async function fetchAndRenderData(collectionName, listId, renderFields) {
     const listElement = document.getElementById(listId);
@@ -59,23 +60,58 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
         console.error(`Elemento ${listId} não encontrado!`);
         return { element: null, error: true };
     }
-    listElement.innerHTML = ""; 
+    listElement.innerHTML = "";
 
     const coll = collection(db, collectionName);
     const snapshot = await getDocs(coll);
 
     if (snapshot.empty) {
-        listElement.innerHTML = `Nenhum ${collectionName} encontrado.`;
+        listElement.innerHTML = `<tr><td colspan='4'>Nenhum ${collectionName} encontrado.</td></tr>`;
     } else {
-        snapshot.forEach((docSnapshot) => {
-            const data = docSnapshot.data();
-            const p = document.createElement("p");
-            p.textContent = renderFields(data);
-            listElement.appendChild(p);
-        });
+        if (collectionName === "obras") {
+            // Renderizar tabela de obras
+            snapshot.forEach((docSnapshot) => {
+                const data = docSnapshot.data();
+                const obraId = docSnapshot.id;
+                const tr = document.createElement("tr");
+
+                // Coluna: Endereço da Obra
+                const tdEndereco = document.createElement("td");
+                tdEndereco.textContent = data.endereco || "N/A";
+                tr.appendChild(tdEndereco);
+
+                // Coluna: Responsável Técnico
+                const tdResponsavel = document.createElement("td");
+                tdResponsavel.textContent = data.responsavel_tecnico || "N/A";
+                tr.appendChild(tdResponsavel);
+
+                // Coluna: Status
+                const tdStatus = document.createElement("td");
+                tdStatus.textContent = data.status || "Ativo";
+                tr.appendChild(tdStatus);
+
+                // Coluna: Ações
+                const tdAcoes = document.createElement("td");
+                tdAcoes.innerHTML = `
+                    <button onclick="abrirModalEditarObra('${obraId}')">Editar</button>
+                `;
+                tr.appendChild(tdAcoes);
+
+                listElement.appendChild(tr);
+            });
+        } else {
+            // Renderização padrão para outras coleções
+            snapshot.forEach((docSnapshot) => {
+                const data = docSnapshot.data();
+                const p = document.createElement("p");
+                p.textContent = renderFields(data);
+                listElement.appendChild(p);
+            });
+        }
     }
     return { element: listElement, error: false };
 }
+
 // Renderiza tabela de empresas com obras relacionadas
 async function renderEmpresasTable() {
     const empresasListElement = document.getElementById("empresas-details-list");
@@ -101,7 +137,7 @@ async function renderEmpresasTable() {
             const empresaData = docSnapshot.data();
             const empresaId = docSnapshot.id;
 
-            // Filtra obras relacionadas à empresa !!!
+            // Filtra obras relacionadas à empresa
             const obrasRelacionadas = obrasSnapshot.docs.filter(
                 (obraDoc) => obraDoc.data().empresaId === empresaId
             );
@@ -140,7 +176,7 @@ async function renderEmpresasTable() {
 
             // Coluna: Status (construtora)
             const tdStatus = document.createElement("td");
-            tdStatus.textContent = empresaData.status || "Ativo"; // Ajuste conforme o campo de status da empresa
+            tdStatus.textContent = empresaData.status || "Ativo";
             tr.appendChild(tdStatus);
 
             // Coluna: Ações
@@ -182,6 +218,26 @@ async function renderEmpresasTable() {
     }
 }
 
+// Função para abrir o modal de edição de obra
+window.abrirModalEditarObra = async function (obraId) {
+    try {
+        const obraRef = doc(db, "obras", obraId);
+        const obraSnap = await getDoc(obraRef);
+        if (obraSnap.exists()) {
+            const obraData = obraSnap.data();
+            document.getElementById("edit-endereco").value = obraData.endereco || "";
+            document.getElementById("edit-responsavel-tecnico").value = obraData.responsavel_tecnico || "";
+            document.getElementById("edit-status").value = obraData.status || "ativo";
+            document.getElementById("modalEditarObra").style.display = "flex";
+        } else {
+            alert("Obra não encontrada!");
+        }
+    } catch (error) {
+        console.error("Erro ao abrir modal de edição:", error);
+        alert("Erro ao carregar dados da obra.");
+    }
+};
+
 async function loadData() {
     try {
         console.log("Iniciando loadData...");
@@ -208,13 +264,13 @@ async function loadData() {
         // Renderizando detalhes
         const usersResult = await fetchAndRenderData(
             "users",
-            "users-details-list", 
+            "users-details-list",
             (data) => data.username || "N/A"
         );
         await renderEmpresasTable();
         const obrasResult = await fetchAndRenderData(
             "obras",
-            "obras-details-list", 
+            "obras-details-list",
             (data) => `Endereço: ${data.endereco || "N/A"}, Responsável Técnico: ${data.responsavel_tecnico || "N/A"}, Status: ${data.status || "Ativo"}`
         );
 
@@ -238,6 +294,7 @@ async function loadData() {
         }
     }
 }
+
 // Monitora estado de autenticação do usuário
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -254,7 +311,6 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login.html";
     }
 });
-
 
 // Configura link de navegação para menu construtora
 document.addEventListener('DOMContentLoaded', () => {

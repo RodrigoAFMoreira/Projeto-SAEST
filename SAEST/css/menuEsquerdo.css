@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px 16px 24px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+  position: fixed;
+  height: 100vh;
+}
+
+.sidebar-header .logo {
+  font-size: 28px;
+  color: #4f46e5;
+  font-weight: bold;
+  font-style: italic;
+  margin-bottom: 32px;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+}
+
+.sidebar-nav li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 30px;
+  margin-bottom: 6px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 16px; 
+}
+
+.sidebar-nav li:hover,
+.sidebar-nav li.active {
+  background-color: #e7edff;
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.sidebar-nav a {
+  text-decoration: none;
+  color: inherit; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-profile {
+  background: #f3f4f6;
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.user-info .name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.user-info .email {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px;
+  }
+
+  .sidebar-nav ul {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .sidebar-nav ul li {
+    margin-bottom: 0;
+  }
+
+  .user-profile {
+    display: none;
+  }
+}

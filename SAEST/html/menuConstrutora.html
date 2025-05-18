@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Empresas</title>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/menuEsquerdo.css" />
   <link href="../css/menuConstrutora.css" rel="stylesheet" />
 </head>
 <body>
@@ -16,10 +17,11 @@
         </div>
         <nav class="sidebar-nav">
           <ul>
-            <li class="dashboard-link"><i class="ri-home-line"></i> Dashboard</li>
-            <li class="empresas-link active"><i class="ri-building-line"></i> Construtoras</li>
-            <li class="obras-link"><i class="ri-building-2-line"></i> Obras</li>
-            <li class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</li>
+            <li><a href="../html/menu.html" class="dashboard-link"><i class="ri-home-line"></i> Dashboard</a></li>
+            <li class="active"><a href="../html/menuConstrutora.html" class="empresas-link"><i class="ri-building-line"></i> Construtoras</a></li>
+            <li><a href="../html/menuObra.html" class="obras-link"><i class="ri-building-2-line"></i> Obras</a></li>
+            <li><a href="../html/epi.html" class="epis-link"><i class="ri-shield-check-line"></i> Equipamentos de Proteção Individual</a></li>
+            <li><a href="../html/configuracoes.html" class="configuracoes-link"><i class="ri-settings-3-line"></i> Configurações</a></li>
           </ul>
         </nav>
       </div>
@@ -60,30 +62,12 @@
               <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="empresa-lista">
-            <!--Icones da Tabela -->
-            <tr>
-              <td>Construtora Exemplo</td>
-              <td>3 Obras</td>
-              <td class="acoes">
-                <button class="icon-button" title="Editar" onclick="abrirEdicao(1)">
-                  <i class="ri-pencil-line"></i>
-                </button>
-                <button class="icon-button delete" title="Excluir" onclick="confirmarExclusao(1)">
-                  <i class="ri-delete-bin-line"></i>
-                </button>
-                <button class="icon-button arrow" title="Detalhes" onclick="verDetalhes(1)">
-                  <i class="ri-arrow-right-line"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="empresa-lista"></tbody>
         </table>
       </section>
     </main>
   </div>
 
-  <!-- Modal: Cadastrar Construtora -->
   <div class="modal-overlay" id="modalConstrutora" role="dialog" aria-labelledby="modal-create-title">
     <div class="modal">
       <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalConstrutora')">
@@ -141,7 +125,6 @@
     </div>
   </div>
 
-  <!-- Modal: Editar Construtora -->
   <div class="modal-overlay" id="modalEditarConstrutora" role="dialog" aria-labelledby="modal-edit-title">
     <div class="modal">
       <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarConstrutora')">
@@ -201,30 +184,24 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="modalDeletarConstrutora" role="dialog" aria-labelledby="modal-delete-title">
+    <div class="modal">
+      <button class="modal-close" aria-label="Fechar modal" onclick="closeDeleteModal()">
+        <i class="ri-close-line"></i>
+      </button>
+      <h2 id="modal-delete-title">Confirmar Exclusão</h2>
+      <p>Tem certeza que deseja remover a empresa "<span id="delete-empresa-nome"></span>"?</p>
+      <div class="modal-buttons">
+        <button type="button" class="cancel-btn" id="cancel-delete-btn">Cancelar</button>
+        <button type="button" class="save-btn" id="confirm-delete-btn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="../js/menuConstrutora.js"></script>
   <script type="module" src="../js/redirecionar.js"></script>
 
   <script>
-    // funções para os ícones de ação
-    function abrirEdicao(id) {
-      console.log('Abrir edição para ID:', id);
-      document.getElementById('modalEditarConstrutora').style.display = 'flex';
-      // lógica para carregar os dados
-    }
-
-    function confirmarExclusao(id) {
-      console.log('Confirmar exclusão para ID:', id);
-      if(confirm('Tem certeza que deseja excluir esta construtora?')) {
-        // lógica de exclusão 
-      }
-    }
-
-    function verDetalhes(id) {
-      console.log('Ver detalhes para ID:', id);
-      // lógica para mostrar detalhes
-    }
-
-    
     const botaoAbrirModal = document.querySelector('.btn.primary');
     const modal = document.getElementById('modalConstrutora');
 
