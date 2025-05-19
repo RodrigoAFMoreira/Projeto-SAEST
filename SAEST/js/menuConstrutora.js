@@ -1,3 +1,7 @@
+// menuObra gerencia uma interface para cadastro, edição e exclusão de construtoras. Ele renderiza uma tabela com dados de construtoras e; 
+// suas obras relacionadas(!!!), permite expandir detalhes, alternar entre formulários de criação e edição via modais, e suporta 
+// navegação responsiva. Logs rastreiam erros e interações.
+
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { collection, getDocs, deleteDoc, doc, getDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
@@ -210,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ? obrasRelacionadas.map(obraDoc => {
                                 const obraData = obraDoc.data();
                                 return `${obraData.endereco} (Status: ${obraData.status || "ativo"})`;
-                            }).join(", ")
+                            }).join("<br>")
                             : "Nenhuma obra relacionada"
                     }</td>
                     <td>

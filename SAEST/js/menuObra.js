@@ -1,3 +1,7 @@
+// menuObra tem interface para cadastro, edição e exclusão de obras, 
+// Ele renderiza uma tabela de obras com detalhes expansíveis, 
+// carrega empresas para associação, valida formulários de criação e edição exibidos em modais, e suporta navegação responsiva
+//  Logs rastreiam erros e interações
 import { auth, db } from "./firebase-config.js";
 import {
   collection,
@@ -292,6 +296,26 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!obraData.empresaId) {
         errorMessage.textContent = "Por favor, selecione uma construtora.";
         return;
+      }
+      // Validação do intervalo de anos para data de início
+      const inicio = new Date(obraData.dataInicio);
+      const anoInicio = inicio.getFullYear();
+      if (anoInicio < 1950 || anoInicio > 2050) {
+        errorMessage.textContent = "A data de início deve estar entre 1950 e 2050.";
+        return;
+      }
+      // Validação de data de término
+      if (obraData.dataTermino) {
+        const termino = new Date(obraData.dataTermino);
+        const anoTermino = termino.getFullYear();
+        if (anoTermino < 1950 || anoTermino > 2050) {
+          errorMessage.textContent = "A data de término deve estar entre 1950 e 2050.";
+          return;
+        }
+        if (termino < inicio) {
+          errorMessage.textContent = "A data de término não pode ser anterior à data de início.";
+          return;
+        }
       }
 
       try {
