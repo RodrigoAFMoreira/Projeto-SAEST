@@ -46,20 +46,22 @@
         <div class="content-header">
           <h2>Obras</h2>
           <div class="actions">
-            <input type="text" placeholder="Pesquisar por endereço" />
-            <select>
-              <option>Ativas</option>
-              <option>Inativas</option>
+            <input type="text" placeholder="Pesquisar por endereço" id="search-input" />
+            <select id="status-filter">
+              <option value="">Todas</option>
+              <option value="ativa">Ativas</option>
+              <option value="inativa">Inativas</option>
+              <option value="concluida">Concluídas</option>
             </select>
-            <button class="btn primary"><i class="ri-add-line"></i> Cadastrar Obra</button>
+            <button class="btn primary" id="cadastrar-obra-btn"><i class="ri-add-line"></i> Cadastrar Obra</button>
           </div>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Obra</th>
-              <th>Empresa Associada</th>
-              <th>Ações</th>
+              <th scope="col">Obra</th>
+              <th scope="col">Empresa Associada</th>
+              <th scope="col">Ações</th>
             </tr>
           </thead>
           <tbody id="obra-lista"></tbody>
@@ -68,6 +70,7 @@
     </main>
   </div>
 
+  <!-- Modal: Cadastrar Obra -->
   <div class="modal-overlay" id="modalObra" role="dialog" aria-labelledby="modal-create-title">
     <div class="modal">
       <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalObra')">
@@ -77,19 +80,54 @@
       <form id="obra-form">
         <div class="form-group">
           <label for="endereco">Endereço</label>
-          <input type="text" id="endereco" name="endereco" required />
+          <textarea id="endereco" name="endereco" rows="3" required></textarea>
         </div>
-        <div class="form-group">
-          <label for="status">Status</label>
-          <select id="status" name="status" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="ativa">Ativa</option>
-            <option value="inativa">Inativa</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="status">Status</label>
+            <select id="status" name="status" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="ativa">Ativa</option>
+              <option value="inativa">Inativa</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="data-inicio">Data de Início</label>
+            <input type="date" id="data-inicio" name="data-inicio" required />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="empresa">Empresa Associada</label>
-          <select id="empresa" name="empresa" required></select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="data-termino">Data de Término</label>
+            <input type="date" id="data-termino" name="data-termino" />
+          </div>
+          <div class="form-group">
+            <label for="responsavel-tecnico">Responsável Técnico</label>
+            <input type="text" id="responsavel-tecnico" name="responsavel-tecnico" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="alvara">Alvará</label>
+            <input type="text" id="alvara" name="alvara" required />
+          </div>
+          <div class="form-group">
+            <label for="registro-crea">Registro no CREA</label>
+            <input type="text" id="registro-crea" name="registro-crea" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="registro-cal">Registro no CAL</label>
+            <input type="text" id="registro-cal" name="registro-cal" required />
+          </div>
+          <div class="form-group">
+            <label for="empresa">Empresa Associada</label>
+            <select id="empresa" name="empresa" required>
+              <option value="" disabled selected>Carregando empresas...</option>
+            </select>
+          </div>
         </div>
         <div class="modal-buttons">
           <button type="button" class="cancel-btn" onclick="fecharModal('modalObra')">Cancelar</button>
@@ -101,6 +139,7 @@
     </div>
   </div>
 
+  <!-- Modal: Editar Obra -->
   <div class="modal-overlay" id="modalEditarObra" role="dialog" aria-labelledby="modal-edit-title">
     <div class="modal">
       <button class="modal-close" aria-label="Fechar modal" onclick="fecharModal('modalEditarObra')">
@@ -111,19 +150,54 @@
         <input type="hidden" id="edit-obra-id" name="obra-id" />
         <div class="form-group">
           <label for="edit-endereco">Endereço</label>
-          <input type="text" id="edit-endereco" name="endereco" required />
+          <textarea id="edit-endereco" name="endereco" rows="3" required></textarea>
         </div>
-        <div class="form-group">
-          <label for="edit-status">Status</label>
-          <select id="edit-status" name="status" required>
-            <option value="" disabled>Selecione</option>
-            <option value="ativa">Ativa</option>
-            <option value="inativa">Inativa</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-status">Status</label>
+            <select id="edit-status" name="status" required>
+              <option value="" disabled>Selecione</option>
+              <option value="ativa">Ativa</option>
+              <option value="inativa">Inativa</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-data-inicio">Data de Início</label>
+            <input type="date" id="edit-data-inicio" name="data-inicio" required />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="edit-empresa">Empresa Associada</label>
-          <select id="edit-empresa" name="empresa" required></select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-data-termino">Data de Término</label>
+            <input type="date" id="edit-data-termino" name="data-termino" />
+          </div>
+          <div class="form-group">
+            <label for="edit-responsavel-tecnico">Responsável Técnico</label>
+            <input type="text" id="edit-responsavel-tecnico" name="responsavel-tecnico" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-alvara">Alvará</label>
+            <input type="text" id="edit-alvara" name="alvara" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-registro-crea">Registro no CREA</label>
+            <input type="text" id="edit-registro-crea" name="registro-crea" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-registro-cal">Registro no CAL</label>
+            <input type="text" id="edit-registro-cal" name="registro-cal" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-empresa">Empresa Associada</label>
+            <select id="edit-empresa" name="empresa" required>
+              <option value="" disabled>Carregando empresas...</option>
+            </select>
+          </div>
         </div>
         <div class="modal-buttons">
           <button type="button" class="cancel-btn" onclick="fecharModal('modalEditarObra')">Cancelar</button>
@@ -135,6 +209,7 @@
     </div>
   </div>
 
+  <!-- Modal: Confirmar Exclusão -->
   <div class="modal-overlay" id="modalDeletarObra" role="dialog" aria-labelledby="modal-delete-title">
     <div class="modal">
       <button class="modal-close" aria-label="Fechar modal" onclick="closeDeleteModal()">
@@ -153,13 +228,6 @@
   <script type="module" src="../js/redirecionar.js"></script>
 
   <script>
-    const botaoAbrirModal = document.querySelector('.btn.primary');
-    const modal = document.getElementById('modalObra');
-
-    botaoAbrirModal.addEventListener('click', () => {
-      modal.style.display = 'flex';
-    });
-
     function fecharModal(modalId) {
       const modal = document.getElementById(modalId);
       modal.style.display = 'none';
@@ -170,6 +238,10 @@
       if (errorMessage) errorMessage.textContent = '';
       if (successMessage) successMessage.textContent = '';
     }
+
+    document.getElementById('cadastrar-obra-btn').addEventListener('click', () => {
+      document.getElementById('modalObra').style.display = 'flex';
+    });
   </script>
 </body>
 </html>
