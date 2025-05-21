@@ -4,7 +4,7 @@
 
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, deleteDoc, doc, getDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import { collection, getDocs, deleteDoc, doc, getDoc, addDoc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
     redirecionarParaMenu,
     redirecionarParaMenuEmpresa,
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnGoToObras.addEventListener('click', () => redirecionarParaObras());
     }
 
-    async function renderEmpresasTable() {
+    async function renderEmpresasTable(filter = "", status = "") {
         const lista = document.getElementById('empresa-lista');
         if (!lista) {
             console.error("Elemento empresa-lista não encontrado!");
@@ -186,16 +186,30 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         try {
-            const empresasSnapshot = await getDocs(collection(db, "empresas"));
+            let queryRef = collection(db, "empresas");
+            if (status && status !== "all") {
+                queryRef = query(queryRef, where("status", "==", status));
+            }
+
+            const empresasSnapshot = await getDocs(queryRef);
             const obrasSnapshot = await getDocs(collection(db, "obras"));
 
-            if (empresasSnapshot.empty) {
+            let filteredDocs = empresasSnapshot.docs;
+            if (filter) {
+                const filterLower = filter.toLowerCase();
+                filteredDocs = empresasSnapshot.docs.filter((doc) => {
+                    const razaoSocial = doc.data().razaoSocial || "";
+                    return razaoSocial.toLowerCase().includes(filterLower);
+                });
+            }
+
+            if (filteredDocs.length === 0) {
                 lista.innerHTML = '<tr><td colspan="3">Nenhuma empresa encontrada.</td></tr>';
                 return;
             }
 
             lista.innerHTML = '';
-            empresasSnapshot.forEach((docSnapshot) => {
+            filteredDocs.forEach((docSnapshot) => {
                 const empresaData = docSnapshot.data();
                 const empresaId = docSnapshot.id;
 
@@ -349,6 +363,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const userEmailElement = document.querySelector(".user-profile .email");
             if (userNameElement) userNameElement.textContent = user.displayName || "Usuário";
             if (userEmailElement) userEmailElement.textContent = user.email || "email@não.disponível";
+
+            const searchInput = document.querySelector('.content-header input[placeholder="Pesquisar por nome"]');
+            const statusSelect = document.querySelector('.content-header select');
+
+            function updateTable() {
+                const filter = searchInput ? searchInput.value.trim() : "";
+                const status = statusSelect ? statusSelect.value : "";
+                renderEmpresasTable(filter, status);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', updateTable);
+            }
+            if (statusSelect) {
+                statusSelect.addEventListener('change', updateTable);
+            }
+
             await renderEmpresasTable();
         } else {
             window.location.href = "login.html";

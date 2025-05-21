@@ -83,9 +83,6 @@ async function renderObrasTable(filter = "", status = "") {
 
   try {
     let queryRef = collection(db, "obras");
-    if (filter) {
-      queryRef = query(queryRef, where("endereco", ">=", filter), where("endereco", "<=", filter + "\uf8ff"));
-    }
     if (status) {
       queryRef = query(queryRef, where("status", "==", status));
     }
@@ -93,13 +90,23 @@ async function renderObrasTable(filter = "", status = "") {
     const obrasSnapshot = await getDocs(queryRef);
     const empresasSnapshot = await getDocs(collection(db, "empresas"));
 
-    if (obrasSnapshot.empty) {
+    // Filter documents client-side for case-insensitive search
+    let filteredDocs = obrasSnapshot.docs;
+    if (filter) {
+      const filterLower = filter.toLowerCase();
+      filteredDocs = obrasSnapshot.docs.filter((doc) => {
+        const endereco = doc.data().endereco || "";
+        return endereco.toLowerCase().includes(filterLower);
+      });
+    }
+
+    if (filteredDocs.length === 0) {
       lista.innerHTML = '<tr><td colspan="3">Nenhuma obra encontrada.</td></tr>';
       return;
     }
 
     lista.innerHTML = "";
-    for (const docSnapshot of obrasSnapshot.docs) {
+    for (const docSnapshot of filteredDocs) {
       const obraData = docSnapshot.data();
       const obraId = docSnapshot.id;
 
