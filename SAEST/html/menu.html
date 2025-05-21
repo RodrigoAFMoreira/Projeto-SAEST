@@ -149,7 +149,6 @@
           </div>
         </div>
         <div id="users-details-list" class="company-table">
-        
         </div>
       </section>
     </main>
@@ -194,36 +193,7 @@
     </div>
   </div>
 
-  <!-- Modal Editar Obra -->
-  <div class="modal-overlay" id="modalEditarObra">
-    <div class="modal">
-      <button class="modal-close" onclick="fecharModalEditarObra()">×</button>
-      <h2>Editar Obra</h2>
-      <form id="editar-obra-form">
-        <div class="form-group">
-          <label for="edit-endereco">Endereço da Obra</label>
-          <input type="text" id="edit-endereco" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-responsavel-tecnico">Responsável Técnico</label>
-          <input type="text" id="edit-responsavel-tecnico" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-status">Status da Obra</label>
-          <select id="edit-status" required>
-            <option value="ativo">Ativo</option>
-            <option value="inativo">Inativo</option>
-            <option value="concluido">Concluído</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn secondary" onclick="fecharModalEditarObra()">Cancelar</button>
-          <button id="salvar-edicao-obra" type="submit" class="btn primary">Salvar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
+  <!-- Modal Editar Obra (Removed as status toggle is obsolete) -->
   <script type="module" src="../js/menu.js"></script>
 </body>
 </html>

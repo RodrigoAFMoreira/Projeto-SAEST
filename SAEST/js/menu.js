@@ -1,9 +1,9 @@
 // O menu.js gerencia um dashboard que exibe e manipula dados de usuários, construtoras e obras;
-// também monitora o estado de autenticação, carrega dados de coleções, renderiza uma tabela de empresas com obras relacionadas;
-// permite alternar o status de obras e suporta navegação para outras páginas. Logs de depuração rastreiam o carregamento e erros.
+// monitora o estado de autenticação, carrega dados de coleções, renderiza uma tabela de empresas com obras relacionadas;
+// suporta navegação para outras páginas. Logs de depuração rastreiam o carregamento e erros.
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
-import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
     redirecionarParaLogin,
     redirecionarParaCadastroUser,
@@ -20,20 +20,6 @@ window.redirecionarParaCadastroObra = redirecionarParaCadastroObra;
 window.gerarRelatorio = function () {
     console.log("Relatório gerado");
 };
-
-// Função para alternar o status (ativo e inativo) de uma obra
-async function toggleObraStatus(obraId, currentStatus) {
-    try {
-        const obraRef = doc(db, "obras", obraId);
-        const newStatus = currentStatus === "ativo" ? "inativo" : "ativo";
-        await updateDoc(obraRef, { status: newStatus });
-        console.log(`Status da obra ${obraId} alterado para ${newStatus}`);
-        return newStatus;
-    } catch (error) {
-        console.error("Erro ao atualizar status da obra:", error);
-        throw error;
-    }
-}
 
 // Formata data de criação para exibição
 function formatCriadoEm(data) {
@@ -73,6 +59,9 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
             snapshot.forEach((docSnapshot) => {
                 const data = docSnapshot.data();
                 const obraId = docSnapshot.id;
+                console.log(`Rendering obra ${obraId}:`, data);
+                console.log(`responsavel_tecnico:`, data.responsavel_tecnico);
+                console.log(`responsavelTecnico:`, data.responsavelTecnico);
                 const tr = document.createElement("tr");
 
                 // Coluna: Endereço da Obra
@@ -82,18 +71,19 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
 
                 // Coluna: Responsável Técnico
                 const tdResponsavel = document.createElement("td");
-                tdResponsavel.textContent = data.responsavel_tecnico || "N/A";
+                // Try responsavel_tecnico first, then responsavelTecnico
+                tdResponsavel.textContent = data.responsavel_tecnico || data.responsavelTecnico || "N/A";
                 tr.appendChild(tdResponsavel);
 
                 // Coluna: Status
                 const tdStatus = document.createElement("td");
-                tdStatus.textContent = data.status || "Ativo";
+                tdStatus.textContent = data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : "Ativa";
                 tr.appendChild(tdStatus);
 
                 // Coluna: Ações
                 const tdAcoes = document.createElement("td");
                 tdAcoes.innerHTML = `
-                    <button onclick="abrirModalEditarObra('${obraId}')">Editar</button>
+                    <button onclick="redirecionarParaDetalhesObra('${obraId}')">Mais Detalhes</button>
                 `;
                 tr.appendChild(tdAcoes);
 
@@ -136,6 +126,7 @@ async function renderEmpresasTable() {
         empresasSnapshot.forEach((docSnapshot) => {
             const empresaData = docSnapshot.data();
             const empresaId = docSnapshot.id;
+            console.log(`Rendering empresa ${empresaId}:`, empresaData);
 
             // Filtra obras relacionadas à empresa
             const obrasRelacionadas = obrasSnapshot.docs.filter(
@@ -157,14 +148,12 @@ async function renderEmpresasTable() {
                 obrasRelacionadas.forEach((obraDoc) => {
                     const obraData = obraDoc.data();
                     const obraId = obraDoc.id;
+                    console.log(`Rendering obra relacionada ${obraId}:`, obraData);
                     const obraDiv = document.createElement("div");
                     obraDiv.className = "obra-item";
                     obraDiv.innerHTML = `
                         ${obraData.endereco} 
-                        (<span class="obra-status" data-obra-id="${obraId}">${obraData.status || "N/A"}</span>)
-                        <button class="toggle-status-btn" data-obra-id="${obraId}" data-current-status="${obraData.status || "ativo"}">
-                            Mudar Status
-                        </button>
+                        (<span class="obra-status" data-obra-id="${obraId}">${obraData.status ? obraData.status.charAt(0).toUpperCase() + obraData.status.slice(1) : "Ativa"}</span>)
                     `;
                     obrasContainer.appendChild(obraDiv);
                 });
@@ -174,69 +163,25 @@ async function renderEmpresasTable() {
             }
             tr.appendChild(tdObras);
 
-            // Coluna: Status (construtora)
+            // Coluna: Status
             const tdStatus = document.createElement("td");
-            tdStatus.textContent = empresaData.status || "Ativo";
+            tdStatus.textContent = empresaData.status ? empresaData.status.charAt(0).toUpperCase() + empresaData.status.slice(1) : "Ativa";
             tr.appendChild(tdStatus);
 
             // Coluna: Ações
             const tdAcoes = document.createElement("td");
             tdAcoes.innerHTML = `
-                <button onclick="redirecionarParaMenuEmpresa('${empresaId}')">Editar</button>
+                <button onclick="redirecionarParaMenuEmpresa('${empresaId}')">Mais Detalhes</button>
             `;
             tr.appendChild(tdAcoes);
 
             empresasListElement.appendChild(tr);
-        });
-
-        // Adicionar eventos aos botões de mudar status
-        document.querySelectorAll(".toggle-status-btn").forEach((button) => {
-            button.addEventListener("click", async () => {
-                const obraId = button.getAttribute("data-obra-id");
-                const currentStatus = button.getAttribute("data-current-status");
-
-                try {
-                    // Alternar status no Firestore
-                    const newStatus = await toggleObraStatus(obraId, currentStatus);
-
-                    // Atualizar o texto do status na interface
-                    const statusSpan = document.querySelector(`.obra-status[data-obra-id="${obraId}"]`);
-                    if (statusSpan) {
-                        statusSpan.textContent = newStatus;
-                    }
-
-                    // Atualizar o atributo data-current-status do botão
-                    button.setAttribute("data-current-status", newStatus);
-                } catch (error) {
-                    alert("Erro ao alterar o status da obra: " + error.message);
-                }
-            });
         });
     } catch (error) {
         console.error("Erro ao carregar empresas:", error);
         empresasListElement.innerHTML = `<tr><td colspan='4'>Erro ao carregar empresas: ${error.message}</td></tr>`;
     }
 }
-
-// Função para abrir o modal de edição de obra
-window.abrirModalEditarObra = async function (obraId) {
-    try {
-        const obraRef = doc(db, "obras", obraId);
-        const obraSnap = await getDoc(obraRef);
-        if (obraSnap.exists()) {
-            const obraData = obraSnap.data();
-            document.getElementById("edit-endereco").value = obraData.endereco || "";
-            document.getElementById("edit-responsavel-tecnico").value = obraData.responsavel_tecnico || "";
-            document.getElementById("edit-status").value = obraData.status || "ativo";
-            document.getElementById("modalEditarObra").style.display = "flex";
-        } else {
-            alert("Obra não encontrada!");
-        }
-    } catch (error) {
-        console.error("Erro ao abrir modal de edição:", error);
-        alert("Erro ao carregar dados da obra.");
-    }
-};
 
 async function loadData() {
     try {
@@ -271,7 +216,7 @@ async function loadData() {
         const obrasResult = await fetchAndRenderData(
             "obras",
             "obras-details-list",
-            (data) => `Endereço: ${data.endereco || "N/A"}, Responsável Técnico: ${data.responsavel_tecnico || "N/A"}, Status: ${data.status || "Ativo"}`
+            (data) => `Endereço: ${data.endereco || "N/A"}, Responsável Técnico: ${data.responsavel_tecnico || data.responsavelTecnico || "N/A"}, Status: ${data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : "Ativa"}`
         );
 
         if (usersResult.error || obrasResult.error) {
@@ -325,3 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Construtoras link não encontrado!");
     }
 });
+
+// Função para redirecionar para detalhes da obra (placeholder)
+window.redirecionarParaDetalhesObra = function (obraId) {
+    console.log(`Redirecionando para detalhes da obra: ${obraId}`);
+    // Implementar redirecionamento real, e.g., window.location.href = `detalhesObra.html?id=${obraId}`;
+};

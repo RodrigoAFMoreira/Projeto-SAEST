@@ -146,6 +146,27 @@ td {
   background-color: #f9f9f9;
 }
 
+/* Estilização do botão "Mais Detalhes" na tabela */
+.company-table td button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  background-color: #4f46e5;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.company-table td button:hover {
+  background-color: #4338ca;
+  transform: translateY(-2px);
+}
+
 /* Badges */
 .badge {
   display: inline-block;

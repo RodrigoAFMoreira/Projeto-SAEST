@@ -1,7 +1,7 @@
-// menuObra tem interface para cadastro, edição e exclusão de obras, 
-// Ele renderiza uma tabela de obras com detalhes expansíveis, 
-// carrega empresas para associação, valida formulários de criação e edição exibidos em modais, e suporta navegação responsiva
-//  Logs rastreiam erros e interações
+// menuObra tem interface para cadastro, edição e exclusão de obras,
+// Ele renderiza uma tabela de obras com detalhes expansíveis,
+// carrega empresas para associação, valida formulários de criação e edição exibidos em modals, e suporta navegação responsiva
+// Logs rastreiam erros e interações
 import { auth, db } from "./firebase-config.js";
 import {
   collection,
@@ -79,7 +79,7 @@ async function renderObrasTable(filter = "", status = "") {
     console.error("Elemento obra-lista não encontrado!");
     return;
   }
-  lista.innerHTML = '<tr><td colspan="3"><div class="spinner">Carregando...</div></td></tr>';
+  lista.innerHTML = '<tr><td colspan="3"><div class="loading-spinner"></div></td></tr>';
 
   try {
     let queryRef = collection(db, "obras");
@@ -130,7 +130,6 @@ async function renderObrasTable(filter = "", status = "") {
       .expanded-details { background: #f9f9f9; padding: 15px; border-top: 1px solid #ddd; }
       .expanded-details p { margin: 5px 0; }
       .expanded-row td { padding: 0 !important; }
-      .spinner { text-align: center; }
     `;
     document.head.appendChild(style);
   } catch (error) {
