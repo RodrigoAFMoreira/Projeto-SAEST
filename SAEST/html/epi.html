@@ -46,35 +46,32 @@
         <div class="section-header">
           <h2>Equipamentos de Proteção Individual</h2>
           <div class="section-actions">
-            <select>
-              <option>Tipo de EPI</option>
-              <option>Capacete</option>
-              <option>Luvas</option>
-              <option>Óculos de Proteção</option>
-              <option>Botas</option>
-            </select>
-            <select>
-              <option>Condição</option>
+            <input type="text" class="input-standard" id="filtro-tipo" placeholder="Tipo de EPI">
+            <select class="input-standard" id="filtro-condicao">
+              <option value="">Condição</option>
               <option>Novo</option>
               <option>Usado</option>
-              <option>Danificado</option>
             </select>
-            <select>
-              <option>Local de Uso</option>
-              <option>Canteiro</option>
-              <option>Escritório</option>
-              <option>Armazém</option>
-            </select>
-            <select>
-              <option>Disponibilidade</option>
+            <input type="text" class="input-standard" id="filtro-local-uso" placeholder="Local de Uso">
+            <select class="input-standard" id="filtro-disponibilidade">
+              <option value="">Disponibilidade</option>
               <option>Em Estoque</option>
               <option>Em Uso</option>
               <option>Indisponível</option>
             </select>
+            <select class="input-standard" id="filtro-validade">
+              <option value="">Validade</option>
+              <option value="válido">Válido (não expirado)</option>
+              <option value="expirado">Expirado</option>
+              <option value="sem-validade">Sem validade informada</option>
+            </select>
+            <input type="text" class="input-standard" id="filtro-codigo" placeholder="Código de EPI">
+            <button class="btn primary" onclick="abrirModalGerenciarEpi()">
+              <i class="ri-settings-3-line"></i> Gerenciar EPI
+            </button>
             <button class="btn primary" onclick="abrirModalEpi()">
               <i class="ri-add-line"></i> Adicionar Novo EPI
             </button>
-            <button class="btn secondary">Cancelar</button>
           </div>
         </div>
         <div class="company-table">
@@ -100,57 +97,71 @@
     <div class="modal">
       <button class="modal-close" onclick="fecharModalEpi()">×</button>
       <h2>Adicionar EPI</h2>
-      <form id="epi-form">
-        <div class="form-group">
-          <label for="tipo">Tipo de EPI</label>
-          <input type="text" id="tipo" required />
-        </div>
-        <div class="form-group">
-          <label for="condicao">Condição</label>
-          <select id="condicao" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="Novo">Novo</option>
-            <option value="Usado">Usado</option>
-            <option value="Danificado">Danificado</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="local-uso">Local de Uso</label>
-          <select id="local-uso" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="Canteiro">Canteiro</option>
-            <option value="Escritório">Escritório</option>
-            <option value="Armazém">Armazém</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="disponibilidade">Disponibilidade</label>
-          <select id="disponibilidade" required>
-            <option value="" disabled selected>Selecione</option>
-            <option value="Em Estoque">Em Estoque</option>
-            <option value="Em Uso">Em Uso</option>
-            <option value="Indisponível">Indisponível</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="data-aquisicao">Data de Aquisição</label>
-          <input type="date" id="data-aquisicao" required />
-        </div>
-        <div class="form-group">
-          <label for="quantidade">Quantidade</label>
-          <input type="number" id="quantidade" min="1" required />
-        </div>
-        <div class="form-group">
-          <label for="obra">Obra Associada</label>
-          <select id="obra" required></select>
-        </div>
-        <div id="error-message" style="color: red;"></div>
-        <div id="success-message" style="color: green;"></div>
-        <div class="form-actions">
-          <button type="button" class="btn secondary" onclick="fecharModalEpi()">Cancelar</button>
-          <button type="submit" class="btn primary">Adicionar</button>
-        </div>
-      </form>
+      <div class="modal-content-scroll">
+        <form id="epi-form">
+          <div class="form-group">
+            <label for="tipo">Tipo de EPI</label>
+            <select id="tipo" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <!-- Populado pelo JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="condicao">Condição</label>
+            <select id="condicao" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Novo">Novo</option>
+              <option value="Usado">Usado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="local-uso">Local de Uso</label>
+            <select id="local-uso" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <!-- Populado pelo JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="disponibilidade">Disponibilidade</label>
+            <select id="disponibilidade" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Em Estoque">Em Estoque</option>
+              <option value="Em Uso">Em Uso</option>
+              <option value="Indisponível">Indisponível</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="data-aquisicao">Data de Aquisição</label>
+            <input type="date" id="data-aquisicao" class="input-standard" min="1950-01-01" required />
+          </div>
+          <div class="form-group">
+            <label for="validade">Validade</label>
+            <input type="date" id="validade" class="input-standard" max="2050-12-31" />
+          </div>
+          <div class="form-group">
+            <label for="codigo-epi">Código de EPI</label>
+            <input type="text" id="codigo-epi" class="input-standard" required />
+          </div>
+          <div class="form-group">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" class="input-standard" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" id="quantidade" class="input-standard" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="obra">Obra Associada</label>
+            <select id="obra" class="input-standard" required></select>
+          </div>
+          <div id="error-message" style="color: red;"></div>
+          <div id="success-message" style="color: green;"></div>
+        </form>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" onclick="fecharModalEpi()">Cancelar</button>
+        <button type="submit" class="btn primary" form="epi-form">Adicionar</button>
+      </div>
     </div>
   </div>
 
@@ -159,58 +170,109 @@
     <div class="modal">
       <button class="modal-close" onclick="fecharModalEditarEpi()">×</button>
       <h2>Editar EPI</h2>
-      <form id="edit-epi-form">
-        <input type="hidden" id="edit-epi-id" />
+      <div class="modal-content-scroll">
+        <form id="edit-epi-form">
+          <input type="hidden" id="edit-epi-id" />
+          <div class="form-group">
+            <label for="edit-tipo">Tipo de EPI</label>
+            <select id="edit-tipo" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <!-- Populated by JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-condicao">Condição</label>
+            <select id="edit-condicao" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Novo">Novo</option>
+              <option value="Usado">Usado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-local-uso">Local de Uso</label>
+            <select id="edit-local-uso" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <!-- Populado JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-disponibilidade">Disponibilidade</label>
+            <select id="edit-disponibilidade" class="input-standard" required>
+              <option value="" disabled selected>Selecione</option>
+              <option value="Em Estoque">Em Estoque</option>
+              <option value="Em Uso">Em Uso</option>
+              <option value="Indisponível">Indisponível</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-data-aquisicao">Data de Aquisição</label>
+            <input type="date" id="edit-data-aquisicao" class="input-standard" min="1950-01-01" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-validade">Validade</label>
+            <input type="date" id="edit-validade" class="input-standard" max="2050-12-31" />
+          </div>
+          <div class="form-group">
+            <label for="edit-codigo-epi">Código de EPI</label>
+            <input type="text" id="edit-codigo-epi" class="input-standard" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-descricao">Descrição</label>
+            <textarea id="edit-descricao" class="input-standard" rows="4"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="edit-quantidade">Quantidade</label>
+            <input type="number" id="edit-quantidade" class="input-standard" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-obra">Obra Associada</label>
+            <select id="edit-obra" class="input-standard" required></select>
+          </div>
+          <div id="edit-error-message" style="color: red;"></div>
+          <div id="edit-success-message" style="color: green;"></div>
+        </form>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" onclick="fecharModalEditarEpi()">Cancelar</button>
+        <button type="submit" class="btn primary" form="edit-epi-form">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- modal gerenciar epi -->
+  <div class="modal-overlay" id="modalGerenciarEpi">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModalGerenciarEpi()">×</button>
+      <h2>Gerenciar EPI</h2>
+      <div class="modal-content-scroll">
         <div class="form-group">
-          <label for="edit-tipo">Tipo de EPI</label>
-          <input type="text" id="edit-tipo" required />
+          <label for="novo-tipo-epi">Adicionar Tipo de EPI</label>
+          <div class="input-button-group">
+            <input type="text" id="novo-tipo-epi" class="input-standard" placeholder="Digite o novo tipo de EPI" />
+            <button type="button" class="btn primary" onclick="adicionarTipoEpi()">Adicionar</button>
+          </div>
         </div>
         <div class="form-group">
-          <label for="edit-condicao">Condição</label>
-          <select id="edit-condicao" required>
-            <option value="" disabled>Selecione</option>
-            <option value="Novo">Novo</option>
-            <option value="Usado">Usado</option>
-            <option value="Danificado">Danificado</option>
-          </select>
+          <label>Tipos de EPI Existentes</label>
+          <ul id="lista-tipos-epi" class="option-list"></ul>
         </div>
         <div class="form-group">
-          <label for="edit-local-uso">Local de Uso</label>
-          <select id="edit-local-uso" required>
-            <option value="" disabled>Selecione</option>
-            <option value="Canteiro">Canteiro</option>
-            <option value="Escritório">Escritório</option>
-            <option value="Armazém">Armazém</option>
-          </select>
+          <label for="novo-local-uso">Adicionar Local de Uso</label>
+          <div class="input-button-group">
+            <input type="text" id="novo-local-uso" class="input-standard" placeholder="Digite o novo local de uso" />
+            <button type="button" class="btn primary" onclick="adicionarLocalUso()">Adicionar</button>
+          </div>
         </div>
         <div class="form-group">
-          <label for="edit-disponibilidade">Disponibilidade</label>
-          <select id="edit-disponibilidade" required>
-            <option value="" disabled>Selecione</option>
-            <option value="Em Estoque">Em Estoque</option>
-            <option value="Em Uso">Em Uso</option>
-            <option value="Indisponível">Indisponível</option>
-          </select>
+          <label>Locais de Uso Existentes</label>
+          <ul id="lista-locais-uso" class="option-list"></ul>
         </div>
-        <div class="form-group">
-          <label for="edit-data-aquisicao">Data de Aquisição</label>
-          <input type="date" id="edit-data-aquisicao" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-quantidade">Quantidade</label>
-          <input type="number" id="edit-quantidade" min="1" required />
-        </div>
-        <div class="form-group">
-          <label for="edit-obra">Obra Associada</label>
-          <select id="edit-obra" required></select>
-        </div>
-        <div id="edit-error-message" style="color: red;"></div>
-        <div id="edit-success-message" style="color: green;"></div>
-        <div class="form-actions">
-          <button type="button" class="btn secondary" onclick="fecharModalEditarEpi()">Cancelar</button>
-          <button type="submit" class="btn primary">Salvar</button>
-        </div>
-      </form>
+        <div id="gerenciar-error-message" style="color: red;"></div>
+        <div id="gerenciar-success-message" style="color: green;"></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn secondary" onclick="fecharModalGerenciarEpi()">Fechar</button>
+      </div>
     </div>
   </div>
 
@@ -229,6 +291,17 @@
       document.getElementById('edit-epi-form').reset();
       document.getElementById('edit-error-message').textContent = '';
       document.getElementById('edit-success-message').textContent = '';
+    }
+    function abrirModalGerenciarEpi() {
+      document.getElementById('modalGerenciarEpi').style.display = 'flex';
+      renderGerenciarEpiLists();
+    }
+    function fecharModalGerenciarEpi() {
+      document.getElementById('modalGerenciarEpi').style.display = 'none';
+      document.getElementById('novo-tipo-epi').value = '';
+      document.getElementById('novo-local-uso').value = '';
+      document.getElementById('gerenciar-error-message').textContent = '';
+      document.getElementById('gerenciar-success-message').textContent = '';
     }
   </script>
   <script type="module" src="../js/epi.js"></script>
