@@ -52,7 +52,7 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
     const snapshot = await getDocs(coll);
 
     if (snapshot.empty) {
-        listElement.innerHTML = `<tr><td colspan='4'>Nenhum ${collectionName} encontrado.</td></tr>`;
+        listElement.innerHTML = `<tr><td colspan='5'>Nenhum ${collectionName} encontrado.</td></tr>`;
     } else {
         if (collectionName === "obras") {
             // Renderizar tabela de obras
@@ -71,7 +71,6 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
 
                 // Coluna: Responsável Técnico
                 const tdResponsavel = document.createElement("td");
-                // Try responsavel_tecnico first, then responsavelTecnico
                 tdResponsavel.textContent = data.responsavel_tecnico || data.responsavelTecnico || "N/A";
                 tr.appendChild(tdResponsavel);
 
@@ -84,6 +83,45 @@ async function fetchAndRenderData(collectionName, listId, renderFields) {
                 const tdAcoes = document.createElement("td");
                 tdAcoes.innerHTML = `
                     <button onclick="redirecionarParaDetalhesObra('${obraId}')">Mais Detalhes</button>
+                `;
+                tr.appendChild(tdAcoes);
+
+                listElement.appendChild(tr);
+            });
+        } else if (collectionName === "epis") {
+            // Renderizar tabela de EPIs
+            const obrasSnapshot = await getDocs(collection(db, "obras"));
+            snapshot.forEach((docSnapshot) => {
+                const epiData = docSnapshot.data();
+                const epiId = docSnapshot.id;
+                console.log(`Rendering EPI ${epiId}:`, epiData);
+                const obra = obrasSnapshot.docs.find(obraDoc => obraDoc.id === epiData.obraId);
+                const tr = document.createElement("tr");
+
+                // Coluna: Tipo de EPI
+                const tdTipo = document.createElement("td");
+                tdTipo.textContent = epiData.tipo || "N/A";
+                tr.appendChild(tdTipo);
+
+                // Coluna: Obra Associada
+                const tdObra = document.createElement("td");
+                tdObra.textContent = obra ? (obra.data().nome || obra.data().endereco || "Obra sem nome") : "Não especificada";
+                tr.appendChild(tdObra);
+
+                // Coluna: Quantidade
+                const tdQuantidade = document.createElement("td");
+                tdQuantidade.textContent = epiData.quantidade || "N/A";
+                tr.appendChild(tdQuantidade);
+
+                // Coluna: Status
+                const tdStatus = document.createElement("td");
+                tdStatus.textContent = epiData.disponibilidade ? epiData.disponibilidade : "N/A";
+                tr.appendChild(tdStatus);
+
+                // Coluna: Ações
+                const tdAcoes = document.createElement("td");
+                tdAcoes.innerHTML = `
+                    <button onclick="redirecionarParaDetalhesEpi('${epiId}')">Mais Detalhes</button>
                 `;
                 tr.appendChild(tdAcoes);
 
@@ -190,16 +228,19 @@ async function loadData() {
         const usersSnapshot = await getDocs(collection(db, "users"));
         const empresasSnapshot = await getDocs(collection(db, "empresas"));
         const obrasSnapshot = await getDocs(collection(db, "obras"));
+        const episSnapshot = await getDocs(collection(db, "epis"));
 
         // Atualizando contadores nos cards com IDs
         setTimeout(() => {
             const usersListElement = document.getElementById("users-list");
             const empresasListElement = document.getElementById("empresas-list");
             const obrasListElement = document.getElementById("obras-list");
+            const episListElement = document.getElementById("epis-list");
 
             if (usersListElement) usersListElement.textContent = usersSnapshot.size;
             if (empresasListElement) empresasListElement.textContent = empresasSnapshot.size;
             if (obrasListElement) obrasListElement.textContent = obrasSnapshot.size;
+            if (episListElement) episListElement.textContent = episSnapshot.size;
 
             document.querySelectorAll(".change-text").forEach((el) => {
                 el.textContent = Math.floor(Math.random() * 15) + 5 + "% no último mês";
@@ -218,8 +259,13 @@ async function loadData() {
             "obras-details-list",
             (data) => `Endereço: ${data.endereco || "N/A"}, Responsável Técnico: ${data.responsavel_tecnico || data.responsavelTecnico || "N/A"}, Status: ${data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : "Ativa"}`
         );
+        const episResult = await fetchAndRenderData(
+            "epis",
+            "epis-details-list",
+            (data) => `Tipo: ${data.tipo || "N/A"}, Obra: ${data.obraId || "N/A"}, Quantidade: ${data.quantidade || "N/A"}, Status: ${data.disponibilidade || "N/A"}`
+        );
 
-        if (usersResult.error || obrasResult.error) {
+        if (usersResult.error || obrasResult.error || episResult.error) {
             return;
         }
 
@@ -228,6 +274,7 @@ async function loadData() {
         const usersList = document.getElementById("users-details-list");
         const empresasList = document.getElementById("empresas-details-list");
         const obrasList = document.getElementById("obras-details-list");
+        const episList = document.getElementById("epis-details-list");
         if (usersList) {
             usersList.innerHTML = "Erro ao carregar usuários: " + error.message;
         }
@@ -236,6 +283,9 @@ async function loadData() {
         }
         if (obrasList) {
             obrasList.innerHTML = "Erro ao carregar obras: " + error.message;
+        }
+        if (episList) {
+            episList.innerHTML = `<tr><td colspan='5'>Erro ao carregar EPIs: ${error.message}</td></tr>`;
         }
     }
 }
@@ -271,8 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Função para redirecionar para detalhes da obra (placeholder)
+// Função para redirecionar para detalhes da obra
 window.redirecionarParaDetalhesObra = function (obraId) {
     console.log(`Redirecionando para detalhes da obra: ${obraId}`);
     // Implementar redirecionamento real, e.g., window.location.href = `detalhesObra.html?id=${obraId}`;
+};
+
+// Função para redirecionar para detalhes do EPI (placeholder)
+window.redirecionarParaDetalhesEpi = function (epiId) {
+    console.log(`Redirecionando para detalhes do EPI: ${epiId}`);
+    window.location.href = `epi.html`; // Redireciona para a página de EPIs
 };

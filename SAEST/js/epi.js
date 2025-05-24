@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (validade) validade.min = today;
     if (editValidade) editValidade.min = today;
 
-
     const tipoOptions = [
         { value: "capacete", label: "Capacete" },
         { value: "luvas", label: "Luvas" },
@@ -181,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function abrirModalEpi() {
         const modal = document.getElementById('modalEpi');
         if (modal) {
-            populateTipoAndLocalUso(); // importante
+            populateTipoAndLocalUso();
             modal.style.display = 'flex';
         }
     }
@@ -390,16 +389,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    window.excluirEpi = async function(epiId, tipo) {
-        if (confirm(`Tem certeza que deseja excluir o EPI "${tipo}"?`)) {
-            try {
-                await deleteDoc(doc(db, "epis", epiId));
-                await renderEpiTable();
-            } catch (error) {
-                console.error("Erro ao remover EPI:", error);
-                alert(`Erro ao remover EPI: ${error.message}`);
+    window.excluirEpi = function(epiId, tipo) {
+        abrirModalConfirmarExclusao(
+            `Tem certeza que deseja excluir o EPI "${tipo}"?`,
+            async () => {
+                try {
+                    await deleteDoc(doc(db, "epis", epiId));
+                    await renderEpiTable();
+                    fecharModalConfirmarExclusao();
+                } catch (error) {
+                    console.error("Erro ao remover EPI:", error);
+                    alert(`Erro ao remover EPI: ${error.message}`);
+                }
             }
-        }
+        );
     };
 
     // Configure search and filters
@@ -428,6 +431,157 @@ document.addEventListener('DOMContentLoaded', () => {
         disponibilidadeFilter.addEventListener('change', applyFilter);
         validadeFilter.addEventListener('change', applyFilter);
     }
+
+    // Gerenciar EPI Modal Functions
+    window.renderGerenciarEpiLists = function () {
+        const listaTiposEpi = document.getElementById('lista-tipos-epi');
+        const listaLocaisUso = document.getElementById('lista-locais-uso');
+
+        if (!listaTiposEpi || !listaLocaisUso) {
+            console.error("Elementos lista-tipos-epi ou lista-locais-uso não encontrados!");
+            return;
+        }
+
+        // Clear existing lists
+        listaTiposEpi.innerHTML = '';
+        listaLocaisUso.innerHTML = '';
+
+        // Render EPI types
+        tipoOptions.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${option.label}
+                <button class="btn secondary" onclick="removerTipoEpi(${index})">
+                    <i class="ri-delete-bin-line"></i> Excluir
+                </button>
+            `;
+            listaTiposEpi.appendChild(li);
+        });
+
+        // Render usage locations
+        localUsoOptions.forEach((option, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                ${option.label}
+                <button class="btn secondary" onclick="removerLocalUso(${index})">
+                    <i class="ri-delete-bin-line"></i> Excluir
+                </button>
+            `;
+            listaLocaisUso.appendChild(li);
+        });
+    };
+
+    window.adicionarTipoEpi = function () {
+        const novoTipoInput = document.getElementById('novo-tipo-epi');
+        const errorMessage = document.getElementById('gerenciar-error-message');
+        const successMessage = document.getElementById('gerenciar-success-message');
+
+        if (!novoTipoInput || !errorMessage || !successMessage) {
+            console.error("Elementos do modal Gerenciar EPI não encontrados!");
+            return;
+        }
+
+        const novoTipo = novoTipoInput.value.trim();
+        if (!novoTipo) {
+            errorMessage.textContent = 'Por favor, insira um tipo de EPI válido.';
+            return;
+        }
+
+        // Check for duplicate EPI type
+        if (tipoOptions.some(option => option.label.toLowerCase() === novoTipo.toLowerCase())) {
+            errorMessage.textContent = 'Este tipo de EPI já existe.';
+            return;
+        }
+
+        // Add new EPI type
+        tipoOptions.push({
+            value: novoTipo.toLowerCase().replace(/\s+/g, '-'),
+            label: novoTipo
+        });
+
+        // Clear input and messages
+        novoTipoInput.value = '';
+        errorMessage.textContent = '';
+        successMessage.textContent = 'Tipo de EPI adicionado com sucesso!';
+
+        // Update select options in modals
+        populateTipoAndLocalUso();
+        // Re-render the lists
+        renderGerenciarEpiLists();
+
+        // Clear success message after 2 seconds
+        setTimeout(() => {
+            successMessage.textContent = '';
+        }, 2000);
+    };
+
+    window.adicionarLocalUso = function () {
+        const novoLocalInput = document.getElementById('novo-local-uso');
+        const errorMessage = document.getElementById('gerenciar-error-message');
+        const successMessage = document.getElementById('gerenciar-success-message');
+
+        if (!novoLocalInput || !errorMessage || !successMessage) {
+            console.error("Elementos do modal Gerenciar EPI não encontrados!");
+            return;
+        }
+
+        const novoLocal = novoLocalInput.value.trim();
+        if (!novoLocal) {
+            errorMessage.textContent = 'Por favor, insira um local de uso válido.';
+            return;
+        }
+
+        // Check for duplicate usage location
+        if (localUsoOptions.some(option => option.label.toLowerCase() === novoLocal.toLowerCase())) {
+            errorMessage.textContent = 'Este local de uso já existe.';
+            return;
+        }
+
+        // Add new usage location
+        localUsoOptions.push({
+            value: novoLocal.toLowerCase().replace(/\s+/g, '-'),
+            label: novoLocal
+        });
+
+        // Clear input and messages
+        novoLocalInput.value = '';
+        errorMessage.textContent = '';
+        successMessage.textContent = 'Local de uso adicionado com sucesso!';
+
+        // Update select options in modals
+        populateTipoAndLocalUso();
+        // Re-render the lists
+        renderGerenciarEpiLists();
+
+        // Clear success message after 2 seconds
+        setTimeout(() => {
+            successMessage.textContent = '';
+        }, 2000);
+    };
+
+    window.removerTipoEpi = function (index) {
+        abrirModalConfirmarExclusao(
+            `Tem certeza que deseja excluir o tipo "${tipoOptions[index].label}"?`,
+            () => {
+                tipoOptions.splice(index, 1);
+                populateTipoAndLocalUso();
+                renderGerenciarEpiLists();
+                fecharModalConfirmarExclusao();
+            }
+        );
+    };
+
+    window.removerLocalUso = function (index) {
+        abrirModalConfirmarExclusao(
+            `Tem certeza que deseja excluir o local "${localUsoOptions[index].label}"?`,
+            () => {
+                localUsoOptions.splice(index, 1);
+                populateTipoAndLocalUso();
+                renderGerenciarEpiLists();
+                fecharModalConfirmarExclusao();
+            }
+        );
+    };
 
     document.querySelector('.btn.primary[onclick="abrirModalEpi()"]')?.addEventListener('click', abrirModalEpi);
     document.querySelector('#modalEpi .btn.secondary')?.addEventListener('click', fecharModalEpi);

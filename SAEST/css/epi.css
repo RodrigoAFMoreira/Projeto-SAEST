@@ -134,7 +134,7 @@ body {
   flex-wrap: wrap;
 }
 
-/* Padronizar tamanho dos campos !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+/* Padronizar tamanho dos campos */
 .input-standard {
   width: 100%;
   max-width: 300px; 
@@ -264,8 +264,8 @@ td {
   position: relative;
   display: flex;
   flex-direction: column;
-  max-height: 80vh; /* Limita a altura do modal a 80% da viewport */
-  padding: 0; /* Remove padding externo para controle interno */
+  max-height: 80vh;
+  padding: 0;
 }
 
 .modal h2 {
@@ -295,7 +295,7 @@ td {
   flex: 1;
   overflow-y: auto;
   padding: 16px 24px;
-  max-height: calc(80vh - 120px); /* Ajusta a altura considerando header e footer */
+  max-height: calc(80vh - 120px);
 }
 
 .modal-content-scroll::-webkit-scrollbar {
@@ -314,6 +314,21 @@ td {
 
 .modal-content-scroll::-webkit-scrollbar-thumb:hover {
   background: #4338ca;
+}
+
+.modal-content {
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.modal-content p {
+  font-size: 16px;
+  color: #374151;
+}
+
+.modal-content p span#delete-epi-nome {
+  font-weight: 600;
+  color: #4f46e5;
 }
 
 @keyframes fadeIn {
