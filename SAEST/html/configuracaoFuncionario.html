@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configurações do Funcionário - SAEST</title>
+  <link rel="stylesheet" href="../css/configuracaoFuncionario.css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="logo">SAEST</div>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="tab-link" onclick="window.location.href='../html/menuFuncionario.html'">
+              <i class="ri-user-line"></i> Informações
+            </li>
+            <li class="tab-link" onclick="window.location.href='../html/certificacoesFuncionario.html'">
+              <i class="ri-award-line"></i> Certificações
+            </li>
+            <li class="tab-link active">
+              <i class="ri-settings-3-line"></i> Configurações
+            </li>
+          </ul>
+        </nav>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="name" id="user-name">Funcionário</div>
+          <div class="email" id="user-email">funcionario@email.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-left"></div>
+        <div class="header-center"></div>
+        <div class="header-right">
+          <i class="ri-notification-3-line notification-icon"></i>
+        </div>
+      </header>
+
+      <section class="section settings-box">
+        <h2>Configurações da Conta</h2>
+        <form id="settings-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="nome">Nome completo</label>
+              <input type="text" id="nome" placeholder="Digite seu nome completo" />
+            </div>
+            <div class="form-group">
+              <label for="telefone">Telefone</label>
+              <input type="text" id="telefone" placeholder="(00) 00000-0000" />
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" placeholder="usuario@exemplo.com" />
+            </div>
+            <div class="form-group">
+              <label for="senha">Nova senha</label>
+              <input type="password" id="senha" placeholder="Nova senha (opcional)" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn primary"><i class="ri-save-line"></i> Salvar Alterações</button>
+            <button type="button" class="btn logout" onclick="logout()"><i class="ri-logout-box-r-line"></i> Sair</button>
+            <button type="button" class="btn delete"><i class="ri-delete-bin-line"></i> Deletar Conta</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="../js/configuracaoFuncionario.js"></script>
+</body>
+</html>

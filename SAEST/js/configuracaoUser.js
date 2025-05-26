@@ -2,10 +2,31 @@ import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updateEmail } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
+
 // Função para validar o formato do e-mail
 function validateEmail(email) {
   const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
   return re.test(String(email).toLowerCase());
+}
+
+// Ajusta o menu lateral com base no perfil
+function ajustarMenuPorPerfil(perfil) {
+  const configuracoesLink = document.querySelector(".configuracoes-link");
+  const usuariosLink = document.querySelector(".usuarios-link");
+
+  if (perfil === "gestor") {
+    // Gestor não vê configurações e gerenciamento de usuários
+    if (configuracoesLink) configuracoesLink.parentElement.style.display = "none";
+    if (usuariosLink) usuariosLink.parentElement.style.display = "none";
+  } else if (perfil === "admin") {
+    // Admin vê tudo
+    if (configuracoesLink) configuracoesLink.parentElement.style.display = "block";
+    if (usuariosLink) usuariosLink.parentElement.style.display = "block";
+  } else {
+    // Outro perfil: pode esconder tudo por segurança
+    if (configuracoesLink) configuracoesLink.parentElement.style.display = "none";
+    if (usuariosLink) usuariosLink.parentElement.style.display = "none";
+  }
 }
 
 // Função para carregar dados do usuário
@@ -16,22 +37,24 @@ async function loadUserData(user) {
   const userEmailDiv = document.querySelector(".user-profile .email");
 
   if (user) {
-    // Atualiza o perfil na barra lateral
     if (userNameDiv) userNameDiv.textContent = user.displayName || "Usuário";
     if (userEmailDiv) userEmailDiv.textContent = user.email || "email@não.disponível";
 
-    // Busca dados adicionais do Firestore
     try {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
         console.log("Dados do usuário carregados:", userData);
-        // Preenche os campos do formulário
+
+        // Preenche o formulário
         if (nomeInput) nomeInput.value = userData.username || "";
         if (emailInput) emailInput.value = userData.email || user.email;
+
+        // Ajusta o menu conforme perfil
+        const perfil = userData.perfil;
+        ajustarMenuPorPerfil(perfil);
       } else {
         console.warn("Documento do usuário não encontrado no Firestore.");
-        // Preenche com dados do Firebase Authentication como fallback
         if (nomeInput) nomeInput.value = "";
         if (emailInput) emailInput.value = user.email || "";
       }
@@ -42,7 +65,7 @@ async function loadUserData(user) {
   }
 }
 
-// Configura o listener do formulário
+// Listener do formulário de configurações
 document.getElementById("settings-form").addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -50,7 +73,6 @@ document.getElementById("settings-form").addEventListener("submit", async functi
   const emailNovo = document.getElementById("email").value.trim();
   const senha = document.getElementById("senha").value;
 
-  // Validações
   if (!validateEmail(emailNovo)) {
     alert("Por favor, insira um e-mail válido.");
     return;
@@ -68,17 +90,14 @@ document.getElementById("settings-form").addEventListener("submit", async functi
 
   if (user) {
     try {
-      // Reautentica o usuário
       const credenciais = EmailAuthProvider.credential(user.email, senha);
       await reauthenticateWithCredential(user, credenciais);
 
-      // Atualiza o e-mail no Firebase Authentication
       if (emailNovo !== user.email) {
         await updateEmail(user, emailNovo);
         console.log("E-mail atualizado no Firebase Authentication:", emailNovo);
       }
 
-      // Atualiza os dados no Firestore
       await updateDoc(doc(db, "users", user.uid), {
         username: nome,
         email: emailNovo,
@@ -86,7 +105,6 @@ document.getElementById("settings-form").addEventListener("submit", async functi
       });
       console.log("Dados atualizados no Firestore:", { username: nome, email: emailNovo });
 
-      // Atualiza o perfil na barra lateral
       const userNameDiv = document.querySelector(".user-profile .name");
       const userEmailDiv = document.querySelector(".user-profile .email");
       if (userNameDiv) userNameDiv.textContent = nome;

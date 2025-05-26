@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Menu Funcionário - SAEST</title>
+  <link rel="stylesheet" href="../css/menuFuncionario.css" />
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="logo">SAEST</div>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li class="tab-link active" data-tab="info"><i class="ri-user-line"></i> Informações</li>
+            <li class="tab-link" data-tab="cert"><i class="ri-award-line"></i> Certificações</li>
+            <li class="tab-link" onclick="window.location.href='../html/configuracaoFuncionario.html'"><i class="ri-settings-3-line"></i> Configurações</li>
+          </ul>
+        </nav>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="name" id="user-name">Usuário</div>
+          <div class="email" id="user-email">carregando...</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="main-header">
+        <div class="header-content">
+          <div class="header-icons">
+            <i class="ri-notification-3-line"></i>
+          </div>
+        </div>
+      </header>
+
+      <section id="tab-info" class="section tab-content active">
+        <div class="section-header">
+          <h2>Informações Pessoais</h2>
+        </div>
+        <p><strong>Nome:</strong> <span id="info-nome">Usuário</span></p>
+        <p><strong>Email:</strong> <span id="info-email">carregando...</span></p>
+      </section>
+
+      <section id="tab-cert" class="section tab-content">
+        <div class="section-header">
+          <h2>Certificações</h2>
+        </div>
+        <ul id="certificacoes-list" style="padding-left: 20px; list-style: disc;">
+          <li>Carregando...</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="../js/menuFuncionario.js"></script>
+</body>
+</html>
