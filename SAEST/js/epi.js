@@ -405,7 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     };
 
-    // Configure search and filters
     const searchInput = document.getElementById('filtro-codigo');
     const tipoFilter = document.getElementById('filtro-tipo');
     const condicaoFilter = document.getElementById('filtro-condicao');
@@ -432,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
         validadeFilter.addEventListener('change', applyFilter);
     }
 
-    // Gerenciar EPI Modal Functions
     window.renderGerenciarEpiLists = function () {
         const listaTiposEpi = document.getElementById('lista-tipos-epi');
         const listaLocaisUso = document.getElementById('lista-locais-uso');
@@ -442,30 +440,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Clear existing lists
         listaTiposEpi.innerHTML = '';
         listaLocaisUso.innerHTML = '';
 
-        // Render EPI types
         tipoOptions.forEach((option, index) => {
             const li = document.createElement('li');
+            // condição para primeiros 5 intems noa ter botao (index >= 5)
             li.innerHTML = `
                 ${option.label}
-                <button class="btn secondary" onclick="removerTipoEpi(${index})">
+                ${index >= 5 ? `<button class="btn secondary" onclick="removerTipoEpi(${index})">
                     <i class="ri-delete-bin-line"></i> Excluir
-                </button>
+                </button>` : ''}
             `;
             listaTiposEpi.appendChild(li);
         });
 
-        // Render usage locations
         localUsoOptions.forEach((option, index) => {
             const li = document.createElement('li');
+            // mesmo so que para 4 (index >= 4)
             li.innerHTML = `
                 ${option.label}
-                <button class="btn secondary" onclick="removerLocalUso(${index})">
+                ${index >= 4 ? `<button class="btn secondary" onclick="removerLocalUso(${index})">
                     <i class="ri-delete-bin-line"></i> Excluir
-                </button>
+                </button>` : ''}
             `;
             listaLocaisUso.appendChild(li);
         });
@@ -487,29 +484,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Check for duplicate EPI type
         if (tipoOptions.some(option => option.label.toLowerCase() === novoTipo.toLowerCase())) {
             errorMessage.textContent = 'Este tipo de EPI já existe.';
             return;
         }
 
-        // Add new EPI type
         tipoOptions.push({
             value: novoTipo.toLowerCase().replace(/\s+/g, '-'),
             label: novoTipo
         });
 
-        // Clear input and messages
+
         novoTipoInput.value = '';
         errorMessage.textContent = '';
         successMessage.textContent = 'Tipo de EPI adicionado com sucesso!';
 
-        // Update select options in modals
         populateTipoAndLocalUso();
-        // Re-render the lists
         renderGerenciarEpiLists();
-
-        // Clear success message after 2 seconds
         setTimeout(() => {
             successMessage.textContent = '';
         }, 2000);
@@ -531,29 +522,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Check for duplicate usage location
         if (localUsoOptions.some(option => option.label.toLowerCase() === novoLocal.toLowerCase())) {
             errorMessage.textContent = 'Este local de uso já existe.';
             return;
         }
 
-        // Add new usage location
         localUsoOptions.push({
             value: novoLocal.toLowerCase().replace(/\s+/g, '-'),
             label: novoLocal
         });
 
-        // Clear input and messages
         novoLocalInput.value = '';
         errorMessage.textContent = '';
         successMessage.textContent = 'Local de uso adicionado com sucesso!';
 
-        // Update select options in modals
-        populateTipoAndLocalUso();
-        // Re-render the lists
-        renderGerenciarEpiLists();
 
-        // Clear success message after 2 seconds
+        populateTipoAndLocalUso();
+        renderGerenciarEpiLists();
         setTimeout(() => {
             successMessage.textContent = '';
         }, 2000);
