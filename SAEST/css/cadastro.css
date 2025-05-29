@@ -63,7 +63,6 @@ html, body {
 .left-section h1 {
   font-size: clamp(28px, 4vw, 42px);
   font-weight: 900;
-  font-style: italic;
   margin-bottom: 1rem;
   z-index: 1;
 }
@@ -98,14 +97,6 @@ html, body {
 }
 
 /* Estilo opcional para barra de rolagem (moderno e clean) */
-.login-container::-webkit-scrollbar {
-  width: 6px;
-}
-.login-container::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-}
-
 .login-container::-webkit-scrollbar {
   width: 6px;
 }
@@ -167,6 +158,7 @@ html, body {
   color: #aaa;
   font-weight: 300;
 }
+
 .input-group select {
   width: 100%;
   padding: 12px 15px 12px 45px;
@@ -180,11 +172,6 @@ html, body {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-
-.input-group select {
-  line-height: 1.4;
-}
-
 
   /* Ícone da seta */
   background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
@@ -205,6 +192,15 @@ html, body {
   font-weight: 300;
 }
 
+/* Estilo para mensagens de erro */
+.input-error {
+  display: block;
+  font-size: clamp(12px, 1.5vw, 13px);
+  color: #ff4d4d;
+  margin-top: 5px;
+  margin-left: 15px;
+  line-height: 1.2;
+}
 
 /* Botão */
 button[type="submit"] {
@@ -311,7 +307,6 @@ button[type="submit"]:active {
   box-shadow: 0 0 6px #2a9d8faa;
 }
 
-
 .senha-requisitos {
   margin-top: 8px;
   list-style: none;
@@ -333,7 +328,6 @@ button[type="submit"]:active {
   position: relative;
 }
 
-
 .senha-requisitos li::before {
   content: "•";
   position: absolute;
@@ -341,7 +335,6 @@ button[type="submit"]:active {
   color: #0077ff;
   font-weight: 700;
 }
-
 
 .senha-requisitos li.valido {
   color: #2a9d8f;
@@ -367,23 +360,20 @@ button[type="submit"]:active {
     text-align: center;
   }
 
-  .input-group input
-{
-padding-left: 45px;
-}
+  .input-group input {
+    padding-left: 45px;
+  }
 
-button[type="submit"] {
-margin-top: 2vh;
-}
+  button[type="submit"] {
+    margin-top: 2vh;
+  }
 }
 
 .login-container {
-
   overflow-y: auto;
   max-height: 85vh;
   padding-right: 4px; 
 }
-
 
 .login-container::-webkit-scrollbar {
   width: 0px;

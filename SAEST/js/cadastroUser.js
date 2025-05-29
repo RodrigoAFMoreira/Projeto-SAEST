@@ -31,6 +31,14 @@ function validarSenhaRobusta(senha, email, nome) {
   return erros;
 }
 
+// Validação de número de telefone (formato (nn) 9nnnn-nnnn)
+function validarTelefone(telefone) {
+  const regexTelefone = /^\(\d{2}\)\s?9\d{4}-\d{4}$/;
+  if (!telefone) return "O campo telefone é obrigatório.";
+  if (!regexTelefone.test(telefone)) return "Digite um telefone válido (ex: (11) 91234-5678).";
+  return null;
+}
+
 // Exibir mensagem de erro
 function exibirMensagem(mensagem, cor = "red") {
   const msgDiv = document.getElementById("mensagem-erro");
@@ -39,7 +47,7 @@ function exibirMensagem(mensagem, cor = "red") {
 }
 
 // Registrar usuário no Firebase
-const registrarUsuario = async (email, senha, nome, tipo) => {
+const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, senha);
     const user = cred.user;
@@ -50,6 +58,7 @@ const registrarUsuario = async (email, senha, nome, tipo) => {
       email: user.email,
       username: nome,
       tipo: tipo,
+      telefone: telefone, // Adiciona o telefone ao Firestore
       criadoEm: new Date(),
     });
 
@@ -70,7 +79,6 @@ const registrarUsuario = async (email, senha, nome, tipo) => {
     exibirMensagem("Erro ao registrar: " + traduzirErroFirebase(err.code));
   }
 };
-
 
 // Tradução de erros do Firebase
 function traduzirErroFirebase(code) {
@@ -96,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nome = document.getElementById("nome").value.trim();
     const email = document.getElementById("email").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
     const senha = document.getElementById("senha").value.trim();
     const tipo = document.getElementById("tipoUsuario").value;
     const msgErro = document.getElementById("mensagem-erro");
@@ -112,6 +121,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const erroTelefone = validarTelefone(telefone);
+    if (erroTelefone) {
+      exibirMensagem(erroTelefone);
+      document.getElementById("telefone-error").textContent = erroTelefone;
+      return;
+    }
+
     if (!tipo) {
       exibirMensagem("Selecione o tipo de usuário.");
       return;
@@ -123,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    registrarUsuario(email, senha, nome, tipo);
+    registrarUsuario(email, senha, nome, tipo, telefone);
   });
 
   // Redirecionar para login

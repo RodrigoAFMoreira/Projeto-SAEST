@@ -62,7 +62,6 @@ html, body {
 .left-section h1 {
   font-size: clamp(28px, 4vw, 42px);
   font-weight: 900;
-  font-style: italic;
   margin-bottom: 1rem;
   z-index: 1;
 }
@@ -214,4 +213,3 @@ button[type="submit"]:active {
     margin-top: 2vh;
   }
 }
-
