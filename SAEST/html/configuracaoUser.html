@@ -32,9 +32,6 @@
         </div>
       </div>
     </aside>
-  </div>
-  
-
     <main class="main-content">
       <header class="main-header">
         <div class="header-content">
@@ -54,25 +51,60 @@
             </div>
             <div class="form-group">
               <label for="telefone">Telefone</label>
-              <input type="text" id="telefone" placeholder="00 0000-0000" />
+              <input type="tel" id="telefone" placeholder="(00) 90000-0000" />
             </div>
             <div class="form-group">
               <label for="email">E-mail</label>
               <input type="email" id="email" placeholder="E-mail" />
             </div>
-            <div class="form-group">
-              <label for="senha">Senha</label>
-              <input type="password" id="senha" placeholder="Senha" />
-            </div>
           </div>
           <div class="buttons">
             <button type="submit" class="btn primary"><i class="ri-save-line"></i> Salvar Alterações</button>
-            <button type="button" class="btn logout" onclick="logout()"><i class="ri-logout-box-r-line"></i> Sair</button>
+            <button type="button" class="btn logout" id="logout-button"><i class="ri-logout-box-r-line"></i> Sair</button>
           </div>
           <div class="danger-zone">
-            <button type="button" class="btn delete"><i class="ri-delete-bin-line"></i> Deletar Conta</button>
+            <button type="button" class="btn delete" id="delete-account-button"><i class="ri-delete-bin-line"></i> Deletar Conta</button>
           </div>
         </form>
+
+        <!-- card de confirmação do form -->
+        <div class="confirmation-card" id="update-confirmation-card" style="display: none;" role="dialog" aria-label="Confirmar alterações">
+          <div class="card-content">
+            <h3>Confirmar Alterações</h3>
+            <p>Digite sua senha para confirmar as alterações.</p>
+            <div class="form-group">
+              <label for="update-password">Senha:</label>
+              <input type="password" id="update-password" placeholder="Senha" />
+            </div>
+            <div class="card-buttons">
+              <button type="button" class="btn cancel" id="cancel-update-button">Cancelar</button>
+              <button type="button" class="btn confirm-update" id="confirm-update-button">Confirmar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card de confirmação de deleção -->
+        <div class="confirmation-card" id="delete-confirmation-card" style="display: none;" role="dialog" aria-label="Confirmar exclusão de conta">
+          <div class="card-content">
+            <h3>Confirmar Exclusão de Conta</h3>
+            <p>Tem certeza que deseja deletar sua conta? Esta ação é irreversível.</p>
+            <div class="form-group">
+              <label for="delete-password">Digite sua senha para confirmar:</label>
+              <input type="password" id="delete-password" placeholder="Senha" />
+            </div>
+            <div class="card-buttons">
+              <button type="button" class="btn cancel" id="cancel-delete-button">Cancelar</button>
+              <button type="button" class="btn confirm-delete" id="confirm-delete-button">Confirmar</button>
+            </div>
+          </div>
+        </div>
+
+        <!--Card so só sucesso -->
+        <div class="success-card" id="success-card" style="display: none;">
+          <div class="card-content">
+            <p>Informações atualizadas</p>
+          </div>
+        </div>
       </section>
     </main>
   </div>
