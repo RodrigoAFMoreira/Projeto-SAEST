@@ -255,7 +255,7 @@ function setupSidebar(tipo) {
         { text: "Obras", href: "menuObra.html", icon: "ri-building-2-line" },
         { text: "Documentos", href: "menuDocumentosObra.html", icon: "ri-file-list-3-line" },
         { text: "EPIs", href: "epi.html", icon: "ri-shield-check-line" },
-        { text: "Configurações", href: "configuracoes.html", icon: "ri-settings-3-line" }
+        { text: "Configurações", href: "configuracaoUser.html", icon: "ri-settings-3-line" }
       ];
 
   items.forEach((item, index) => {

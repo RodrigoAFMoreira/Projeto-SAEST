@@ -42,5 +42,5 @@ export const redirecionarParaEsqueciSenha = () => {
 };
 
 export const redirecionarParaConfiguracoes = () => {
-    window.location.href = "../html/configuracoes.html";
+    window.location.href = "../html/configuracaoUser.html";
 };
