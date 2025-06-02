@@ -2,7 +2,7 @@
 // Ele renderiza uma tabela de obras com detalhes expansíveis,
 // carrega empresas para associação, valida formulários de criação e edição exibidos em modals, e suporta navegação responsiva
 // Logs rastreiam erros e interações
-import { auth, db } from "./firebase-config.js";
+import { auth, db, storage } from "./firebase-config.js";
 import {
   collection,
   getDocs,
@@ -14,11 +14,15 @@ import {
   query,
   where,
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/11.5.0/firebase-storage.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 
 console.log("menuObra.js carregado");
 
-// Carrega empresas para preencher <select> elements
 const carregarEmpresas = async (selectElementId) => {
   const selectEmpresa = document.getElementById(selectElementId);
   try {
@@ -43,12 +47,36 @@ const carregarEmpresas = async (selectElementId) => {
   }
 };
 
-// Registra uma nova obra
+const uploadPDF = async (file, path) => {
+  if (!file) return null;
+  if (file.type !== "application/pdf") {
+    throw new Error("Arquivo deve ser um PDF.");
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("O arquivo deve ter no máximo 5MB.");
+  }
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file);
+  return await getDownloadURL(storageRef);
+};
+
 const registrarObra = async (obraData) => {
   try {
     console.log("Tentando registrar obra:", obraData);
+    const alvaraURL = await uploadPDF(obraData.alvara, `obras/${obraData.endereco}/alvara.pdf`);
+    const registroCreaURL = await uploadPDF(obraData.registroCrea, `obras/${obraData.endereco}/registro_crea.pdf`);
+    const registroCalURL = await uploadPDF(obraData.registroCal, `obras/${obraData.endereco}/registro_cal.pdf`);
+
     await addDoc(collection(db, "obras"), {
-      ...obraData,
+      endereco: obraData.endereco,
+      status: obraData.status,
+      dataInicio: obraData.dataInicio,
+      dataTermino: obraData.dataTermino,
+      responsavelTecnico: obraData.responsavelTecnico,
+      alvara: alvaraURL,
+      registroCrea: registroCreaURL,
+      registroCal: registroCalURL,
+      empresaId: obraData.empresaId,
       criadoEm: new Date(),
     });
     console.log("Obra registrada com sucesso!");
@@ -59,11 +87,29 @@ const registrarObra = async (obraData) => {
   }
 };
 
-// Atualiza uma obra existente
 const atualizarObra = async (obraId, obraData) => {
   try {
     const obraRef = doc(db, "obras", obraId);
-    await updateDoc(obraRef, obraData);
+    const updateData = {
+      endereco: obraData.endereco,
+      status: obraData.status,
+      dataInicio: obraData.dataInicio,
+      dataTermino: obraData.dataTermino,
+      responsavelTecnico: obraData.responsavelTecnico,
+      empresaId: obraData.empresaId,
+    };
+
+    if (obraData.alvara) {
+      updateData.alvara = await uploadPDF(obraData.alvara, `obras/${obraData.endereco}/alvara.pdf`);
+    }
+    if (obraData.registroCrea) {
+      updateData.registroCrea = await uploadPDF(obraData.registroCrea, `obras/${obraData.endereco}/registro_crea.pdf`);
+    }
+    if (obraData.registroCal) {
+      updateData.registroCal = await uploadPDF(obraData.registroCal, `obras/${obraData.endereco}/registro_cal.pdf`);
+    }
+
+    await updateDoc(obraRef, updateData);
     console.log("Obra atualizada com sucesso!");
     return true;
   } catch (error) {
@@ -72,7 +118,6 @@ const atualizarObra = async (obraId, obraData) => {
   }
 };
 
-// Renderiza a tabela de obras
 async function renderObrasTable(filter = "", status = "") {
   const lista = document.getElementById("obra-lista");
   if (!lista) {
@@ -90,7 +135,6 @@ async function renderObrasTable(filter = "", status = "") {
     const obrasSnapshot = await getDocs(queryRef);
     const empresasSnapshot = await getDocs(collection(db, "empresas"));
 
-    // Filter documents client-side for case-insensitive search
     let filteredDocs = obrasSnapshot.docs;
     if (filter) {
       const filterLower = filter.toLowerCase();
@@ -145,7 +189,6 @@ async function renderObrasTable(filter = "", status = "") {
   }
 }
 
-// Alterna exibição de detalhes expandidos
 function toggleExpandRow(obraId, obraData, expandBtn) {
   const row = document.querySelector(`tr[data-id="${obraId}"]`);
   const existingExpandedRow = row.nextElementSibling;
@@ -172,9 +215,9 @@ function toggleExpandRow(obraId, obraData, expandBtn) {
           <p><strong>Data de Início:</strong> ${obraData.dataInicio || "N/A"}</p>
           <p><strong>Data de Término:</strong> ${obraData.dataTermino || "N/A"}</p>
           <p><strong>Responsável Técnico:</strong> ${obraData.responsavelTecnico || "N/A"}</p>
-          <p><strong>Alvará:</strong> ${obraData.alvara || "N/A"}</p>
-          <p><strong>Registro CREA:</strong> ${obraData.registroCrea || "N/A"}</p>
-          <p><strong>Registro CAL:</strong> ${obraData.registroCal || "N/A"}</p>
+          <p><strong>Alvará:</strong> <a href="${obraData.alvara || '#'}" target="_blank">${obraData.alvara ? "Ver PDF" : "N/A"}</a></p>
+          <p><strong>Registro CREA:</strong> <a href="${obraData.registroCrea || '#'}" target="_blank">${obraData.registroCrea ? "Ver PDF" : "N/A"}</a></p>
+          <p><strong>Registro CAL:</strong> <a href="${obraData.registroCal || '#'}" target="_blank">${obraData.registroCal ? "Ver PDF" : "N/A"}</a></p>
         </div>
       </td>
     `;
@@ -183,7 +226,6 @@ function toggleExpandRow(obraId, obraData, expandBtn) {
   }
 }
 
-// Abre o modal de exclusão
 window.openDeleteModal = function (obraId, endereco) {
   const modal = document.getElementById("modalDeletarObra");
   const obraNome = document.getElementById("delete-obra-nome");
@@ -209,12 +251,10 @@ window.openDeleteModal = function (obraId, endereco) {
   };
 };
 
-// Fecha o modal de exclusão
 window.closeDeleteModal = function () {
   document.getElementById("modalDeletarObra").style.display = "none";
 };
 
-// Edita uma obra
 window.editObra = async function (obraId) {
   try {
     const obraRef = doc(db, "obras", obraId);
@@ -228,11 +268,32 @@ window.editObra = async function (obraId) {
       document.getElementById("edit-data-inicio").value = obraData.dataInicio || "";
       document.getElementById("edit-data-termino").value = obraData.dataTermino || "";
       document.getElementById("edit-responsavel-tecnico").value = obraData.responsavelTecnico || "";
-      document.getElementById("edit-alvara").value = obraData.alvara || "";
-      document.getElementById("edit-registro-crea").value = obraData.registroCrea || "";
-      document.getElementById("edit-registro-cal").value = obraData.registroCal || "";
       await carregarEmpresas("edit-empresa");
       document.getElementById("edit-empresa").value = obraData.empresaId || "";
+      
+      // PDF
+      const alvaraLink = document.getElementById("edit-alvara-link");
+      const registroCreaLink = document.getElementById("edit-registro-crea-link");
+      const registroCalLink = document.getElementById("edit-registro-cal-link");
+      if (obraData.alvara) {
+        alvaraLink.href = obraData.alvara;
+        alvaraLink.style.display = "inline";
+      } else {
+        alvaraLink.style.display = "none";
+      }
+      if (obraData.registroCrea) {
+        registroCreaLink.href = obraData.registroCrea;
+        registroCreaLink.style.display = "inline";
+      } else {
+        registroCreaLink.style.display = "none";
+      }
+      if (obraData.registroCal) {
+        registroCalLink.href = obraData.registroCal;
+        registroCalLink.style.display = "inline";
+      } else {
+        registroCalLink.style.display = "none";
+      }
+
       modal.style.display = "flex";
     } else {
       alert("Erro: Obra não encontrada para edição.");
@@ -243,12 +304,9 @@ window.editObra = async function (obraId) {
   }
 };
 
-// Configuração inicial
 document.addEventListener("DOMContentLoaded", () => {
-  // Carrega empresas para formulários
   carregarEmpresas("empresa");
 
-  // Configura formulário de cadastro
   const obraForm = document.getElementById("obra-form");
   if (obraForm) {
     obraForm.addEventListener("submit", async (e) => {
@@ -264,13 +322,12 @@ document.addEventListener("DOMContentLoaded", () => {
         dataInicio: document.getElementById("data-inicio").value,
         dataTermino: document.getElementById("data-termino").value || null,
         responsavelTecnico: document.getElementById("responsavel-tecnico").value.trim(),
-        alvara: document.getElementById("alvara").value.trim(),
-        registroCrea: document.getElementById("registro-crea").value.trim(),
-        registroCal: document.getElementById("registro-cal").value.trim(),
+        alvara: document.getElementById("alvara").files[0],
+        registroCrea: document.getElementById("registro-crea").files[0],
+        registroCal: document.getElementById("registro-cal").files[0],
         empresaId: document.getElementById("empresa").value,
       };
 
-      // Validação
       if (!obraData.endereco) {
         errorMessage.textContent = "Por favor, insira o endereço.";
         return;
@@ -288,29 +345,28 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       if (!obraData.alvara) {
-        errorMessage.textContent = "Por favor, insira o alvará.";
+        errorMessage.textContent = "Por favor, selecione o arquivo do alvará (PDF).";
         return;
       }
       if (!obraData.registroCrea) {
-        errorMessage.textContent = "Por favor, insira o registro no CREA.";
+        errorMessage.textContent = "Por favor, selecione o arquivo do registro CREA (PDF).";
         return;
       }
       if (!obraData.registroCal) {
-        errorMessage.textContent = "Por favor, insira o registro no CAL.";
+        errorMessage.textContent = "Por favor, selecione o arquivo do registro CAL (PDF).";
         return;
       }
       if (!obraData.empresaId) {
         errorMessage.textContent = "Por favor, selecione uma construtora.";
         return;
       }
-      // Validação do intervalo de anos para data de início
+
       const inicio = new Date(obraData.dataInicio);
       const anoInicio = inicio.getFullYear();
       if (anoInicio < 1950 || anoInicio > 2050) {
         errorMessage.textContent = "A data de início deve estar entre 1950 e 2050.";
         return;
       }
-      // Validação de data de término
       if (obraData.dataTermino) {
         const termino = new Date(obraData.dataTermino);
         const anoTermino = termino.getFullYear();
@@ -339,7 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Configura formulário de edição
   const editObraForm = document.getElementById("edit-obra-form");
   if (editObraForm) {
     editObraForm.addEventListener("submit", async (e) => {
@@ -356,13 +411,12 @@ document.addEventListener("DOMContentLoaded", () => {
         dataInicio: document.getElementById("edit-data-inicio").value,
         dataTermino: document.getElementById("edit-data-termino").value || null,
         responsavelTecnico: document.getElementById("edit-responsavel-tecnico").value.trim(),
-        alvara: document.getElementById("edit-alvara").value.trim(),
-        registroCrea: document.getElementById("edit-registro-crea").value.trim(),
-        registroCal: document.getElementById("edit-registro-cal").value.trim(),
+        alvara: document.getElementById("edit-alvara").files[0],
+        registroCrea: document.getElementById("edit-registro-crea").files[0],
+        registroCal: document.getElementById("edit-registro-cal").files[0],
         empresaId: document.getElementById("edit-empresa").value,
       };
 
-      // Validação
       if (!obraData.endereco) {
         errorMessage.textContent = "Por favor, insira o endereço.";
         return;
@@ -377,18 +431,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (!obraData.responsavelTecnico) {
         errorMessage.textContent = "Por favor, insira o responsável técnico.";
-        return;
-      }
-      if (!obraData.alvara) {
-        errorMessage.textContent = "Por favor, insira o alvará.";
-        return;
-      }
-      if (!obraData.registroCrea) {
-        errorMessage.textContent = "Por favor, insira o registro no CREA.";
-        return;
-      }
-      if (!obraData.registroCal) {
-        errorMessage.textContent = "Por favor, insira o registro no CAL.";
         return;
       }
       if (!obraData.empresaId) {
@@ -411,7 +453,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Configura busca e filtro
   const searchInput = document.getElementById("search-input");
   const statusFilter = document.getElementById("status-filter");
   if (searchInput && statusFilter) {
@@ -424,7 +465,6 @@ document.addEventListener("DOMContentLoaded", () => {
     statusFilter.addEventListener("change", applyFilter);
   }
 
-  // Monitora autenticação
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       const userNameElement = document.querySelector(".user-profile .name");

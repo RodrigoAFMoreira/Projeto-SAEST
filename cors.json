@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["https://saest-87e06.web.app"],
+    "method": ["GET", "PUT", "DELETE"],
+    "maxAgeSeconds": 3600
+  }
+]
