@@ -120,6 +120,7 @@ body {
     width: 100%;
     height: auto;
     flex-direction: row;
+    border-right: none;
     border-bottom: 1px solid #e5e7eb;
     padding: 16px;
   }

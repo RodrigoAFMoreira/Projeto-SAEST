@@ -1,31 +1,207 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cadastro - SAEST</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cadastro de Usuário - SAEST</title>
   <link rel="stylesheet" href="../css/cadastro.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;900&display=swap" rel="stylesheet" />
 </head>
 <body>
   <div class="container">
-    <div class="left-section">
+    <!-- Lado esquerdo -->
+    <section class="left-section">
       <h1>SAEST</h1>
       <p>Protegendo pessoas, fortalecendo negócios</p>
-    </div>
-    <div class="right-section">
-      <form class="login-form" id="cadastro-form">
-        <h2>Criar Conta</h2>
-        <p>Preencha os campos abaixo para se cadastrar</p>
-        <input type="text" placeholder="Nome completo" id="nome" required />
-        <input type="email" placeholder="E-mail" id="email" required />
-        <input type="password" placeholder="Senha" id="senha" required />
-        <button type="submit">Cadastrar</button>
-        <p>
-          <a href="#" id="login-link" class="register-link">Já tem uma conta? <span class="login-highlight">Faça login</span></a>
-        </p>
-      </form>
-    </div>
+    </section>
+
+    <!-- Lado direito -->
+    <section class="right-section">
+      <div class="login-container">
+        <form id="cadastro-form" novalidate aria-describedby="mensagem-erro" autocomplete="off">
+          <h2>Criar Conta</h2>
+          <p>Preencha os campos abaixo para criar sua conta:</p>
+
+          <!-- Tipo de usuário -->
+          <div class="input-group">
+            <i class="fa fa-user-tag"></i>
+            <select 
+              id="tipoUsuario" 
+              name="tipoUsuario" 
+              required 
+              aria-required="true"
+              aria-describedby="tipo-error"
+            >
+              <option value="" disabled selected hidden>Selecione o tipo de usuário</option>
+              <option value="administrador">Administrador</option>
+              <option value="gestor">Gestor de Segurança</option>
+              <option value="funcionario">Funcionário</option>
+            </select>
+            <span id="tipo-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Nome -->
+          <div class="input-group">
+            <i class="fa fa-user"></i>
+            <input 
+              type="text" 
+              id="nome" 
+              name="nome" 
+              placeholder="Nome completo" 
+              required 
+              autocomplete="name"
+              aria-required="true"
+              aria-describedby="nome-error"
+            />
+            <span id="nome-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Email -->
+          <div class="input-group">
+            <i class="fa fa-envelope"></i>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              placeholder="E-mail" 
+              required 
+              autocomplete="email"
+              aria-required="true"
+              aria-describedby="email-error"
+            />
+            <span id="email-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <!-- Senha -->
+          <div class="input-group">
+            <i class="fa fa-lock"></i>
+            <input 
+              type="password" 
+              id="senha" 
+              name="senha" 
+              placeholder="Senha" 
+              required 
+              autocomplete="new-password" 
+              aria-required="true"
+              aria-describedby="senha-status senha-requisitos mensagem-erro"
+            />
+          </div>
+
+          <!-- Barra de força da senha -->
+          <div class="senha-status" id="senha-status" aria-live="polite" style="display:none;">
+            <div class="forca-barra" id="strength-bar" aria-hidden="true"></div>
+            <div class="forca-texto" id="strength-text"></div>
+          </div>
+
+          <!-- Requisitos da senha -->
+          <ul id="senha-requisitos" class="senha-requisitos" style="display:none;">
+            <li data-regra="min-caracteres">Mínimo de 8 caracteres</li>
+            <li data-regra="maiuscula">Letra maiúscula</li>
+            <li data-regra="minuscula">Letra minúscula</li>
+            <li data-regra="numero">Número</li>
+            <li data-regra="especial">Caractere especial</li>
+            <li data-regra="repeticao">Sem repetições (ex: aaa)</li>
+          </ul>
+
+          <!-- Erros gerais -->
+          <div class="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive"></div>
+
+          <!-- Botão -->
+          <button type="submit" aria-label="Cadastrar nova conta">Cadastrar</button>
+
+          <!-- Link para login -->
+          <p class="register-link">Já tem uma conta? <a href="../index.html">Entrar</a></p>
+        </form>
+      </div>
+    </section>
   </div>
+
+  <script src="https://kit.fontawesome.com/a2e0b6b91b.js" crossorigin="anonymous"></script>
+  <script src="../js/registroUsers.js" type="module"></script>
   <script src="../js/cadastroUser.js" type="module"></script>
+
+  <!-- Força da senha -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const senhaInput = document.getElementById("senha");
+      const barraForca = document.getElementById("strength-bar");
+      const textoForca = document.getElementById("strength-text");
+      const statusSenha = document.getElementById("senha-status");
+      const requisitos = document.querySelectorAll("#senha-requisitos li");
+      const ulRequisitos = document.getElementById("senha-requisitos");
+
+      senhaInput.addEventListener("input", () => {
+        const senha = senhaInput.value.trim();
+
+        if (senha.length > 0) {
+          statusSenha.style.display = "block";
+          ulRequisitos.style.display = "block";
+        } else {
+          statusSenha.style.display = "none";
+          ulRequisitos.style.display = "none";
+        }
+
+        const forca = calcularForcaSenha(senha);
+        atualizarBarraForca(forca);
+        atualizarRequisitos(senha);
+      });
+
+      function calcularForcaSenha(senha) {
+        let pontos = 0;
+        if (senha.length >= 8) pontos++;
+        if (/[A-Z]/.test(senha) || /[^A-Za-z0-9]/.test(senha)) pontos++;
+        if (/\d/.test(senha)) pontos++;
+        return pontos;
+      }
+
+      function atualizarBarraForca(pontos) {
+        const cores = ["#e63946", "#f4a261", "#2a9d8f"];
+        const textos = ["Fraca", "Média", "Forte"];
+        const porcentagens = ["33%", "66%", "100%"];
+
+        if (pontos === 0) {
+          barraForca.style.width = "0%";
+          barraForca.style.backgroundColor = "transparent";
+          textoForca.textContent = "";
+        } else {
+          barraForca.style.width = porcentagens[pontos - 1];
+          barraForca.style.backgroundColor = cores[pontos - 1];
+          textoForca.textContent = textos[pontos - 1];
+        }
+      }
+
+      function atualizarRequisitos(senha) {
+        requisitos.forEach(li => {
+          const regra = li.getAttribute("data-regra");
+          let valido = false;
+
+          switch (regra) {
+            case "min-caracteres":
+              valido = senha.length >= 8;
+              break;
+            case "maiuscula":
+              valido = /[A-Z]/.test(senha);
+              break;
+            case "minuscula":
+              valido = /[a-z]/.test(senha);
+              break;
+            case "numero":
+              valido = /\d/.test(senha);
+              break;
+            case "especial":
+              valido = /[^A-Za-z0-9]/.test(senha);
+              break;
+            case "repeticao":
+              valido = !/(.)\1\1/.test(senha);
+              break;
+          }
+
+          li.classList.toggle("valido", valido);
+        });
+      }
+    });
+  </script>
 </body>
 </html>

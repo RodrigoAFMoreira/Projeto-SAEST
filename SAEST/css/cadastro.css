@@ -1,3 +1,4 @@
+/* Reset e fonte */
 * {
   margin: 0;
   padding: 0;
@@ -5,26 +6,27 @@
   font-family: 'Poppins', sans-serif;
 }
 
-body, html {
-  height: 100%;
+html, body {
   width: 100%;
+  height: 100%;
   background-color: #f5f7fa;
   overflow-x: hidden;
 }
 
+/* Container principal */
 .container {
   display: flex;
+  flex-wrap: wrap;
   min-height: 100vh;
   width: 100%;
-  margin: 0 auto;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
-  flex-wrap: wrap;
 }
 
+/* Lado esquerdo - fixo e estilizado */
 .left-section {
   flex: 1 1 50%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0077ff 0%, #002a80 100%);
+  background: linear-gradient(135deg, #0077ff, #002a80);
   color: white;
   display: flex;
   flex-direction: column;
@@ -32,7 +34,7 @@ body, html {
   padding: 5vw;
   position: relative;
   overflow: hidden;
-  min-width: 300px;
+  user-select: none;
 }
 
 .left-section::before,
@@ -60,37 +62,56 @@ body, html {
 
 .left-section h1 {
   font-size: clamp(28px, 4vw, 42px);
-  font-weight: 700;
+  font-weight: 900;
   font-style: italic;
-  margin-bottom: 2vh;
-  position: relative;
+  margin-bottom: 1rem;
   z-index: 1;
 }
 
 .left-section p {
   font-size: clamp(14px, 1.8vw, 16px);
-  line-height: 1.6;
+  font-weight: 300;
   opacity: 0.9;
-  position: relative;
   z-index: 1;
 }
 
+/* Lado direito */
 .right-section {
   flex: 1 1 50%;
+  min-height: 100vh;
+  background: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #ffffff;
-  padding: 5vw;
-  min-width: 300px;
+  padding: 5vh 4vw;
+  overflow: hidden; /* Impede scroll externo */
+  position: relative;
 }
 
-.login-form {
+.login-container {
   width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
+  max-width: 450px;
+  max-height: 85vh; /* Altura máxima para o conteúdo */
+  overflow-y: auto; /* Scroll aparece apenas se necessário */
+  padding-right: 8px; /* espaço para não cortar o conteúdo com a barra */
   animation: fadeIn 0.5s ease-out;
+}
+
+/* Estilo opcional para barra de rolagem (moderno e clean) */
+.login-container::-webkit-scrollbar {
+  width: 6px;
+}
+.login-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.login-container::-webkit-scrollbar {
+  width: 6px;
+}
+.login-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
 @keyframes fadeIn {
@@ -98,116 +119,241 @@ body, html {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.login-form h2 {
+.login-container h2 {
   font-size: clamp(24px, 3vw, 28px);
-  margin-bottom: 2vh;
   color: #002a80;
   font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
-.login-form p {
+.login-container p {
   color: #666;
-  margin-bottom: 20px;
   font-size: clamp(12px, 1.5vw, 14px);
-  line-height: 1.5;
+  margin-bottom: 2rem;
 }
 
+/* Inputs com ícone */
+.input-group {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
 
-.login-form input {
-  padding: 2vh 3vw;
+.input-group i {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 15px 12px 45px;
   border: 2px solid #e0e5ec;
   border-radius: 30px;
   font-size: clamp(14px, 1.8vw, 15px);
-  transition: all 0.3s ease;
   background-color: #f9fbfd;
-  color: #333;
-  margin-bottom: 3vh;
+  transition: all 0.3s ease;
 }
 
-.login-form input:focus {
+.input-group input:focus {
   outline: none;
   border-color: #0077ff;
   background-color: #fff;
   box-shadow: 0 5px 15px rgba(0, 119, 255, 0.1);
 }
 
-.login-form input::placeholder {
+.input-group input::placeholder {
   color: #aaa;
   font-weight: 300;
 }
-
-.login-form button {
+.input-group select {
   width: 100%;
-  padding: 2vh;
-  background: linear-gradient(135deg, #0077ff 0%, #00a2ff 100%);
+  padding: 12px 15px 12px 45px;
+  border: 2px solid #e0e5ec;
+  border-radius: 30px;
+  font-size: clamp(14px, 1.8vw, 15px);
+  font-weight: 300;
+  background-color: #f9fbfd;
+  color: #333;
+  transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+.input-group select {
+  line-height: 1.4;
+}
+
+
+  /* Ícone da seta */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 18px;
+}
+
+.input-group select:focus {
+  outline: none;
+  border-color: #0077ff;
+  background-color: #fff;
+  box-shadow: 0 5px 15px rgba(0, 119, 255, 0.1);
+}
+
+.input-group select option[disabled] {
+  color: #aaa !important;
+  font-weight: 300;
+}
+
+
+/* Botão */
+button[type="submit"] {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #0077ff, #00a2ff);
   color: white;
   border: none;
   border-radius: 30px;
   font-size: clamp(14px, 2vw, 16px);
   font-weight: 500;
   cursor: pointer;
-  margin: 3vh 0 2vh;
-  text-transform: capitalize; 
-  letter-spacing: 0.5px;
+  margin-top: 10px;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.login-form button:hover {
-  background: linear-gradient(135deg, #0066dd 0%, #0088ee 100%);
+button[type="submit"]:hover {
+  background: linear-gradient(135deg, #0066dd, #0088ee);
   transform: translateY(-2px);
 }
 
-.login-form button:active {
+button[type="submit"]:active {
   transform: translateY(0);
 }
 
-.register-link {
+/* Links */
+.form-links {
   text-align: center;
+  margin-top: 1rem;
+}
+
+.forgot-password {
   font-size: clamp(12px, 1.5vw, 14px);
-  color: #666;
-  text-decoration: none;
-}
-
-.register-link:hover .login-highlight {
-  text-decoration: underline;
-}
-
-.login-highlight {
   color: #0077ff;
-  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.3s ease;
 }
 
-/* Validação e barra de força da senha */
-.mensagem-erro {
-  color: #e63946;
+.forgot-password:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+/* Mensagem */
+.mensagem {
+  margin-top: 1.5rem;
   font-size: 14px;
-  margin-bottom: 20px;
+  color: green;
   text-align: center;
-  font-weight: 500;
 }
 
+/* Barra de força da senha */
 .senha-status {
   margin-top: 6px;
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #444;
+  font-weight: 600;
+  user-select: none;
 }
 
-
 .forca-barra {
-  height: 10px;
-  width: 100%;
-  background-color: #eee;
-  border-radius: 20px;
-  margin-bottom: 5px;
-  transition: background-color 0.3s ease, width 0.3s ease;
+  flex: 1;
+  height: 8px;
+  border-radius: 30px;
+  background-color: #ddd;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .forca-texto {
-  font-size: 13px;
-  font-weight: 500;
-  color: #666;
+  min-width: 60px;
+  text-align: right;
+  font-weight: 600;
+  color: #555;
+  user-select: none;
 }
 
-/* Responsivo */
+/* Cores da barra de força */
+.forca-baixa {
+  width: 25%;
+  background-color: #ff4d4d; /* vermelho suave */
+  box-shadow: 0 0 6px #ff4d4daa;
+}
+
+.forca-media {
+  width: 50%;
+  background-color: #ffb84d; /* laranja */
+  box-shadow: 0 0 6px #ffb84daa;
+}
+
+.forca-alta {
+  width: 75%;
+  background-color: #4da6ff; /* azul */
+  box-shadow: 0 0 6px #4da6ffaa;
+}
+
+.forca-muito-alta {
+  width: 100%;
+  background-color: #2a9d8f; /* verde */
+  box-shadow: 0 0 6px #2a9d8faa;
+}
+
+
+.senha-requisitos {
+  margin-top: 8px;
+  list-style: none;
+  background-color: #e0f0ff; 
+  border: 1px solid #99cfff;
+  border-radius: 12px;
+  padding: 10px 15px;
+  font-size: 0.7rem;
+  color: #004a99;
+  max-width: 320px;
+  line-height: 1.3;
+  user-select: none;
+  box-shadow: 0 2px 5px rgba(0, 119, 255, 0.15);
+}
+
+.senha-requisitos li {
+  margin-bottom: 4px;
+  padding-left: 14px;
+  position: relative;
+}
+
+
+.senha-requisitos li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #0077ff;
+  font-weight: 700;
+}
+
+
+.senha-requisitos li.valido {
+  color: #2a9d8f;
+  text-decoration: line-through;
+  opacity: 0.85;
+}
+
+.senha-requisitos li.valido::before {
+  color: #2a9d8f;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
@@ -215,28 +361,40 @@ body, html {
 
   .left-section,
   .right-section {
-    min-height: 50vh;
     flex: 1 1 100%;
-  }
-
-  .left-section {
+    min-height: 50vh;
     padding: 8vh 8vw;
     text-align: center;
   }
 
-  .right-section {
-    padding: 8vh 8vw;
-  }
-
-  .login-form {
-    max-width: 100%;
-  }
-
-  .login-form input {
-    padding: 2vh 5vw;
-  }
+  .input-group input
+{
+padding-left: 45px;
 }
 
-.senha-status {
-  display: none;
+button[type="submit"] {
+margin-top: 2vh;
+}
+}
+
+.login-container {
+
+  overflow-y: auto;
+  max-height: 85vh;
+  padding-right: 4px; 
+}
+
+
+.login-container::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.login-container {
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+
+.login-container::-webkit-scrollbar-thumb {
+  background: transparent;
 }

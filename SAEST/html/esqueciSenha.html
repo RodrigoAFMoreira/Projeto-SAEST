@@ -2,32 +2,57 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recuperar Senha - SAEST</title>
-  <link rel="stylesheet" href="../css/styles.css" />
+
+  <!-- Estilo padrão -->
   <link rel="stylesheet" href="../css/esqueciSenha.css" />
+
+  <!-- Fontes e Ícones -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-  <div class="container">
-    <div class="left-side">
-      <h1><strong>SAEST</strong></h1>
+  <main class="container">
+    <!-- Branding da aplicação -->
+    <section class="left-section">
+      <h1>SAEST</h1>
       <p>Protegendo pessoas, fortalecendo negócios</p>
-    </div>
-    <div class="right-side">
-      <form id="resetForm">
-        <h2>Recuperar Senha</h2>
-        <p>Informe seu e-mail para redefinir a senha</p>
+    </section>
 
-        <div class="input-group">
-          <input type="email" id="email" placeholder="E-mail" required />
-        </div>
+    <!-- Área do formulário -->
+    <section class="right-section">
+      <div class="login-container">
+        <header>
+          <h2>Recuperar Senha</h2>
+          <p>Informe seu e-mail para redefinir sua senha</p>
+        </header>
 
-        <button type="submit" id="btnEnviar">Enviar</button>
-        <p class="voltar"><a id="voltar-login" href="#">Voltar ao login</a></p>
-        <p id="mensagem" class="mensagem"></p>
-      </form>
-    </div>
-  </div>
+        <form id="resetForm">
+          <!-- Campo de e-mail -->
+          <div class="input-group">
+            <label for="email">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="email" name="email" placeholder="E-mail" required />
+            </label>
+          </div>
+
+          <!-- Botão de envio -->
+          <div class="input-group">
+            <button type="submit" id="btnEnviar">Enviar</button>
+          </div>
+
+          <!-- Link para voltar ao login -->
+          <div class="form-links">
+            <a href="../index.html" class="forgot-password">Voltar ao login</a>
+          </div>
+
+          <!-- Mensagem de status -->
+          <p id="mensagem" class="mensagem"></p>
+        </form>
+      </div>
+    </section>
+  </main>
 
   <script type="module" src="../js/esqueciSenha.js"></script>
 </body>

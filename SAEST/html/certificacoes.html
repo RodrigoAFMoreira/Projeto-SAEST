@@ -1,0 +1,139 @@
+<!-- menuCertificacoes.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Certificações - SAEST</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/menuEsquerdo.css" />
+  <link rel="stylesheet" href="../css/menuDocumentosObra.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="logo">SAEST</div>
+        </div>
+        <nav class="sidebar-nav">
+          <ul>
+            <li><a href="menu.html"><i class="ri-home-line"></i> Dashboard</a></li>
+            <li class="active"><a href="menuCertificacoes.html"><i class="ri-award-line"></i> Certificações</a></li>
+            <li><a href="configuracoes.html"><i class="ri-settings-3-line"></i> Configurações</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="user-profile">
+        <div class="user-info">
+          <div class="name">Usuário</div>
+          <div class="email">usuario@email.com</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+      <header class="main-header">
+        <i class="ri-notification-3-line"></i>
+      </header>
+
+      <!-- Seção de certificações -->
+      <section class="section">
+        <div class="section-header">
+          <h2>Certificações</h2>
+          <div class="section-actions">
+            <button class="btn primary" onclick="abrirModalCertificacao()">Adicionar Certificação</button>
+          </div>
+        </div>
+
+        <div class="company-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Data de Emissão</th>
+                <th>Funcionário</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-documentos">
+              <!-- Preenchido por JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de Certificação -->
+  <div class="modal-overlay" id="modalCertificacao">
+    <div class="modal">
+      <button class="modal-close" onclick="fecharModalCertificacao()">×</button>
+      <h2>Nova Certificação</h2>
+      <div class="modal-content-scroll">
+        <form id="certificacao-form">
+          <input type="hidden" id="funcionario">
+
+          <div class="form-group" id="grupo-tipo">
+            <label for="tipo">Tipo de Certificação</label>
+            <select id="tipo" class="input-standard">
+              <option value="">Selecione</option>
+              <option value="NR 10 – Segurança em Instalações Elétricas">NR 10</option>
+              <option value="NR 12 – Máquinas e Equipamentos">NR 12</option>
+              <option value="NR 18 – Construção Civil">NR 18</option>
+              <option value="NR 35 – Trabalho em Altura">NR 35</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="data-emissao">Data de Emissão</label>
+              <input type="date" id="data-emissao" class="input-standard" required>
+            </div>
+            <div class="form-group">
+              <label for="data-validade">Data de Validade</label>
+              <input type="date" id="data-validade" class="input-standard">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="arquivo">Certificado (PDF, máx. 2MB)</label>
+            <input type="file" id="arquivo" accept="application/pdf" class="input-standard" required>
+          </div>
+
+          <div id="mensagem" class="mensagem"></div>
+        </form>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary" form="certificacao-form">Salvar</button>
+        <button type="button" class="btn secondary" onclick="fecharModalCertificacao()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="../js/menuDocumentosObra.js"></script>
+  <script>
+    function abrirModalCertificacao() {
+      document.getElementById('modalCertificacao').style.display = 'flex';
+    }
+
+    function fecharModalCertificacao() {
+      document.getElementById('modalCertificacao').style.display = 'none';
+      document.getElementById('certificacao-form').reset();
+      document.getElementById('mensagem').textContent = '';
+      esconderCampos();
+    }
+
+    function esconderCampos() {
+      ['grupo-tipo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'block';
+      });
+    }
+  </script>
+</body>
+</html>

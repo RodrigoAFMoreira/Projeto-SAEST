@@ -38,6 +38,25 @@ body {
   align-items: center;
 }
 
+.header-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.header-icons i {
+  font-size: 22px;
+  color: #4b5563;
+  cursor: pointer;
+}
+
 /* Estatísticas */
 .stats-container {
   display: grid;
@@ -302,4 +321,8 @@ td {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.user-info .name {
+    border: none !important;
 }
