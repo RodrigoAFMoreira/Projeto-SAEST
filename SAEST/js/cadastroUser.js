@@ -2,7 +2,6 @@ import { auth, db } from "./firebase-config.js";
 import {
   sendEmailVerification,
   createUserWithEmailAndPassword,
-  signOut,
 } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 import {
@@ -63,14 +62,11 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
     });
 
     // Redirecionar conforme o tipo
-    if (tipo === "administrador") {
+    if (tipo === "administrador" || tipo === "gestor") {
       window.location.href = "../menu.html";
     } else if (tipo === "funcionario") {
       window.location.href = "../menuFuncionario.html";
-    } else if (tipo === "gestor") {
-      window.location.href = "../menu.html";  
     } else {
-      // Fallback
       window.location.href = "../index.html";
     }
   } catch (err) {
@@ -106,42 +102,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const telefone = document.getElementById("telefone").value.trim();
     const senha = document.getElementById("senha").value.trim();
     const tipo = document.getElementById("tipoUsuario").value;
+
     const msgErro = document.getElementById("mensagem-erro");
     const tipoError = document.getElementById("tipo-error");
+    const nomeError = document.getElementById("nome-error");
+    const emailError = document.getElementById("email-error");
+    const telefoneError = document.getElementById("telefone-error");
 
     msgErro.textContent = "";
     tipoError.textContent = "";
-    document.getElementById("nome-error").textContent = "";
-    document.getElementById("email-error").textContent = "";
-    document.getElementById("telefone-error").textContent = "";
+    nomeError.textContent = "";
+    emailError.textContent = "";
+    telefoneError.textContent = "";
 
     if (!email.includes("@") || !email.includes(".")) {
       exibirMensagem("Digite um e-mail válido (ex: usuario@dominio.com)");
-      document.getElementById("email-error").textContent = "E-mail inválido.";
+      emailError.textContent = "E-mail inválido.";
       return;
     }
 
     if (!nome) {
       exibirMensagem("Preencha seu nome completo.");
-      document.getElementById("nome-error").textContent = "Nome é obrigatório.";
+      nomeError.textContent = "Nome é obrigatório.";
       return;
     }
 
     const erroTelefone = validarTelefone(telefone);
     if (erroTelefone) {
       exibirMensagem(erroTelefone);
-      document.getElementById("telefone-error").textContent = erroTelefone;
+      telefoneError.textContent = erroTelefone;
       return;
     }
 
-    // Validar tipoUsuario
+    // Validação do tipo de usuário
     if (!tipo) {
       exibirMensagem("Selecione o tipo de usuário.");
       tipoError.textContent = "Tipo de usuário é obrigatório.";
       return;
     }
 
-    // Validar senha
+    // Validação da senha
     const errosSenha = validarSenhaRobusta(senha, email, nome);
     if (errosSenha.length > 0) {
       exibirMensagem("Senha inválida:\n" + errosSenha.join("\n"));

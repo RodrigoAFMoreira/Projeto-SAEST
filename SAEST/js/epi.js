@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             </tr>
         `;
+
         try {
             let queryRef = collection(db, "epis");
             if (filtroCondicao) queryRef = query(queryRef, where("condicao", "==", filtroCondicao));
@@ -159,21 +160,89 @@ document.addEventListener('DOMContentLoaded', () => {
             filteredDocs.forEach((doc) => {
                 const epiData = doc.data();
                 const obra = obrasSnapshot.docs.find(obraDoc => obraDoc.id === epiData.obraId);
+                const escapedTipo = (epiData.tipo || 'EPI').replace(/'/g, "\\'");
                 const tr = document.createElement('tr');
                 tr.setAttribute('data-id', doc.id);
                 tr.innerHTML = `
                     <td>${epiData.tipo || 'N/A'}</td>
                     <td>${obra ? (obra.data().nome || obra.data().endereco || 'Obra sem nome') : 'Não especificada'}</td>
                     <td>
-                        <button class="btn primary" onclick="editarEpi('${doc.id}')"><i class="ri-edit-line"></i> Editar</button>
-                        <button class="btn secondary" onclick="excluirEpi('${doc.id}', '${(epiData.tipo || 'EPI').replace(/'/g, "\\'")}')"><i class="ri-delete-bin-line"></i> Excluir</button>
+                        <button title="Editar" class="btn primary" onclick="editarEpi('${doc.id}')"><i class="ri-edit-line"></i> Editar</button>
+                        <button title="Expandir" class="expand-btn" data-id="${doc.id}"><i class="ri-arrow-down-s-line"></i></button>
+                        <button title="Excluir" class="btn secondary" onclick="excluirEpi('${doc.id}', '${escapedTipo}')"><i class="ri-delete-bin-line"></i> Excluir</button>
                     </td>
                 `;
                 lista.appendChild(tr);
+                const expandBtn = tr.querySelector('.expand-btn');
+                expandBtn.addEventListener('click', () => toggleExpandEpiRow(doc.id, epiData, expandBtn));
             });
+
+            const style = document.createElement('style');
+            style.textContent = `
+                .expanded-details {
+                    background: #f9f9f9;
+                    padding: 15px;
+                    border-top: 1px solid #ddd;
+                }
+                .expanded-details p {
+                    margin: 5px 0;
+                }
+                .expanded-row td {
+                    padding: 0 !important;
+                }
+                .expand-btn {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    padding: 5px;
+                    font-size: 1.2em;
+                }
+                .expand-btn i {
+                    vertical-align: middle;
+                }
+            `;
+            document.head.appendChild(style);
         } catch (error) {
             console.error("Erro ao carregar EPIs:", error);
             lista.innerHTML = `<tr><td colspan="3">Erro ao carregar EPIs: ${error.message}</td></tr>`;
+        }
+    }
+
+    function toggleExpandEpiRow(epiId, epiData, expandBtn) {
+        const row = document.querySelector(`tr[data-id="${epiId}"]`);
+        const existingExpandedRow = row.nextElementSibling;
+
+        document.querySelectorAll('.expanded-row').forEach((expandedRow) => {
+            if (expandedRow !== existingExpandedRow) {
+                expandedRow.remove();
+                const otherBtn = document.querySelector(`.expand-btn[data-id="${expandedRow.dataset.id}"] i`);
+                if (otherBtn) otherBtn.className = 'ri-arrow-down-s-line';
+            }
+        });
+
+        if (existingExpandedRow && existingExpandedRow.classList.contains('expanded-row')) {
+            existingExpandedRow.remove();
+            expandBtn.querySelector('i').className = 'ri-arrow-down-s-line';
+        } else {
+            const expandedRow = document.createElement('tr');
+            expandedRow.classList.add('expanded-row');
+            expandedRow.dataset.id = epiId;
+            expandedRow.innerHTML = `
+                <td colspan="3">
+                    <div class="expanded-details">
+                        <p><strong>Condição:</strong> ${epiData.condicao || 'N/A'}</p>
+                        <p><strong>Local de Uso:</strong> ${epiData.localUso || 'N/A'}</p>
+                        <p><strong>Disponibilidade:</strong> ${epiData.disponibilidade || 'N/A'}</p>
+                        <p><strong>Data de Aquisição:</strong> ${epiData.dataAquisicao || 'N/A'}</p>
+                        <p><strong>Validade:</strong> ${epiData.validade || 'N/A'}</p>
+                        <p><strong>Código de EPI:</strong> ${epiData.codigoEpi || 'N/A'}</p>
+                        <p><strong>Descrição:</strong> ${epiData.descricao || 'N/A'}</p>
+                        <p><strong>Quantidade:</strong> ${epiData.quantidade || 'N/A'}</p>
+                    </div>
+                </td>
+            `;
+            row.insertAdjacentElement('afterend', expandedRow);
+            expandBtn.querySelector('i').className = 'ri-arrow-up-s-line';
         }
     }
 
@@ -445,7 +514,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tipoOptions.forEach((option, index) => {
             const li = document.createElement('li');
-            // condição para primeiros 5 intems noa ter botao (index >= 5)
             li.innerHTML = `
                 ${option.label}
                 ${index >= 5 ? `<button class="btn secondary" onclick="removerTipoEpi(${index})">
@@ -457,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localUsoOptions.forEach((option, index) => {
             const li = document.createElement('li');
-            // mesmo so que para 4 (index >= 4)
             li.innerHTML = `
                 ${option.label}
                 ${index >= 4 ? `<button class="btn secondary" onclick="removerLocalUso(${index})">
@@ -493,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
             value: novoTipo.toLowerCase().replace(/\s+/g, '-'),
             label: novoTipo
         });
-
 
         novoTipoInput.value = '';
         errorMessage.textContent = '';
@@ -535,7 +601,6 @@ document.addEventListener('DOMContentLoaded', () => {
         novoLocalInput.value = '';
         errorMessage.textContent = '';
         successMessage.textContent = 'Local de uso adicionado com sucesso!';
-
 
         populateTipoAndLocalUso();
         renderGerenciarEpiLists();
