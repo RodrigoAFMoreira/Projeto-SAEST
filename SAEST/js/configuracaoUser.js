@@ -1,3 +1,9 @@
+//Esta classe  fornece um sistema de gerenciamento de contas de usuário, usuários autenticados podem atualizar(nome, e-mail e número de 
+// telefone) e excluir suas contas. 
+// Inclui validação de formulários para formatos de e-mail e telefone, ajusta a visibilidade do menu da barra lateral com base nas funções
+//  do usuário (por exemplo, ocultando determinados links para usuários não administradores).
+//  O sistema exige reautenticação com senha para ações confidenciais, como atualizar e-mails ou excluir contas
+
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updateEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
 import { doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
