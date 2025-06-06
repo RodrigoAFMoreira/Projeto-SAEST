@@ -1,4 +1,4 @@
-//Esta classe equipamentos de proteção individual (EPI). Ela permite que os usuários criem, editem, excluam e filtrem registros de EPI,
+//Esta classe equipamentos de proteção individual (EPI). Ela permite que os usuários criem, editem, excluam e filtrem registros de EPI,Add commentMore actions
 // associando-os a locais de trabalho específicos (obras). O sistema preenche menus suspensos com tipos de EPI, locais de uso e dados do
 //  local de trabalho, e exibe uma tabela de registros de EPI com detalhes expansíveis. Ele Inclui validação de formulários, restrições 
 // de data para aquisição e expiração e filtragem por tipo, condição, local, disponibilidade e status de expiração
@@ -172,9 +172,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${epiData.tipo || 'N/A'}</td>
                     <td>${obra ? (obra.data().nome || obra.data().endereco || 'Obra sem nome') : 'Não especificada'}</td>
                     <td>
-                        <button title="Editar" class="btn edit-btn" onclick="editarEpi('${doc.id}')" aria-label="Editar EPI ${epiData.tipo || 'N/A'}"><i class="ri-edit-line"></i></button>
+                        <button title="Editar" class="btn primary" onclick="editarEpi('${doc.id}')"><i class="ri-edit-line"></i> Editar</button>
                         <button title="Expandir" class="expand-btn" data-id="${doc.id}"><i class="ri-arrow-down-s-line"></i></button>
-                        <button title="Excluir" class="btn secondary" onclick="excluirEpi('${doc.id}', '${escapedTipo}')" aria-label="Excluir EPI ${epiData.tipo || 'N/A'}"><i class="ri-delete-bin-line"></i></button>
+                        <button title="Excluir" class="btn secondary" onclick="excluirEpi('${doc.id}', '${escapedTipo}')"><i class="ri-delete-bin-line"></i> Excluir</button>
                     </td>
                 `;
                 lista.appendChild(tr);
@@ -440,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const epiDoc = await getDoc(epiRef);
             if (epiDoc.exists()) {
                 const epiData = epiDoc.data();
-                const modal = document.getElementById('controle-epi');
+                const modal = document.getElementById('modalEditarEpi');
                 populateTipoAndLocalUso(); 
                 document.getElementById('edit-epi-id').value = epiId;
                 document.getElementById('edit-tipo').value = epiData.tipo || '';
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.excluirEpi = function(epiId, tipo) {
         abrirModalConfirmarExclusao(
-            `Tem certeza que deseja remover o EPI "${tipo}"?`,
+            `Tem certeza que deseja excluir o EPI "${tipo}"?`,
             async () => {
                 try {
                     await deleteDoc(doc(db, "epis", epiId));
@@ -498,9 +498,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         searchInput.addEventListener('input', applyFilter);
-        tipoFilter.addEventListener('input', applyFilter);
+        tipoFilter.addEventListener('input', applyFilter); 
         condicaoFilter.addEventListener('change', applyFilter);
-        localUsoFilter.addEventListener('input', applyFilter);
+        localUsoFilter.addEventListener('input', applyFilter); 
         disponibilidadeFilter.addEventListener('change', applyFilter);
         validadeFilter.addEventListener('change', applyFilter);
     }
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `
                 ${option.label}
                 ${index >= 5 ? `<button class="btn secondary" onclick="removerTipoEpi(${index})">
-                    <i class="ri-delete-bin-line"></i> Excluir</button>
+                    <i class="ri-delete-bin-line"></i> Excluir
                 </button>` : ''}
             `;
             listaTiposEpi.appendChild(li);
@@ -533,8 +533,8 @@ document.addEventListener('DOMContentLoaded', () => {
             li.innerHTML = `
                 ${option.label}
                 ${index >= 4 ? `<button class="btn secondary" onclick="removerLocalUso(${index})">
-                    <i class="ri-delete-bin-line"></i> Excluir</button>
-                ` : ''}
+                    <i class="ri-delete-bin-line"></i> Excluir
+                </button>` : ''}
             `;
             listaLocaisUso.appendChild(li);
         });
@@ -616,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.removerTipoEpi = function (index) {
         abrirModalConfirmarExclusao(
-            `Tem certeza que deseja remover o tipo "${tipoOptions[index].label}"?`,
+            `Tem certeza que deseja excluir o tipo "${tipoOptions[index].label}"?`,
             () => {
                 tipoOptions.splice(index, 1);
                 populateTipoAndLocalUso();
@@ -628,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.removerLocalUso = function (index) {
         abrirModalConfirmarExclusao(
-            `Tem certeza que deseja remover o local "${localUsoOptions[index].label}"?`,
+            `Tem certeza que deseja excluir o local "${localUsoOptions[index].label}"?`,
             () => {
                 localUsoOptions.splice(index, 1);
                 populateTipoAndLocalUso();

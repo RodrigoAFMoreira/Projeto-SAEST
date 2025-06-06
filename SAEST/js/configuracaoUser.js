@@ -1,4 +1,4 @@
-//Esta classe  fornece um sistema de gerenciamento de contas de usuário, usuários autenticados podem atualizar(nome, e-mail e número de 
+//Esta classe  fornece um sistema de gerenciamento de contas de usuário, usuários autenticados podem atualizar(nome, e-mail e número de Add commentMore actions
 // telefone) e excluir suas contas. 
 // Inclui validação de formulários para formatos de e-mail e telefone, ajusta a visibilidade do menu da barra lateral com base nas funções
 //  do usuário (por exemplo, ocultando determinados links para usuários não administradores).
