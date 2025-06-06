@@ -129,14 +129,26 @@ table {
 thead {
   color: #6b7280;
   font-size: 13px;
+  background-color: #f5f7fa; 
 }
 
-th,
+th {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13px;
+  font-weight: normal; 
+}
+
 td {
   text-align: left;
   padding: 10px 12px;
   border-bottom: 1px solid #e5e7eb;
   font-size: 13px;
+}
+
+tr:hover {
+  background-color: #f9f9f9; 
 }
 
 .acoes {
