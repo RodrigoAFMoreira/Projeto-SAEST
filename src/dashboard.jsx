@@ -1,7 +1,6 @@
-// src/dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import supabase from './config/supabaseClient'; 
+import supabase from './config/supabaseClient';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler } from 'chart.js';
 import { LayoutDashboard, Building2, CalendarClock, FileText, Settings, HelpCircle, Bell, Home, Building, File, ShieldCheck } from 'lucide-react';
@@ -27,9 +26,16 @@ const formatCriadoEm = (date) => {
   return 'Data não disponível';
 };
 
+// alterado
+const roleDisplayNames = {
+  user: 'Funcionário',
+  gestor: 'Gestor de Segurança',
+  administrador: 'Administrador',
+};
+
 const Sidebar = ({ userType, userEmail }) => {
   const navigate = useNavigate();
-  const items = userType === 'funcionario'
+  const items = userType === 'user'
     ? [
         { text: 'Informações', path: '#', icon: <LayoutDashboard /> },
         { text: 'Certificações', path: '/certificacoes', icon: <FileText /> },
@@ -65,7 +71,7 @@ const Sidebar = ({ userType, userEmail }) => {
       </div>
       <div className="user-profile">
         <div className="user-info">
-          <div className={`name role-${userType}`}>{userType}</div>
+          <div className={`name role-${userType}`}>{roleDisplayNames[userType] || userType}</div>
           <div className="email" id="user-email">{userEmail || 'carregando...'}</div>
         </div>
       </div>
@@ -126,8 +132,8 @@ const DataTable = ({ collectionName, listId, userType }) => {
           </td>
         </tr>
       );
-    } else if (collectionName === 'users') {
-      return <p key={item.id}>{item.username || 'N/A'}</p>;
+    } else if (collectionName === 'usuarios') {
+      return <p key={item.id}>{item.nome || 'N/A'}</p>;
     }
     return null;
   };
@@ -151,7 +157,9 @@ const EmpresasTable = () => {
   const [obras, setObras] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async () =>
+
+ {
       try {
         const { data: empresasData, error: empresasError } = await supabase.from('empresas').select('*');
         const { data: obrasData, error: obrasError } = await supabase.from('obras').select('*');
@@ -216,7 +224,7 @@ const EmpresasTable = () => {
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState({ tipo: 'funcionario' });
+  const [userData, setUserData] = useState({ tipo: 'user' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -230,10 +238,10 @@ const Dashboard = () => {
       console.log('Usuário logado:', user.id, user.email);
       setUser(user);
 
-      const { data, error: userError } = await supabase.from('users').select('*').eq('id', user.id).single();
+      const { data, error: userError } = await supabase.from('usuarios').select('*').eq('id', user.id).single();
       if (userError || !data) {
-        console.warn('Documento do usuário não encontrado, usando padrão funcionário');
-        setUserData({ tipo: 'funcionario' });
+        console.warn('Documento do usuário não encontrado, usando padrão user');
+        setUserData({ tipo: 'user' });
       } else {
         setUserData(data);
       }
@@ -245,7 +253,7 @@ const Dashboard = () => {
     const fetchCounts = async () => {
       try {
         const [users, empresas, obras, epis] = await Promise.all([
-          supabase.from('users').select('id', { count: 'exact' }),
+          supabase.from('usuarios').select('id', { count: 'exact' }),
           supabase.from('empresas').select('id', { count: 'exact' }),
           supabase.from('obras').select('id', { count: 'exact' }),
           supabase.from('epis').select('id', { count: 'exact' }),
@@ -374,7 +382,7 @@ const Dashboard = () => {
           <h2>Usuários</h2>
         </div>
         <div id="users-details-list">
-          <DataTable collectionName="users" listId="users-details-list" userType={userData.tipo} />
+          <DataTable collectionName="usuarios" listId="users-details-list" userType={userData.tipo} />
         </div>
       </section>
       <section className="grafico">
@@ -384,7 +392,7 @@ const Dashboard = () => {
     </main>
   );
 
-  const renderFuncionarioContent = () => (
+  const renderUserContent = () => (
     <main className="main-content">
       <header className="main-header">
         <Bell />
@@ -401,7 +409,7 @@ const Dashboard = () => {
       {user && (
         <>
           <Sidebar userType={userData.tipo} userEmail={user.email} />
-          {userData.tipo === 'funcionario' ? renderFuncionarioContent() : renderAdminGestorContent()}
+          {userData.tipo === 'user' ? renderUserContent() : renderAdminGestorContent()}
         </>
       )}
     </div>

@@ -10,11 +10,10 @@ const Cadastro = () => {
   const [tipo, setTipo] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const validarSenhaRobusta = (senha, email, nome) => {
     const erros = [];
-
     if (senha.length < 8) erros.push("Mínimo de 8 caracteres.");
     if (!/[A-Z]/.test(senha)) erros.push("Deve conter ao menos 1 letra maiúscula.");
     if (!/[a-z]/.test(senha)) erros.push("Deve conter ao menos 1 letra minúscula.");
@@ -24,11 +23,9 @@ const Cadastro = () => {
 
     const nomeLimpo = nome.toLowerCase().replace(/\s+/g, "");
     const emailParte = email.split("@")[0].toLowerCase();
-
     if (senha.toLowerCase().includes(nomeLimpo) || senha.toLowerCase().includes(emailParte)) {
       erros.push("A senha não deve conter seu nome ou e-mail.");
     }
-
     return erros;
   };
 
@@ -39,48 +36,47 @@ const Cadastro = () => {
     return null;
   };
 
-const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
-  try {
-    setIsSubmitting(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: senha,
-      options: {
-        data: {
-          username: nome,
-          tipo: tipo,
-          telefone: telefone,
-          criadoEm: new Date().toISOString(),
+  const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
+    try {
+      setIsSubmitting(true);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: senha,
+        options: {
+          data: {
+            username: nome,
+            tipo: tipo, // Will now be 'user', 'gestor', or 'administrador'
+            telefone: telefone,
+            criadoEm: new Date().toISOString(),
+          },
         },
-      },
-    });
-
-    if (error) throw error;
-
-    if (data.user) {
-      const { error: insertError } = await supabase.from('usuarios').insert({
-        id: data.user.id,
-        nome: nome,
-        email: email,
-        tipo: tipo,
-        telefone: telefone,
       });
 
-      if (insertError) throw insertError;
+      if (error) throw error;
 
-      navigate("/verificar-email");
+      if (data.user) {
+        const { error: insertError } = await supabase.from('usuarios').insert({
+          id: data.user.id,
+          nome: nome,
+          email: email,
+          tipo: tipo, // Matches Supabase table values
+          telefone: telefone,
+        });
+
+        if (insertError) throw insertError;
+
+        navigate("/verificar-email");
+      }
+    } catch (err) {
+      console.error("Erro ao registrar - Detalhes:", err);
+      setMessage("Erro ao registrar: " + (err.message || "Erro desconhecido. Tente novamente."));
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (err) {
-    console.error("Erro ao registrar - Detalhes:", err);
-    setMessage("Erro ao registrar: " + (err.message || "Erro desconhecido. Tente novamente."));
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const emailError = document.getElementById("email-error");
     const nomeError = document.getElementById("nome-error");
     const telefoneError = document.getElementById("telefone-error");
@@ -135,7 +131,6 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
       if (/\d/.test(senha)) pontos++;
       return pontos;
     };
-
     const forca = calcularForcaSenha(senha);
     setStrength(forca);
   }, [senha]);
@@ -144,7 +139,6 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
     const cores = ["#e63946", "#f4a261", "#2a9d8f"];
     const textos = ["Fraca", "Média", "Forte"];
     const porcentagens = ["33%", "66%", "100%"];
-
     return strength > 0
       ? { width: porcentagens[strength - 1], backgroundColor: cores[strength - 1], text: textos[strength - 1] }
       : { width: "0%", backgroundColor: "transparent", text: "" };
@@ -164,7 +158,7 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
 
   const handleLoginClick = (e) => {
     e.preventDefault();
-    navigate("/login"); 
+    navigate("/login");
   };
 
   return (
@@ -192,7 +186,7 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
                 <option value="" disabled selected hidden>Selecione o tipo de usuário</option>
                 <option value="administrador">Administrador</option>
                 <option value="gestor">Gestor de Segurança</option>
-                <option value="funcionario">Funcionário</option>
+                <option value="user">Funcionário</option>
               </select>
               <span id="tipo-error" className="input-error" aria-live="polite"></span>
             </div>
@@ -259,7 +253,7 @@ const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
                 style={{ width: updatePasswordStrength().width, backgroundColor: updatePasswordStrength().backgroundColor }}
                 aria-hidden="true"
               />
-              <div className="forca-texto" id="strength-text">{updatePasswordStrength().text}</div>
+                <div className="forca-texto" id="strength-text">{updatePasswordStrength().text}</div>
             </div>
 
             <ul id="senha-requisitos" className="senha-requisitos" style={{ display: senha ? "block" : "none" }}>
