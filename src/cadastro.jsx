@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import supabase from "./config/supabaseClient";
 
 const Cadastro = () => {
@@ -39,34 +39,44 @@ const Cadastro = () => {
     return null;
   };
 
-  const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
-    try {
-      setIsSubmitting(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: senha,
-        options: {
-          data: {
-            username: nome,
-            tipo: tipo,
-            telefone: telefone,
-            criadoEm: new Date().toISOString(),
-          },
+const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
+  try {
+    setIsSubmitting(true);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: senha,
+      options: {
+        data: {
+          username: nome,
+          tipo: tipo,
+          telefone: telefone,
+          criadoEm: new Date().toISOString(),
         },
+      },
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      const { error: insertError } = await supabase.from('usuarios').insert({
+        id: data.user.id,
+        nome: nome,
+        email: email,
+        tipo: tipo,
+        telefone: telefone,
       });
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
-      if (data.user) {
-        navigate("/verificar-email"); 
-      }
-    } catch (err) {
-      console.error("Erro ao registrar:", err.message);
-      setMessage("Erro ao registrar: " + (err.message || "Erro desconhecido. Tente novamente."));
-    } finally {
-      setIsSubmitting(false);
+      navigate("/verificar-email");
     }
-  };
+  } catch (err) {
+    console.error("Erro ao registrar - Detalhes:", err);
+    setMessage("Erro ao registrar: " + (err.message || "Erro desconhecido. Tente novamente."));
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -291,4 +301,4 @@ const Cadastro = () => {
   );
 };
 
-export default Cadastro; // Capitalize component name
+export default Cadastro;
