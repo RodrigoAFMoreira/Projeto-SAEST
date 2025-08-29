@@ -1,0 +1,128 @@
+/* src/css/menuEsquerdo.css */
+
+/* conteiner da barra lateral */
+.sidebar {
+  width: 250px;
+  background-color: #1e3a8a;
+  color: #ffffff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* cabecalho da barra lateral com logo */
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* menu de navegacao */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 0;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin: 5px 0;
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.sidebar-nav a:hover {
+  background-color: #2b4cb4;
+}
+
+.sidebar-nav a svg {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.sidebar-nav a span {
+  font-size: 1rem;
+}
+
+.sidebar-nav li.active a {
+  background-color: #2b4cb4;
+  font-weight: bold;
+}
+
+/* secao de perfil do usuario */
+.user-profile {
+  padding: 20px;
+  border-top: 1px solid #3b82f6;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.email {
+  font-size: 0.9rem;
+  color: #d1d5db;
+  margin-top: 5px;
+}
+
+/* estilos especificos da barra lateral por funcao */
+.sidebar.role-funcionario {
+  background-color: #1f2937; /* tom mais escuro para funcionario */
+}
+
+.sidebar.role-administrador,
+.sidebar.role-gestor {
+  background-color: #1e3a8a; /* azul padrao para admin/gestor */
+}
+
+.name.role-funcionario {
+  color: #93c5fd;
+}
+
+.name.role-administrador,
+.name.role-gestor {
+  color: #ffffff;
+}
+
+/* ajustes responsivos */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: column;
+  }
+
+  .sidebar-nav a {
+    padding: 10px;
+  }
+}

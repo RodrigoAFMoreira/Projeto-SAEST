@@ -1,0 +1,36 @@
+/* src/css/menu.css */
+
+/* estilos para obra-item em empresastable */
+.obra-item {
+  padding: 5px 0;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+/* garantir estilo consistente de links em todos os menus */
+a {
+  color: #1e3a8a;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* estilos adicionais relacionados a menu (podem ser expandidos com outros componentes) */
+.section {
+  margin-bottom: 30px;
+}
+
+/* sobrescritas especificas de tabela para conteudo relacionado a menu */
+table .obra-item {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* ajustes responsivos */
+@media (max-width: 768px) {
+  .obra-item {
+    font-size: 0.85rem;
+  }
+}
