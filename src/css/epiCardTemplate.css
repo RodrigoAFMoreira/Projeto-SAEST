@@ -1,33 +1,18 @@
-/* estilos existentes em dashboard.css */
-.epi-info-section {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.epi-link {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-.epi-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.epi-item {
-  padding: 5px 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer; /* adicionado para mudar o cursor para mao ao passar o mouse */
-}
-
-.epi-item:hover {
-  background-color: #e0e0e0;
+.epi-link:hover {
+  color: #0056b3;
 }
 
 .epi-card-overlay {
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: white;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -35,7 +20,9 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   width: 300px;
-  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .card-content {

@@ -1,9 +1,13 @@
+// src/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler } from 'chart.js';
-import { LayoutDashboard, Building2, CalendarClock, FileText, Settings, HelpCircle, Bell, Home, Building, File, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Building2, CalendarClock, FileText, Settings, HelpCircle, Bell, Home, Building, File, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import Sidebar from "./Sidebar";
+//import EmpresasTable from "./EmpresasTable";
+//import DataTable from "./DataTable";
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';
@@ -26,205 +30,16 @@ const formatCriadoEm = (date) => {
   return 'Data não disponível';
 };
 
-// alterado
 const roleDisplayNames = {
   user: 'Funcionário',
   gestor: 'Gestor de Segurança',
   administrador: 'Administrador',
 };
 
-const Sidebar = ({ userType, userEmail }) => {
-  const navigate = useNavigate();
-  const items = userType === 'user'
-    ? [
-        { text: 'Informações', path: '#', icon: <LayoutDashboard /> },
-        { text: 'Certificações', path: '/certificacoes', icon: <FileText /> },
-        { text: 'Configurações', path: '#', icon: <Settings /> },
-      ]
-    : [
-        { text: 'Dashboard', path: '/menu', icon: <Home /> },
-        { text: 'Construtoras', path: '/menuConstrutora', icon: <Building /> },
-        { text: 'Obras', path: '/menuObra', icon: <Building2 /> },
-        { text: 'Documentos', path: '/menuDocumentosObra', icon: <File /> },
-        { text: 'EPIs', path: '/epi', icon: <ShieldCheck /> },
-        { text: 'Configurações', path: '/configuracaoUser', icon: <Settings /> },
-      ];
-
-  return (
-    <aside className={`sidebar role-${userType}`}>
-      <div>
-        <div className="sidebar-header">
-          <div className="logo">SAEST</div>
-        </div>
-        <nav className="sidebar-nav">
-          <ul>
-            {items.map((item, index) => (
-              <li key={item.text} className={index === 0 ? 'active' : ''}>
-                <a href={item.path} onClick={(e) => { e.preventDefault(); navigate(item.path); }}>
-                  {item.icon}
-                  <span>{item.text}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-      <div className="user-profile">
-        <div className="user-info">
-          <div className={`name role-${userType}`}>{roleDisplayNames[userType] || userType}</div>
-          <div className="email" id="user-email">{userEmail || 'carregando...'}</div>
-        </div>
-      </div>
-    </aside>
-  );
-};
-
-const DataTable = ({ collectionName, listId, userType }) => {
-  const navigate = useNavigate();
-  const [data, setData] = useState([]);
-  const [obras, setObras] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: items, error } = await supabase.from(collectionName).select('*');
-        if (error) throw error;
-        setData(items);
-
-        if (collectionName === 'epis') {
-          const { data: obrasData, error: obrasError } = await supabase.from('obras').select('*');
-          if (obrasError) throw obrasError;
-          setObras(obrasData);
-        }
-      } catch (error) {
-        console.error(`Erro ao carregar ${collectionName}:`, error.message);
-      }
-    };
-    fetchData();
-  }, [collectionName]);
-
-  const renderRow = (item) => {
-    if (collectionName === 'obras') {
-      return (
-        <tr key={item.id}>
-          <td>{item.endereco || 'N/A'}</td>
-          <td>{item.responsavel_tecnico || item.responsavelTecnico || 'N/A'}</td>
-          <td>{item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Ativa'}</td>
-          <td>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate(`/detalhesObra/${item.id}`); }}>
-              Ver
-            </a>
-          </td>
-        </tr>
-      );
-    } else if (collectionName === 'epis') {
-      const obra = obras.find((obra) => obra.id === item.obraId);
-      return (
-        <tr key={item.id}>
-          <td>{item.tipo || 'N/A'}</td>
-          <td>{obra ? (obra.nome || obra.endereco || 'Obra sem nome') : 'Não especificada'}</td>
-          <td>{item.quantidade || 'N/A'}</td>
-          <td>{item.disponibilidade || 'N/A'}</td>
-          <td>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/epi'); }}>
-              Ver
-            </a>
-          </td>
-        </tr>
-      );
-    } else if (collectionName === 'usuarios') {
-      return <p key={item.id}>{item.nome || 'N/A'}</p>;
-    }
-    return null;
-  };
-
-  return (
-    <div>
-      {data.length === 0 ? (
-        <tr>
-          <td colSpan="5">Nenhum {collectionName} encontrado.</td>
-        </tr>
-      ) : (
-        data.map(renderRow)
-      )}
-    </div>
-  );
-};
-
-const EmpresasTable = () => {
-  const navigate = useNavigate();
-  const [empresas, setEmpresas] = useState([]);
-  const [obras, setObras] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () =>
-
- {
-      try {
-        const { data: empresasData, error: empresasError } = await supabase.from('empresas').select('*');
-        const { data: obrasData, error: obrasError } = await supabase.from('obras').select('*');
-        if (empresasError || obrasError) throw new Error('Erro ao carregar dados');
-        setEmpresas(empresasData);
-        setObras(obrasData);
-      } catch (error) {
-        console.error('Erro ao carregar empresas:', error.message);
-      }
-    };
-    fetchData();
-  }, []);
-
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th>Construtora</th>
-          <th>Obras</th>
-          <th>Status</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {empresas.length === 0 ? (
-          <tr>
-            <td colSpan="4">Nenhuma construtora encontrada.</td>
-          </tr>
-        ) : (
-          empresas.map((empresa) => {
-            const obrasRelacionadas = obras.filter((obra) => obra.empresaId === empresa.id);
-            return (
-              <tr key={empresa.id}>
-                <td>{empresa.razaoSocial || 'Nome não disponível'}</td>
-                <td>
-                  {obrasRelacionadas.length > 0 ? (
-                    <div>
-                      {obrasRelacionadas.map((obra) => (
-                        <div key={obra.id} className="obra-item">
-                          {obra.endereco || 'Obra sem endereço'}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    'Nenhuma obra relacionada'
-                  )}
-                </td>
-                <td>{empresa.status ? empresa.status.charAt(0).toUpperCase() + empresa.status.slice(1) : 'Ativa'}</td>
-                <td>
-                  <a href="#" onClick={(e) => { e.preventDefault(); navigate(`/menuEmpresa/${empresa.id}`); }}>
-                    Ver
-                  </a>
-                </td>
-              </tr>
-            );
-          })
-        )}
-      </tbody>
-    </table>
-  );
-};
-
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ tipo: 'user' });
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -259,20 +74,24 @@ const Dashboard = () => {
           supabase.from('epis').select('id', { count: 'exact' }),
         ]);
         setTimeout(() => {
-          document.getElementById('users-list').textContent = users.count || 0;
-          document.getElementById('empresas-list').textContent = empresas.count || 0;
-          document.getElementById('obras-list').textContent = obras.count || 0;
-          document.getElementById('epis-list').textContent = epis.count || 0;
+          const usersList = document.getElementById('users-list');
+          const empresasList = document.getElementById('empresas-list');
+          const obrasList = document.getElementById('obras-list');
+          const episList = document.getElementById('epis-list');
+          if (usersList) usersList.textContent = users.count || 0;
+          if (empresasList) empresasList.textContent = empresas.count || 0;
+          if (obrasList) obrasList.textContent = obras.count || 0;
+          if (episList) episList.textContent = epis.count || 0;
           document.querySelectorAll('.change-text').forEach((el) => {
-            el.textContent = `${Math.floor(Math.random() * 15) + 5}% no último mês`;
+            if (el) el.textContent = `${Math.floor(Math.random() * 15) + 5}% no último mês`;
           });
         }, 800);
       } catch (error) {
         console.error('Erro ao carregar contadores:', error.message);
       }
     };
-    fetchCounts();
-  }, []);
+    if (userData.tipo !== 'user') fetchCounts(); //so para admin/gestor!!!!
+  }, [userData.tipo]);
 
   const chartData = {
     labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
@@ -300,7 +119,7 @@ const Dashboard = () => {
   };
 
   const renderAdminGestorContent = () => (
-    <main className="main-content admin-dashboard">
+    <main className={`main-content admin-dashboard ${isSidebarMinimized ? 'shifted-left' : ''}`}>
       <header className="main-header">
         <Bell />
       </header>
@@ -392,24 +211,28 @@ const Dashboard = () => {
     </main>
   );
 
-  const renderUserContent = () => (
-    <main className="main-content">
-      <header className="main-header">
-        <Bell />
-      </header>
-      <section className="details">
-        <h2>Informações</h2>
-        <p>Bem-vindo! Aqui você pode acessar suas certificações e dados pessoais.</p>
-      </section>
-    </main>
-  );
+  const handleToggleSidebar = () => {
+    setIsSidebarMinimized(!isSidebarMinimized);
+  };
 
   return (
     <div className="container">
       {user && (
         <>
-          <Sidebar userType={userData.tipo} userEmail={user.email} />
-          {userData.tipo === 'user' ? renderUserContent() : renderAdminGestorContent()}
+          <Sidebar userType={userData.tipo} userEmail={user.email} isMinimized={isSidebarMinimized} onToggle={handleToggleSidebar} />
+          {userData.tipo === 'user' ? (
+            <main className={`main-content ${isSidebarMinimized ? 'shifted-left' : ''}`}>
+              <header className="main-header">
+                <Bell />
+              </header>
+              <section className="details">
+                <h2>Informações Pessoais</h2>
+                <p>Bem-vindo! Aqui você pode acessar suas informações pessoais, certificações e dados relacionados.</p>
+              </section>
+            </main>
+          ) : (
+            renderAdminGestorContent()
+          )}
         </>
       )}
     </div>

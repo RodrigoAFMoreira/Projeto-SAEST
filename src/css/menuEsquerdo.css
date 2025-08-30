@@ -1,128 +1,101 @@
-/* src/css/menuEsquerdo.css */
+/* menuEsquerdo.css */
 
-/* conteiner da barra lateral */
+/* barra lateral esquerda */
 .sidebar {
-  width: 250px;
-  background-color: #1e3a8a;
-  color: #ffffff;
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  height: 100%;
+  background-color: #1e3a8a;
+  color: white;
+  transition: width 0.3s ease;
+  z-index: 1000;
 }
 
-/* cabecalho da barra lateral com logo */
+/* barra lateral minimizada */
+.sidebar.minimized {
+  width: 60px;
+}
+
+/* cabecalho da barra lateral com botao de toggle */
 .sidebar-header {
-  padding: 20px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
 }
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #ffffff;
+/* botao de toggle para expandir/retrair sidebar */
+.toggle-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
 }
 
-/* menu de navegacao */
-.sidebar-nav {
-  flex: 1;
-  padding: 10px 0;
-}
-
+/* navegacao da barra lateral */
 .sidebar-nav ul {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
-.sidebar-nav li {
-  margin: 5px 0;
+.sidebar-nav ul li {
+  padding: 10px;
 }
 
-.sidebar-nav a {
+/* links da navegacao */
+.sidebar-nav ul li a {
+  color: white;
+  text-decoration: none;
   display: flex;
   align-items: center;
-  padding: 12px 20px;
-  color: #ffffff;
-  text-decoration: none;
-  transition: background-color 0.2s;
 }
 
-.sidebar-nav a:hover {
-  background-color: #2b4cb4;
+.sidebar-nav ul li a span {
+  margin-left: 10px;
 }
 
-.sidebar-nav a svg {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
+/* efeito hover nos links */
+.sidebar-nav ul li a:hover {
+  background-color: #2a5caa;
 }
 
-.sidebar-nav a span {
-  font-size: 1rem;
-}
-
-.sidebar-nav li.active a {
-  background-color: #2b4cb4;
-  font-weight: bold;
-}
-
-/* secao de perfil do usuario */
+/* perfil do usuario no final da sidebar */
 .user-profile {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+}
+
+/* conteudo principal */
+.main-content {
+  margin-left: 250px;
   padding: 20px;
-  border-top: 1px solid #3b82f6;
+  transition: margin-left 0.3s ease;
 }
 
-.user-info {
-  display: flex;
-  flex-direction: column;
+/* conteudo principal ajustado quando sidebar esta minimizada */
+.main-content.shifted-left {
+  margin-left: 60px;
 }
 
-.name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.email {
-  font-size: 0.9rem;
-  color: #d1d5db;
-  margin-top: 5px;
-}
-
-/* estilos especificos da barra lateral por funcao */
-.sidebar.role-funcionario {
-  background-color: #1f2937; /* tom mais escuro para funcionario */
-}
-
-.sidebar.role-administrador,
-.sidebar.role-gestor {
-  background-color: #1e3a8a; /* azul padrao para admin/gestor */
-}
-
-.name.role-funcionario {
-  color: #93c5fd;
-}
-
-.name.role-administrador,
-.name.role-gestor {
-  color: #ffffff;
-}
-
-/* ajustes responsivos */
+/* responsividade para telas menores */
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;
-    height: auto;
-    position: static;
-    flex-direction: column;
+    width: 60px;
   }
-
-  .sidebar-nav a {
-    padding: 10px;
+  .main-content {
+    margin-left: 60px;
+  }
+  .sidebar-nav ul li a span {
+    display: none;
+  }
+  .user-profile .name,
+  .user-profile .email {
+    display: none;
   }
 }
