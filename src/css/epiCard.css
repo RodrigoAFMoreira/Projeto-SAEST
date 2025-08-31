@@ -1,0 +1,57 @@
+/* src/css/epiCard.css */
+.epi-card {
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  z-index: 1000;
+  width: 300px;
+  max-width: 90%;
+  top: 10px;
+  left: 10px;
+}
+
+.epi-card .card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.epi-card .card-image {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.epi-card .card-text {
+  font-size: 14px;
+  color: #333;
+}
+
+.epi-card .card-text h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #222;
+}
+
+.epi-card .card-text p {
+  margin: 5px 0;
+}
+
+.epi-card .close-button {
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.epi-card .close-button:hover {
+  background: #e63939;
+}

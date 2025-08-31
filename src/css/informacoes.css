@@ -1,9 +1,9 @@
-/* container de informacoes */
+/* src/css/informacoes.css */
 .informacoes-container {
   padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-/* cabecalho de informacoes */
 .informacoes-header {
   display: flex;
   justify-content: space-between;
@@ -11,64 +11,100 @@
   margin-bottom: 20px;
 }
 
-/* botao de voltar */
+.informacoes-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
 .back-button {
-  padding: 5px 10px;
-  background-color: #007bff;
-  color: white;
+  background: #007bff;
+  color: #fff;
   border: none;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .back-button:hover {
-  background-color: #0056b3;
+  background: #0056b3;
 }
 
-/* secao de informacoes */
-.informacoes-section {
-  margin-bottom: 30px;
+.search-bar {
+  margin-bottom: 20px;
 }
 
-/* item de informacao */
+.search-bar input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.nr-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nr-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+}
+
+.informacoes-section h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.inner-card {
+  margin: 10px 0; 
+  padding: 15px; 
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  width: 100%; 
+}
+
 .info-item {
   display: flex;
-  align-items: flex-start; /* alinhar itens no topo */
-  gap: 20px; /* espaco entre imagem e texto */
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px; 
+  width: 100%; 
 }
 
 .info-item div {
-  flex: 1; /* permitir que o texto ocupe o espaco restante */
+  flex: 2; 
 }
 
 .info-item img {
-  max-width: 150px; /* tamanho menor para imagem */
+  flex: 1; 
+  max-width: 150px; 
   height: auto;
-  margin-right: 20px; /* margem para separar do texto */
-  order: -1; /* mover imagem para a esquerda */
+  border-radius: 4px;
 }
 
-/* item de epi */
 .epi-item {
-  padding: 5px 0;
-  cursor: pointer; /* cursor de mao ao passar o mouse */
+  cursor: pointer;
+  margin: 5px 0;
 }
 
 .epi-item:hover {
-  background-color: #f0f0f0;
+  color: #007bff;
 }
 
-/* overlay do card de epi */
 .epi-card-overlay {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  width: 300px;
-  margin-top: 5px;
+  position: relative;
+  margin-top: 10px;
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+  font-size: 1.2em;
 }
