@@ -1,13 +1,10 @@
-// src/Dashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler } from 'chart.js';
-import { LayoutDashboard, Building2, CalendarClock, FileText, Settings, HelpCircle, Bell, Home, Building, File, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Building2, Bell, Building, ShieldCheck } from 'lucide-react';
 import Sidebar from "./Sidebar";
-//import EmpresasTable from "./EmpresasTable";
-//import DataTable from "./DataTable";
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';
@@ -40,14 +37,17 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ tipo: 'user' });
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true);
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) {
         console.log('Usuário não está logado, redirecionando para login');
         navigate('/login');
+        setLoading(false);
         return;
       }
       console.log('Usuário logado:', user.id, user.email);
@@ -60,6 +60,7 @@ const Dashboard = () => {
       } else {
         setUserData(data);
       }
+      setLoading(false);
     };
     fetchUser();
   }, [navigate]);
@@ -90,8 +91,8 @@ const Dashboard = () => {
         console.error('Erro ao carregar contadores:', error.message);
       }
     };
-    if (userData.tipo !== 'user') fetchCounts(); //so para admin/gestor!!!!
-  }, [userData.tipo]);
+    if (!loading && userData.tipo !== 'user') fetchCounts();
+  }, [loading, userData.tipo]);
 
   const chartData = {
     labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
@@ -157,7 +158,7 @@ const Dashboard = () => {
         <div className="section-header">
           <h2>Construtoras</h2>
         </div>
-        <EmpresasTable />
+        <p>EmpresasTable component to be implemented</p>
       </section>
       <section className="section">
         <div className="section-header">
@@ -173,7 +174,7 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody id="obras-details-list">
-            <DataTable collectionName="obras" listId="obras-details-list" userType={userData.tipo} />
+            <tr><td colSpan="4">DataTable for obras to be implemented</td></tr>
           </tbody>
         </table>
       </section>
@@ -192,7 +193,7 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody id="epis-details-list">
-            <DataTable collectionName="epis" listId="epis-details-list" userType={userData.tipo} />
+            <tr><td colSpan="5">DataTable for epis to be implemented</td></tr>
           </tbody>
         </table>
       </section>
@@ -201,7 +202,7 @@ const Dashboard = () => {
           <h2>Usuários</h2>
         </div>
         <div id="users-details-list">
-          <DataTable collectionName="usuarios" listId="users-details-list" userType={userData.tipo} />
+          <p>DataTable for usuarios to be implemented</p>
         </div>
       </section>
       <section className="grafico">
@@ -215,11 +216,27 @@ const Dashboard = () => {
     setIsSidebarMinimized(!isSidebarMinimized);
   };
 
+  const LoadingSpinner = () => (
+    <div className="loading-container">
+      <div className="spinner"></div>
+      <p>Carregando...</p>
+    </div>
+  );
+
   return (
     <div className="container">
-      {user && (
-        <>
-          <Sidebar userType={userData.tipo} userEmail={user.email} isMinimized={isSidebarMinimized} onToggle={handleToggleSidebar} />
+      {loading ? (
+        <LoadingSpinner />
+      ) : user ? (
+        <div className="dashboard-wrapper">
+          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
+            <Sidebar 
+              userType={userData.tipo} 
+              userEmail={user.email} 
+              isMinimized={isSidebarMinimized} 
+              onToggle={handleToggleSidebar} 
+            />
+          </div>
           {userData.tipo === 'user' ? (
             <main className={`main-content ${isSidebarMinimized ? 'shifted-left' : ''}`}>
               <header className="main-header">
@@ -233,8 +250,8 @@ const Dashboard = () => {
           ) : (
             renderAdminGestorContent()
           )}
-        </>
-      )}
+        </div>
+      ) : null}
     </div>
   );
 };
