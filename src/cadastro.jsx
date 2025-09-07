@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "./config/supabaseClient";
+import { validatePhoneNumber, validatePassword } from "./componentes/validacao";
+import ForcaSenha from "./componentes/forcaSenha";
 
 const Cadastro = () => {
   const [nome, setNome] = useState("");
@@ -12,30 +14,6 @@ const Cadastro = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const validarSenhaRobusta = (senha, email, nome) => {
-    const erros = [];
-    if (senha.length < 8) erros.push("Mínimo de 8 caracteres.");
-    if (!/[A-Z]/.test(senha)) erros.push("Deve conter ao menos 1 letra maiúscula.");
-    if (!/[a-z]/.test(senha)) erros.push("Deve conter ao menos 1 letra minúscula.");
-    if (!/[0-9]/.test(senha)) erros.push("Deve conter ao menos 1 número.");
-    if (!/[^A-Za-z0-9]/.test(senha)) erros.push("Deve conter ao menos 1 caractere especial.");
-    if (/(.)\1{2,}/.test(senha)) erros.push("Não repita o mesmo caractere em sequência (ex: aaa).");
-
-    const nomeLimpo = nome.toLowerCase().replace(/\s+/g, "");
-    const emailParte = email.split("@")[0].toLowerCase();
-    if (senha.toLowerCase().includes(nomeLimpo) || senha.toLowerCase().includes(emailParte)) {
-      erros.push("A senha não deve conter seu nome ou e-mail.");
-    }
-    return erros;
-  };
-
-  const validarTelefone = (telefone) => {
-    const regexTelefone = /^\(\d{2}\)\s?9\d{4}-\d{4}$/;
-    if (!telefone) return "O campo telefone é obrigatório.";
-    if (!regexTelefone.test(telefone)) return "Digite um telefone válido (ex: (11) 91234-5678).";
-    return null;
-  };
-
   const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
     try {
       setIsSubmitting(true);
@@ -45,8 +23,8 @@ const Cadastro = () => {
         options: {
           data: {
             username: nome,
-            tipo: tipo, // Will now be 'user', 'gestor', or 'administrador'
-            telefone: telefone,
+            tipo,
+            telefone,
             criadoEm: new Date().toISOString(),
           },
         },
@@ -55,12 +33,12 @@ const Cadastro = () => {
       if (error) throw error;
 
       if (data.user) {
-        const { error: insertError } = await supabase.from('usuarios').insert({
+        const { error: insertError } = await supabase.from("usuarios").insert({
           id: data.user.id,
-          nome: nome,
-          email: email,
-          tipo: tipo, // Matches Supabase table values
-          telefone: telefone,
+          nome,
+          email,
+          tipo,
+          telefone,
         });
 
         if (insertError) throw insertError;
@@ -100,7 +78,7 @@ const Cadastro = () => {
       return;
     }
 
-    const erroTelefone = validarTelefone(telefone);
+    const erroTelefone = validatePhoneNumber(telefone);
     if (erroTelefone) {
       setMessage(erroTelefone);
       if (telefoneError) telefoneError.textContent = erroTelefone;
@@ -113,7 +91,7 @@ const Cadastro = () => {
       return;
     }
 
-    const errosSenha = validarSenhaRobusta(senha, email, nome);
+    const errosSenha = validatePassword(senha, email, nome);
     if (errosSenha.length > 0) {
       setMessage("Senha inválida:\n" + errosSenha.join("\n"));
       return;
@@ -122,42 +100,9 @@ const Cadastro = () => {
     registrarUsuario(email, senha, nome, tipo, telefone);
   };
 
-  const [strength, setStrength] = useState(0);
-  useEffect(() => {
-    const calcularForcaSenha = (senha) => {
-      let pontos = 0;
-      if (senha.length >= 8) pontos++;
-      if (/[A-Z]/.test(senha) || /[^A-Za-z0-9]/.test(senha)) pontos++;
-      if (/\d/.test(senha)) pontos++;
-      return pontos;
-    };
-    const forca = calcularForcaSenha(senha);
-    setStrength(forca);
-  }, [senha]);
-
-  const updatePasswordStrength = () => {
-    const cores = ["#e63946", "#f4a261", "#2a9d8f"];
-    const textos = ["Fraca", "Média", "Forte"];
-    const porcentagens = ["33%", "66%", "100%"];
-    return strength > 0
-      ? { width: porcentagens[strength - 1], backgroundColor: cores[strength - 1], text: textos[strength - 1] }
-      : { width: "0%", backgroundColor: "transparent", text: "" };
-  };
-
-  const checkRequirement = (rule, senha) => {
-    switch (rule) {
-      case "min-caracteres": return senha.length >= 8;
-      case "maiuscula": return /[A-Z]/.test(senha);
-      case "minuscula": return /[a-z]/.test(senha);
-      case "numero": return /\d/.test(senha);
-      case "especial": return /[^A-Za-z0-9]/.test(senha);
-      case "repeticao": return !/(.)\1\1/.test(senha);
-      default: return false;
-    }
-  };
-
   const handleLoginClick = (e) => {
     e.preventDefault();
+    console.log('Navigating to /login'); // Debugging
     navigate("/login");
   };
 
@@ -183,7 +128,9 @@ const Cadastro = () => {
                 aria-required="true"
                 aria-describedby="tipo-error"
               >
-                <option value="" disabled selected hidden>Selecione o tipo de usuário</option>
+                <option value="" disabled selected hidden>
+                  Selecione o tipo de usuário
+                </option>
                 <option value="administrador">Administrador</option>
                 <option value="gestor">Gestor de Segurança</option>
                 <option value="user">Funcionário</option>
@@ -246,36 +193,7 @@ const Cadastro = () => {
               />
             </div>
 
-            <div className="senha-status" id="senha-status" aria-live="polite" style={{ display: senha ? "block" : "none" }}>
-              <div
-                className="forca-barra"
-                id="strength-bar"
-                style={{ width: updatePasswordStrength().width, backgroundColor: updatePasswordStrength().backgroundColor }}
-                aria-hidden="true"
-              />
-                <div className="forca-texto" id="strength-text">{updatePasswordStrength().text}</div>
-            </div>
-
-            <ul id="senha-requisitos" className="senha-requisitos" style={{ display: senha ? "block" : "none" }}>
-              <li data-regra="min-caracteres" className={checkRequirement("min-caracteres", senha) ? "valido" : ""}>
-                Mínimo de 8 caracteres
-              </li>
-              <li data-regra="maiuscula" className={checkRequirement("maiuscula", senha) ? "valido" : ""}>
-                Letra maiúscula
-              </li>
-              <li data-regra="minuscula" className={checkRequirement("minuscula", senha) ? "valido" : ""}>
-                Letra minúscula
-              </li>
-              <li data-regra="numero" className={checkRequirement("numero", senha) ? "valido" : ""}>
-                Número
-              </li>
-              <li data-regra="especial" className={checkRequirement("especial", senha) ? "valido" : ""}>
-                Caractere especial
-              </li>
-              <li data-regra="repeticao" className={checkRequirement("repeticao", senha) ? "valido" : ""}>
-                Sem repetições (ex: aaa)
-              </li>
-            </ul>
+            <ForcaSenha password={senha} email={email} nome={nome} />
 
             <div className="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive">
               {message}

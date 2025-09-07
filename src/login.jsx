@@ -3,106 +3,105 @@ import { useNavigate } from "react-router-dom";
 import supabase from "./config/supabaseClient";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const loginUser = async (email, senha) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('Attempting login for:', email); // Debugging
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        password: senha,
+        password,
       });
-
       if (error) throw error;
-
-      const user = data.user;
-
-      if (user.email_confirmed_at) {
-        navigate("/menu");
-      } else {
-        navigate("/verificar-email");
-        await supabase.auth.resend({ type: "signup", email });
-      }
-    } catch (erro) {
-      console.error("Erro no login:", erro.message);
-      alert("E-mail ou senha incorretos! (" + erro.message + ")");
+      navigate('/menu');
+    } catch (err) {
+      console.error('Login error:', err);
+      setMessage('Erro ao fazer login: ' + (err.message || 'Tente novamente.'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!email.includes("@")) {
-      alert("Por favor, inclua um '@' no endereço de e-mail.");
-      return;
-    }
-
-    if (senha.trim() === "") {
-      alert("Por favor, insira sua senha.");
-      return;
-    }
-
-    await loginUser(email, senha);
-  };
-
   const handleCadastroClick = (e) => {
     e.preventDefault();
-    navigate("/cadastro");
+    console.log('Navigating to /cadastro'); // Debugging
+    navigate('/cadastro');
   };
 
-  const handleEsqueciSenhaClick = (e) => {
+  const handleForgotPasswordClick = (e) => {
     e.preventDefault();
-    navigate("/esqueciSenha"); 
+    console.log('Navigating to /esqueci-senha'); // Debugging
+    navigate('/esqueci-senha');
   };
 
   return (
     <div className="container">
-      <div className="left-section">
+      <section className="left-section">
         <h1>SAEST</h1>
         <p>Protegendo pessoas, fortalecendo negócios</p>
-      </div>
-      <div className="right-section">
+      </section>
+
+      <section className="right-section">
         <div className="login-container">
-          <h2>Login</h2>
-          <p>Acesse sua conta para continuar</p>
-          <form id="login-form" onSubmit={handleSubmit}>
+          <form id="login-form" onSubmit={handleSubmit} noValidate aria-describedby="mensagem-erro">
+            <h2>Entrar</h2>
+            <p>Faça login para acessar o sistema:</p>
+
             <div className="input-group">
+              <label htmlFor="email">E-mail</label>
               <input
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.trim())}
                 placeholder="E-mail"
                 required
+                aria-required="true"
+                aria-describedby="email-error"
               />
+              <span id="email-error" className="input-error" aria-live="polite"></span>
             </div>
+
             <div className="input-group">
+              <label htmlFor="password">Senha</label>
               <input
                 type="password"
                 id="password"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value.trim())}
                 placeholder="Senha"
                 required
+                aria-required="true"
+                aria-describedby="password-error"
               />
+              <span id="password-error" className="input-error" aria-live="polite"></span>
             </div>
-            <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Entrando..." : "Entrar"}
+
+            <div className="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive">
+              {message}
+            </div>
+
+            <button type="submit" disabled={isSubmitting} aria-label="Fazer login">
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
             </button>
+
+            <p className="register-link">
+              Não tem uma conta? <a href="#" onClick={handleCadastroClick}>Criar Conta</a>
+            </p>
+            <p className="forgot-password-link">
+              Esqueceu sua senha? <a href="#" onClick={handleForgotPasswordClick}>Recuperar Senha</a>
+            </p>
           </form>
-          <a href="#" id="link-esqueci-senha" onClick={handleEsqueciSenhaClick}>
-            Esqueceu sua senha?
-          </a>
-          <a href="#" id="link-cadastro" onClick={handleCadastroClick}>
-            Não tem uma conta? Registre-se
-          </a>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
