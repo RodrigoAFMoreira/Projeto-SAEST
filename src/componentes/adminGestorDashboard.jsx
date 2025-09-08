@@ -1,3 +1,6 @@
+// Em uso em dashboard.jsx
+// Componente para visualização do painel de administração e gerente
+
 import React from 'react';
 import { LayoutDashboard, Building2, Building, ShieldCheck, Bell } from 'lucide-react';
 

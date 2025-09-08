@@ -5,7 +5,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import LoadingSpinner from './componentes/carregando';
 import UserDashboard from './componentes/userDashboard';
 import AdminGestorDashboard from './componentes/adminGestorDashboard';
-import Sidebar from './Sidebar';
+import Sidebar from './componentes/sidebar';
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';

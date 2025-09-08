@@ -1,3 +1,5 @@
+// Em uso em dashboard.jsx
+// Componente para visualização do painel de funcionário
 import React from 'react';
 import { Bell } from 'lucide-react';
 

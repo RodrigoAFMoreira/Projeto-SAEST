@@ -1,3 +1,6 @@
+// Em uso em cadastro.jsx e esqueciSenha.jsx
+// Componente para validação de campos de formulário
+
 export const validatePhoneNumber = (telefone) => {
   const regexTelefone = /^\(\d{2}\)\s?9\d{4}-\d{4}$/;
   if (!telefone) return "O campo telefone é obrigatório.";

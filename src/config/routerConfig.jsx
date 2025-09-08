@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
-import supabase from './config/supabaseClient';
-import Login from './login';
-import Cadastro from './cadastro';
-import EsqueciSenha from './esqueciSenha';
-import VerificarEmail from './verificarEmail';
-import Layout from './layout';
-import Dashboard from './dashboard';
-import Informacoes from './informacoes';
-import Configuracoes from './configuracao';
-import './index.css';
+import supabase from './supabaseClient';
+import Login from '../login';
+import Cadastro from '../cadastro';
+import EsqueciSenha from '../esqueciSenha';
+import VerificarEmail from '../verificarEmail';
+import Layout from '../componentes/layout';
+import Dashboard from '../dashboard';
+import Informacoes from '../informacoes';
+import Configuracoes from '../configuracao';
+import '../css/index.css';
 
 
 const ProtectedRoute = () => {

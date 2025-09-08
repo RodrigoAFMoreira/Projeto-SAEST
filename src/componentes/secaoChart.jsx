@@ -1,3 +1,5 @@
+//Em uso em dashboard.jsx
+// Componente de seção de gráfico reutilizável
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 

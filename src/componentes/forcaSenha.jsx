@@ -1,4 +1,4 @@
-// em uso em cadastro.jsx
+// em uso em cadastro.jsx, login.jsx, e esqueciSenha.jsx
 // Indicador de força da senha com requisitos
 
 import React, { useState, useEffect } from "react";

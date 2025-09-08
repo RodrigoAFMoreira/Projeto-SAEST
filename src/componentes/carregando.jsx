@@ -1,3 +1,6 @@
+// Em uso em dashboard.jsx
+// Componente simples de carregamento com spinner
+
 import React from 'react';
 
 const Carregando = () => (

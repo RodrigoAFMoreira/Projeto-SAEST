@@ -1,11 +1,13 @@
-// src/layout.jsx
+// em uso em routerConfig.jsx, dashboard.jsx
+// Componente de layout com sidebar e área principal
+
 import React from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import supabase from "./config/supabaseClient";
-import "./css/dashboard.css";
-import "./css/menuEsquerdo.css";
-import "./css/menu.css";
+import Sidebar from "./sidebar";
+import supabase from "../config/supabaseClient";
+import "../css/dashboard.css";
+import "../css/menuEsquerdo.css";
+import "../css/menu.css";
 
 const Layout = () => {
   const [isSidebarMinimized, setIsSidebarMinimized] = React.useState(false);
