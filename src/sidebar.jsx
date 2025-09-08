@@ -9,7 +9,7 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
     ? [
         { text: 'Informações sobre Trabalho com Segurança', path: '/informacoes', icon: <Info /> },
         { text: 'Certificações', path: '/certificacoes', icon: <FileText /> },
-        { text: 'Configurações', path: '#', icon: <Settings /> },
+        { text: 'Configurações', path: '/configuracoes', icon: <Settings /> }, 
       ]
     : [
         { text: 'Dashboard', path: '/menu', icon: <Home /> },
@@ -17,7 +17,7 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
         { text: 'Obras', path: '/menuObra', icon: <Building2 /> },
         { text: 'Documentos', path: '/menuDocumentosObra', icon: <File /> },
         { text: 'EPIs', path: '/epi', icon: <ShieldCheck /> },
-        { text: 'Configurações', path: '/configuracaoUser', icon: <Settings /> },
+        { text: 'Configurações', path: '/configuracoes', icon: <Settings /> },
       ];
 
   return (

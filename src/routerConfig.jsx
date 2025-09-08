@@ -8,7 +8,9 @@ import VerificarEmail from './verificarEmail';
 import Layout from './layout';
 import Dashboard from './dashboard';
 import Informacoes from './informacoes';
+import Configuracoes from './configuracao';
 import './index.css';
+
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -46,6 +48,7 @@ const AppRoutes = () => {
         <Route element={<Layout />}>
           <Route path="/menu" element={<Dashboard />} />
           <Route path="/informacoes" element={<Informacoes />} />
+          <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
