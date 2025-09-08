@@ -1,3 +1,6 @@
+// usado em dasboard, menu, menuConstrutora, menuObra, menuDocumentosObra, epi, informacoes, certificacoes, configuracoes
+// Componente Sidebar que exibe a barra lateral de navegação com base no tipo de usuário.
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Info, FileText, Settings, Home, Building, Building2, File, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';

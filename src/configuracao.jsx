@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
 import { validatePhoneNumber, validatePassword } from './componentes/validacao';
-import ForcaSenha from './componentes/forcaSenha';
-//import './css/configuracoes.css'; 
+import ForcaSenha from '../src/componentes/forcaSenha';
+import './css/configuracao.css'; 
 
 const Configuracoes = () => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
   const [senha, setSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -49,7 +53,26 @@ const Configuracoes = () => {
     fetchUserData();
   }, [navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleConfirmPassword = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: currentPassword,
+      });
+      if (error) {
+        setMessage('Senha atual incorreta.');
+        return;
+      }
+      setShowConfirmModal(false);
+      setCurrentPassword('');
+      // Prosseguir com a submissão
+      handleSubmitInternal();
+    } catch (err) {
+      setMessage('Erro ao verificar senha: ' + (err.message || 'Erro desconhecido.'));
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     const emailError = document.getElementById('email-error');
     const nomeError = document.getElementById('nome-error');
@@ -59,6 +82,7 @@ const Configuracoes = () => {
     if (emailError) emailError.textContent = '';
     if (nomeError) nomeError.textContent = '';
     if (telefoneError) telefoneError.textContent = '';
+
     if (!email.includes('@') || !email.includes('.')) {
       setMessage('Digite um e-mail válido (ex: usuario@dominio.com)');
       if (emailError) emailError.textContent = 'E-mail inválido.';
@@ -78,17 +102,28 @@ const Configuracoes = () => {
       return;
     }
 
-    if (senha && validatePassword(senha, email, nome).length > 0) {
-      const errosSenha = validatePassword(senha, email, nome);
-      setMessage('Senha inválida:\n' + errosSenha.join('\n'));
-      return;
+    if (showPasswordFields) {
+      if (senha && validatePassword(senha, email, nome).length > 0) {
+        const errosSenha = validatePassword(senha, email, nome);
+        setMessage('Senha inválida:\n' + errosSenha.join('\n'));
+        return;
+      }
+      if (senha !== confirmarSenha) {
+        setMessage('As senhas não coincidem.');
+        return;
+      }
     }
 
+    // Abrir modal de confirmação de senha atual
+    setShowConfirmModal(true);
+  };
+
+  const handleSubmitInternal = async () => {
     try {
       setIsSubmitting(true);
       const updates = {};
       if (email) updates.email = email;
-      if (senha) updates.password = senha;
+      if (showPasswordFields && senha) updates.password = senha;
       if (nome || telefone) {
         updates.data = {
           username: nome,
@@ -107,7 +142,9 @@ const Configuracoes = () => {
       if (dbError) throw dbError;
 
       setMessage('Dados atualizados com sucesso!');
-      setSenha(''); 
+      setSenha('');
+      setConfirmarSenha('');
+      setShowPasswordFields(false);
     } catch (err) {
       console.error('Erro ao atualizar dados:', err);
       setMessage('Erro ao atualizar: ' + (err.message || 'Erro desconhecido. Tente novamente.'));
@@ -168,17 +205,40 @@ const Configuracoes = () => {
         </div>
 
         <div className="input-group">
-          <input
-            type="password"
-            id="senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value.trim())}
-            placeholder="Nova senha (opcional)"
-            aria-describedby="senha-status senha-requisitos mensagem-erro"
-          />
+          <button
+            type="button"
+            onClick={() => setShowPasswordFields(!showPasswordFields)}
+            aria-label={showPasswordFields ? "Cancelar alteração de senha" : "Alterar senha"}
+          >
+            {showPasswordFields ? 'Cancelar Alteração de Senha' : 'Alterar Senha'}
+          </button>
         </div>
 
-        <ForcaSenha password={senha} email={email} nome={nome} />
+        {showPasswordFields && (
+          <>
+            <div className="input-group">
+              <input
+                type="password"
+                id="senha"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value.trim())}
+                placeholder="Nova senha"
+                aria-describedby="senha-status senha-requisitos mensagem-erro"
+              />
+            </div>
+            <div className="input-group">
+              <input
+                type="password"
+                id="confirmar-senha"
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value.trim())}
+                placeholder="Confirmar nova senha"
+                aria-describedby="mensagem-erro"
+              />
+            </div>
+            < ForcaSenha password={senha} email={email} nome={nome} />
+          </>
+        )}
 
         <div className="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive">
           {message}
@@ -196,6 +256,49 @@ const Configuracoes = () => {
           Voltar
         </button>
       </form>
+
+      {showConfirmModal && (
+        <div className="modal" role="dialog" aria-labelledby="modal-title">
+          <div className="modal-content">
+            <h3 id="modal-title">Confirme sua Senha Atual</h3>
+            <p>Por favor, insira sua senha atual para prosseguir com as alterações.</p>
+            <div className="input-group">
+              <input
+                type="password"
+                id="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value.trim())}
+                placeholder="Senha atual"
+                required
+                aria-required="true"
+                aria-describedby="current-password-error"
+              />
+              <span id="current-password-error" className="input-error" aria-live="polite"></span>
+            </div>
+            <div className="modal-buttons">
+              <button
+                type="button"
+                onClick={handleConfirmPassword}
+                disabled={!currentPassword}
+                aria-label="Confirmar senha atual"
+              >
+                Confirmar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setCurrentPassword('');
+                  setMessage('');
+                }}
+                aria-label="Cancelar"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
