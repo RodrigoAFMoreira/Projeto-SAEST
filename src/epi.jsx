@@ -73,13 +73,12 @@ const Epi = () => {
         }
         definirEstaAutenticado(true);
 
-        // Modified query to select only 'id' to avoid column errors
         const { data: dadosObras, error: erroObras } = await supabase
           .from('obras')
           .select('id');
         if (erroObras) {
           console.error('Erro ao carregar obras:', erroObras);
-          definirObras([]); // Set obras to empty array if the query fails
+          definirObras([]); 
         } else {
           definirObras(
             dadosObras?.map((o) => ({
@@ -210,7 +209,7 @@ const Epi = () => {
       ano_fabricacao: dadosFormulario.ano_fabricacao ? parseInt(dadosFormulario.ano_fabricacao) : null,
       descricao: dadosFormulario.descricao?.trim(),
       quantidade: dadosFormulario.quantidade ? parseInt(dadosFormulario.quantidade) : null,
-      // obra_id: dadosFormulario.obra_id, // Commented out to make obra_id optional
+      // obra_id: dadosFormulario.obra_id, // 
     };
 
     const erros = [];
@@ -221,7 +220,7 @@ const Epi = () => {
     if (!dados.disponibilidade) erros.push('Disponibilidade é obrigatória.');
     if (!dados.data_aquisicao) erros.push('Data de aquisição é obrigatória.');
     if (!dados.quantidade || dados.quantidade < 1) erros.push('Quantidade deve ser maior que 0.');
-    // if (!dados.obra_id) erros.push('Obra associada é obrigatória.'); // Commented out to make obra_id optional
+    // if (!dados.obra_id) erros.push('Obra associada é obrigatória.'); 
 
     if (erros.length > 0) {
       definirErro(erros.join(' '));

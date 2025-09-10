@@ -94,4 +94,8 @@ Abaixo está o resumo dos commits realizados até o momento:
 - **Contexto**: Transição para Vite + React
 - **Alterações principais**: Necessidade de usar senha antiga para alterar informações
 - **Impacto**: Boas práticas
+<<<<<<< HEAD
 - **Próximos passos**: Adicionar parte de EPI.
+=======
+- **Próximos passos**: Adicionar parte de EPI.
+>>>>>>> c9554ed40b26d0f5acf47f3f89909f0ff2c7aefd
