@@ -12,21 +12,8 @@ import imagem7 from './assets/protecaoMaos.png';
 import EpiCardTemplate from './EpiCardTemplate';
 import EpiCardCapacete from './epiCardCapacete';
 import EpiCardOculos from './epiCardOculos';
+import SearchFilter from './componentes/filtroBusca'; 
 
-//  debounce 
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// estrutura de dados modular para normas, EPIs,
 const normasData = [
   {
     nrTitle: "NR 6 – EPI",
@@ -127,49 +114,16 @@ const normasData = [
 const Informacoes = () => {
   const navigate = useNavigate();
   const [selectedEpi, setSelectedEpi] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  
-  const normalizeString = (str) => {
-    return str
-      .toLowerCase()
-      .replace(/\s+/g, ''); // Remove todos os espaços
-  };
-
-  
-  const filterCards = (nrTitle, subTitle, epis) => {
-    if (!searchQuery) return true;
-
-    // normaliza o texto da busca
-    const queries = searchQuery
-      .toLowerCase()
-      .split(' ')
-      .filter((q) => q)
-      .map(normalizeString);
-
-    const normalizedNrTitle = normalizeString(nrTitle);
-    const normalizedSubTitle = subTitle ? normalizeString(subTitle) : '';
-    const normalizedEpis = epis.map(normalizeString);
-
-    return queries.every((query) =>
-      normalizedNrTitle.includes(query) ||
-      (normalizedSubTitle && normalizedSubTitle.includes(query)) ||
-      normalizedEpis.some((epi) => epi.includes(query))
-    );
-  };
-
-  const debouncedSetSearchQuery = debounce((value) => {
-    setSearchQuery(value);
-  }, 300);
-
-  const filteredNormas = useMemo(() => {
-    return normasData.map((norma) => ({
+  const [filteredNormas, setFilteredNormas] = useState(normasData);
+  const handleSearch = (filterCards, searchQuery) => {
+    const filtered = normasData.map((norma) => ({
       ...norma,
       sections: norma.sections.filter((section) =>
         filterCards(norma.nrTitle, section.subTitle, section.epis)
       ),
     })).filter((norma) => norma.sections.length > 0);
-  }, [searchQuery]);
+    setFilteredNormas(filtered);
+  };
 
   const handleClose = () => {
     setSelectedEpi(null);
@@ -183,13 +137,7 @@ const Informacoes = () => {
           Voltar
         </button>
       </header>
-      <div className="search-bar">
-        <input
-          type="text"
-          placeholder="Pesquisar por NR, subtítulo ou EPI..."
-          onChange={(e) => debouncedSetSearchQuery(e.target.value)}
-        />
-      </div>
+      <SearchFilter onSearch={handleSearch} /> {/* Usa o componente SearchFilter */}
       <div className="nr-cards-container">
         {filteredNormas.length === 0 ? (
           <div className="no-results">Nenhum resultado encontrado.</div>
@@ -206,7 +154,6 @@ const Informacoes = () => {
                   <div
                     className="inner-card"
                     key={section.subTitle}
-                    style={{ display: filterCards(norma.nrTitle, section.subTitle, section.epis) ? 'block' : 'none' }}
                   >
                     <div className="info-item">
                       <div>
