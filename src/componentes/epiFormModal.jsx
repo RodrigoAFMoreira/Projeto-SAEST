@@ -1,7 +1,7 @@
 // uado em epi.jsx
 // Este componente exibe um modal com um formulário para adicionar ou editar EPIs.
-import React from 'react';
 
+import React from 'react';
 
 const ModalFormularioEpi = ({
   estaAberto,

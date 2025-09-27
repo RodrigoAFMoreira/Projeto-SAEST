@@ -2,7 +2,7 @@
 // Componente Sidebar que exibe a barra lateral de navegação com base no tipo de usuário.
 
 import React from 'react';
-import { NavLink } from 'react-router-dom'; // Added NavLink import
+import { NavLink } from 'react-router-dom'; 
 import { Info, FileText, Settings, Home, Building, Building2, File, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import '../css/menuEsquerdo.css';
 
@@ -15,10 +15,10 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
       ]
     : [
         { text: 'Dashboard', path: '/menu', icon: <Home /> },
-        { text: 'Construtoras', path: '/menuConstrutora', icon: <Building /> },
-        { text: 'Obras', path: '/menuObra', icon: <Building2 /> },
-        { text: 'Documentos', path: '/menuDocumentosObra', icon: <File /> },
-        { text: 'EPIs', path: '/epis', icon: <ShieldCheck /> }, // Correct path
+        { text: 'Construtoras', path: '/construtoras', icon: <Building /> }, 
+        { text: 'Obras', path: '/obras', icon: <Building2 /> }, 
+        { text: 'Documentos', path: '/documentos', icon: <File /> }, 
+        { text: 'EPIs', path: '/epis', icon: <ShieldCheck /> },
         { text: 'Configurações', path: '/configuracoes', icon: <Settings /> },
       ];
 

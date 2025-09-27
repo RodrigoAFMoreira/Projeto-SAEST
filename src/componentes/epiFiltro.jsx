@@ -1,5 +1,6 @@
 // usado em epi.jsx
 // Este componente fornece filtros para a lista de EPIs, permitindo buscas por vários critérios.
+
 import React from 'react';
 
 const EpiFiltro = ({ filtros = {}, aoAlterarFiltros, abrirModalAdicionar, abrirModalGerenciar }) => {

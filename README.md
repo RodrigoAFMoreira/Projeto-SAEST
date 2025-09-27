@@ -96,6 +96,24 @@ Abaixo está o resumo dos commits realizados até o momento:
 - **Impacto**: Boas práticas
 <<<<<<< HEAD
 - **Próximos passos**: Adicionar parte de EPI.
-=======
-- **Próximos passos**: Adicionar parte de EPI.
->>>>>>> c9554ed40b26d0f5acf47f3f89909f0ff2c7aefd
+
+#### **11/09/2025** - Rodrigo (Commit: `783942af93f5a9bee65b48751ff7af0f55e58262`)
+- **Descrição**: Adicionado as funções de epi. (adição, remoção).
+- **Contexto**: Transição para Vite + React
+- **Alterações principais**: Adicionado meios de adicionar epis
+- **Impacto**: popular o banco com epis.
+- **Próximos passos**: fazer a página de irregularidades abrangendo o tópico "Registrar o progresso de situação de irregularidades de segurança do trabalho em uma obra com lembrete enviado por Email."
+
+#### **15/09/2025** - Caroline (Commit: `d31a7ff71765f570290e453c136c105980ea02cd`)
+- **Descrição**: Front-end da página de Login e Documentos
+- **Contexto**: Estilização da página de Login incluindo a biblioteca Mui UI. Inserção da Página de Documentos.
+- **Alterações principais**: Novo design e desenvolvimento da página de normas.
+- **Impacto**: Boas práticas <<<<<<< HEAD
+- **Próximos passos**: Corrigir as novas rotas de gerenciamento de usuario, e fazer o front-end das seguintes páginas: cadastro, configuração, dashboard, documento, empresas, obras, epi's, informações (gerente). verificar email, criar componente para admnistrador, gestor e funcionario já são existentes. adicionar compatibilidade com dispositivos moveis. inserção de gráficos analiticos.
+
+#### **27/09/2025** - Rodrigo (Commit: ``)
+- **Descrição**: Finalizada conversao (empresa/obra), implantado login seguindo normas de JWT, feitas melhorias diversas.
+- **Contexto**: Transição para Vite + React
+- **Alterações principais**: Adicionado log in seguro.
+- **Impacto**: Maior segurança no login.
+- **Próximos passos**: fazer a página de irregularidades abrangendo o tópico "Registrar o progresso de situação de irregularidades de segurança do trabalho em uma obra com lembrete enviado por Email."

@@ -1,3 +1,6 @@
+// src/configuracao.jsx
+// Página de configurações do usuário (atualizar dados, alterar senha)
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';

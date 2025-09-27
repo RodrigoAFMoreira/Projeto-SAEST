@@ -7,11 +7,15 @@ import EsqueciSenha from '../esqueciSenha';
 import VerificarEmail from '../verificarEmail';
 import Layout from '../componentes/layout';
 import Dashboard from '../dashboard';
-import Informacoes from '../informacoes';
+import Informacao from '../informacao';
 import Configuracoes from '../configuracao';
 import Epi from '../epi';
 import Carregando from '../componentes/carregando'; 
+import Empresa from '../empresa';
+import Obra from '../obra';
+//import Documento from '../documento'; 
 import '../css/index.css';
+
 
 
 const ProtectedRoute = () => {
@@ -23,47 +27,43 @@ const ProtectedRoute = () => {
       setIsAuthenticated(!!session);
     });
 
-    // Initial check
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
     };
     checkAuth();
 
-    // Cleanup listener on unmount
     return () => {
       authListener.subscription?.unsubscribe();
     };
-  }, []); // No location dependency to avoid repeated checks
+  }, []);
 
   if (isAuthenticated === null) {
-    return <Carregando />; // Use Carregando component instead of LoadingSpinner
+    return <Carregando />;
   }
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace state={{ from: location }} />;
 };
 
 const AppRoutes = () => {
-  // Removed console.log for production
   return (
     <Routes>
-      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/cadastro" element={<Cadastro />} />
       <Route path="/esqueci-senha" element={<EsqueciSenha />} />
       <Route path="/verificar-email" element={<VerificarEmail />} />
       
-      {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/menu" element={<Dashboard />} />
-          <Route path="/informacoes" element={<Informacoes />} />
+          <Route path="/construtoras" element={<Empresa />} />
+          <Route path="/obras" element={<Obra />} />
+          {/* <Route path="/documento" element={<Documento />} /> */}
+          <Route path="/epis" element={<Epi />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/epis" element={<Epi />} /> {/* Route for Epi.jsx */}
         </Route>
       </Route>
       
-      {/* Catch-all Route */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

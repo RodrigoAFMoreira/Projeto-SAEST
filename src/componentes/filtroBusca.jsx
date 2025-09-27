@@ -1,5 +1,6 @@
 // usado em epi.jsx
 // Componente de barra de pesquisa estática
+
 import React, { useState } from 'react';
 
 function debouncer(func, espera) {

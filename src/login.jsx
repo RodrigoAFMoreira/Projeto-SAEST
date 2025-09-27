@@ -1,30 +1,26 @@
+// src/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import supabase from "./config/supabaseClient";
+import AuthService from "../src/componentes/authService";
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
+    setMessage("");
     setIsSubmitting(true);
 
     try {
-      console.log('Attempting login for:', email); // Debugging
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      navigate('/menu');
+      await AuthService.login(email, password);
+      navigate("/menu");
     } catch (err) {
-      console.error('Login error:', err);
-      setMessage('Erro ao fazer login: ' + (err.message || 'Tente novamente.'));
+      console.error("Login error:", err);
+      setMessage("Erro ao fazer login: " + (err.message || "Tente novamente."));
     } finally {
       setIsSubmitting(false);
     }
@@ -32,14 +28,14 @@ const Login = () => {
 
   const handleCadastroClick = (e) => {
     e.preventDefault();
-    console.log('Navigating to /cadastro'); // Debugging
-    navigate('/cadastro');
+    console.log("Navigating to /cadastro");
+    navigate("/cadastro");
   };
 
   const handleForgotPasswordClick = (e) => {
     e.preventDefault();
-    console.log('Navigating to /esqueci-senha'); // Debugging
-    navigate('/esqueci-senha');
+    console.log("Navigating to /esqueci-senha");
+    navigate("/esqueci-senha");
   };
 
   return (
@@ -90,7 +86,7 @@ const Login = () => {
             </div>
 
             <button type="submit" disabled={isSubmitting} aria-label="Fazer login">
-              {isSubmitting ? 'Entrando...' : 'Entrar'}
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
 
             <p className="register-link">

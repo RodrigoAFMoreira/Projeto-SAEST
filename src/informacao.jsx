@@ -1,14 +1,16 @@
-// src/informacoes.jsx
+// src/informacao.jsx
+// Página de informações de segurança para user
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './css/informacoes.css';
-import protecaoCabecaImpactos from './assets/protecaoCabecaImpactos.png';
-import segurancaPesPernas from './assets/segurancaPesPernas.png';
-import imagem3 from './assets/imagem4.png';
-import imagem4 from './assets/imagem5.png';
-import imagem5 from './assets/imagem7.png';
-import imagem6 from './assets/imagem1.png';
-import imagem7 from './assets/protecaoMaos.png';
+import './css/informacao.css';
+import protecaoCabecaImpacto from './assets/protecaoCabecaImpacto.png';
+import segurancaPerna from './assets/segurancaPerna.png';
+import protecaoEletrica from './assets/protecaoEletrica.png';
+import protecaoRespiratoria from './assets/protecaoRespiratoria.png';
+import ProtecaoAuditiva from './assets/ProtecaoAuditiva.png';
+import protecaoAltura from './assets/protecaoAltura.png';
+import protecaoMao from './assets/protecaoMao.png';
 import EpiCardTemplate from './EpiCardTemplate';
 import EpiCardCapacete from './epiCardCapacete';
 import EpiCardOculos from './epiCardOculos';
@@ -27,7 +29,7 @@ const normasData = [
           "Óculos com lentes escuras para solda (CA específico)",
           "Protetor facial tipo viseira de policarbonato",
         ],
-        image: protecaoCabecaImpactos,
+        image: protecaoCabecaImpacto,
       },
       {
         subTitle: "Proteção das Mãos",
@@ -38,7 +40,7 @@ const normasData = [
           "Luva de borracha nitrílica (resistente a solventes/químicos)",
           "Luva anticorte (malha de aço ou fibra de vidro)",
         ],
-        image: imagem7,
+        image: protecaoMao,
       },
     ],
   },
@@ -52,7 +54,7 @@ const normasData = [
           "Botina de segurança com biqueira de aço ou composite (ex: Bracol, Marluvas, Fujiwara)",
           "Botas impermeáveis de PVC (para cimento e umidade)",
         ],
-        image: segurancaPesPernas,
+        image: segurancaPerna,
       },
     ],
   },
@@ -67,7 +69,7 @@ const normasData = [
           "Bota dielétrica (ex: Fujiwara – modelo ESD)",
           "Capacete com isolamento elétrico (classe B)",
         ],
-        image: imagem3,
+        image: protecaoEletrica,
       },
     ],
   },
@@ -81,7 +83,7 @@ const normasData = [
           "Máscara PFF2 ou N95 (ex: 3M 8822, Delta Plus M1300V)",
           "Respirador semifacial com filtros químicos (para solventes e tintas)",
         ],
-        image: imagem4,
+        image: protecaoRespiratoria,
       },
       {
         subTitle: "Proteção Auditiva",
@@ -90,7 +92,7 @@ const normasData = [
           "Protetor auricular tipo plug (espuma 3M 1100, MSA Classic)",
           "Abafador tipo concha (ex: MSA Excel, Peltor Optime)",
         ],
-        image: imagem5,
+        image: ProtecaoAuditiva,
       },
     ],
   },
@@ -105,13 +107,13 @@ const normasData = [
           "Talabarte com absorvedor de energia",
           "Trava-quedas retrátil",
         ],
-        image: imagem6,
+        image: protecaoAltura,
       },
     ],
   },
 ];
 
-const Informacoes = () => {
+const Informacao = () => {
   const navigate = useNavigate();
   const [selectedEpi, setSelectedEpi] = useState(null);
   const [filteredNormas, setFilteredNormas] = useState(normasData);
@@ -137,7 +139,7 @@ const Informacoes = () => {
           Voltar
         </button>
       </header>
-      <SearchFilter onSearch={handleSearch} /> {/* Usa o componente SearchFilter */}
+      <SearchFilter onSearch={handleSearch} /> {/* componente filtroBusca */}
       <div className="nr-cards-container">
         {filteredNormas.length === 0 ? (
           <div className="no-results">Nenhum resultado encontrado.</div>
@@ -198,4 +200,4 @@ const Informacoes = () => {
   );
 };
 
-export default Informacoes;
+export default Informacao;

@@ -1,7 +1,7 @@
 // usado em epi.jsx
 // Este componente exibe uma tabela de EPIs com funcionalidades de expansão de linha e ações de edição/exclusão.
-import React from 'react';
 
+import React from 'react';
 
 const TabelaEpi = ({ epis, obras, linhasExpandidas, alternarExpansao, editarEpi, excluirEpi }) => {
   return (

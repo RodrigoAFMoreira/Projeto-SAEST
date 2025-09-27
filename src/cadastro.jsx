@@ -1,7 +1,8 @@
+// src/cadastro.jsx
+// Página de cadastro de novos usuários
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import supabase from "./config/supabaseClient";
-import { validatePhoneNumber, validatePassword } from "./componentes/validacao";
 import ForcaSenha from "./componentes/forcaSenha";
 
 const Cadastro = () => {
@@ -14,95 +15,33 @@ const Cadastro = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const registrarUsuario = async (email, senha, nome, tipo, telefone) => {
-    try {
-      setIsSubmitting(true);
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: senha,
-        options: {
-          data: {
-            username: nome,
-            tipo,
-            telefone,
-            criadoEm: new Date().toISOString(),
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        const { error: insertError } = await supabase.from("usuarios").insert({
-          id: data.user.id,
-          nome,
-          email,
-          tipo,
-          telefone,
-        });
-
-        if (insertError) throw insertError;
-
-        navigate("/verificar-email");
-      }
-    } catch (err) {
-      console.error("Erro ao registrar - Detalhes:", err);
-      setMessage("Erro ao registrar: " + (err.message || "Erro desconhecido. Tente novamente."));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
     const emailError = document.getElementById("email-error");
     const nomeError = document.getElementById("nome-error");
     const telefoneError = document.getElementById("telefone-error");
     const tipoError = document.getElementById("tipo-error");
 
-    setMessage("");
     if (emailError) emailError.textContent = "";
     if (nomeError) nomeError.textContent = "";
     if (telefoneError) telefoneError.textContent = "";
     if (tipoError) tipoError.textContent = "";
 
-    if (!email.includes("@") || !email.includes(".")) {
-      setMessage("Digite um e-mail válido (ex: usuario@dominio.com)");
-      if (emailError) emailError.textContent = "E-mail inválido.";
-      return;
+    try {
+      await AuthService.register(email, senha, nome, tipo, telefone);
+      navigate("/verificar-email");
+    } catch (err) {
+      console.error("Erro ao registrar:", err);
+      setMessage("Erro ao registrar: " + (err.message || "Tente novamente."));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (!nome) {
-      setMessage("Preencha seu nome completo.");
-      if (nomeError) nomeError.textContent = "Nome é obrigatório.";
-      return;
-    }
-
-    const erroTelefone = validatePhoneNumber(telefone);
-    if (erroTelefone) {
-      setMessage(erroTelefone);
-      if (telefoneError) telefoneError.textContent = erroTelefone;
-      return;
-    }
-
-    if (!tipo) {
-      setMessage("Selecione o tipo de usuário.");
-      if (tipoError) tipoError.textContent = "Tipo de usuário é obrigatório.";
-      return;
-    }
-
-    const errosSenha = validatePassword(senha, email, nome);
-    if (errosSenha.length > 0) {
-      setMessage("Senha inválida:\n" + errosSenha.join("\n"));
-      return;
-    }
-
-    registrarUsuario(email, senha, nome, tipo, telefone);
   };
 
   const handleLoginClick = (e) => {
     e.preventDefault();
-    console.log('Navigating to /login'); // Debugging
+    console.log("Navigating to /login");
     navigate("/login");
   };
 

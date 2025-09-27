@@ -48,6 +48,7 @@ const Epi = () => {
   const [sucesso, definirSucesso] = useState('');
   const [estaAutenticado, definirEstaAutenticado] = useState(null);
   const [carregando, definirCarregando] = useState(true);
+  const [userId, setUserId] = useState(null); // importante!
 
   const hoje = new Date().toISOString().split('T')[0];
 
@@ -62,6 +63,8 @@ const Epi = () => {
           definirEstaAutenticado(autenticado);
           if (!autenticado) {
             navegar('/login', { state: { from: localizacao } });
+          } else {
+            setUserId(sessao.user.id); // Armazena o user_id
           }
         });
 
@@ -72,23 +75,39 @@ const Epi = () => {
           return;
         }
         definirEstaAutenticado(true);
+        setUserId(session.user.id);
 
+       
+        const { data: dadosEmpresas, error: erroEmpresas } = await supabase
+          .from('empresa')
+          .select('cnpj')
+          .eq('user_id', session.user.id);
+
+        if (erroEmpresas) {
+          console.error('Erro ao carregar empresas:', erroEmpresas);
+          definirObras([]);
+          return;
+        }
+
+        const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
         const { data: dadosObras, error: erroObras } = await supabase
-          .from('obras')
-          .select('id');
+          .from('obra')
+          .select('id, cnpj_empresa, status') 
+          .in('cnpj_empresa', cnpjs);
+
         if (erroObras) {
           console.error('Erro ao carregar obras:', erroObras);
-          definirObras([]); 
+          definirObras([]);
         } else {
           definirObras(
             dadosObras?.map((o) => ({
               value: o.id,
-              label: `Obra ${o.id}`, // Fallback label
+              label: `Obra ${o.id} (${o.status})`, 
             })) || []
           );
         }
 
-        await carregarEpis();
+        await carregarEpis(session.user.id);
       } catch (err) {
         definirErro('Erro ao carregar dados: ' + (err.message || 'Erro desconhecido.'));
       } finally {
@@ -105,9 +124,32 @@ const Epi = () => {
     };
   }, [navegar, localizacao]);
 
-  const carregarEpis = async () => {
+  const carregarEpis = async (userId) => {
     try {
-      let consulta = supabase.from('epis').select('*');
+      const { data: dadosEmpresas, error: erroEmpresas } = await supabase
+        .from('empresa')
+        .select('cnpj')
+        .eq('user_id', userId);
+
+      if (erroEmpresas) throw erroEmpresas;
+
+      const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
+      
+      const { data: dadosObras, error: erroObras } = await supabase
+        .from('obra')
+        .select('id')
+        .in('cnpj_empresa', cnpjs);
+
+      if (erroObras) throw erroObras;
+
+      const obraIds = dadosObras.map(obra => obra.id);
+
+      // Consultar EPIs filtrando por obra_id
+      let consulta = supabase
+        .from('epis')
+        .select('*, obra(id, cnpj_empresa)') // Incluir dados da obra
+        .in('obra_id', obraIds);
+
       if (filtros['filtro-tipo']) consulta = consulta.ilike('tipo', `%${filtros['filtro-tipo']}%`);
       if (filtros['filtro-condicao']) consulta = consulta.eq('condicao', filtros['filtro-condicao']);
       if (filtros['filtro-local-uso']) consulta = consulta.ilike('local_uso', `%${filtros['filtro-local-uso']}%`);
@@ -118,6 +160,7 @@ const Epi = () => {
         if (filtros['filtro-validade'] === 'expirado') consulta = consulta.lte('validade', hoje);
         if (filtros['filtro-validade'] === 'sem-validade') consulta = consulta.is('validade', null);
       }
+
       const { data, error } = await consulta;
       if (error) throw error;
       definirEpis(data || []);
@@ -127,17 +170,17 @@ const Epi = () => {
   };
 
   useEffect(() => {
-    if (estaAutenticado) {
-      carregarEpis();
+    if (estaAutenticado && userId) {
+      carregarEpis(userId);
     }
-  }, [filtros, estaAutenticado]);
+  }, [filtros, estaAutenticado, userId]);
 
   const alterarFiltros = (e) => {
     definirFiltros({ ...filtros, [e.target.id]: e.target.value });
   };
 
   const abrirModalAdicionarEpi = () => {
-    definirDadosFormulario({});
+    definirDadosFormulario({ obra_id: obras[0]?.value || '' }); // Predefine a primeira obra
     definirExibirModalAdicionar(true);
     definirErro('');
     definirSucesso('');
@@ -209,7 +252,7 @@ const Epi = () => {
       ano_fabricacao: dadosFormulario.ano_fabricacao ? parseInt(dadosFormulario.ano_fabricacao) : null,
       descricao: dadosFormulario.descricao?.trim(),
       quantidade: dadosFormulario.quantidade ? parseInt(dadosFormulario.quantidade) : null,
-      // obra_id: dadosFormulario.obra_id, // 
+      obra_id: dadosFormulario.obra_id, // Inclui obra_id
     };
 
     const erros = [];
@@ -220,7 +263,7 @@ const Epi = () => {
     if (!dados.disponibilidade) erros.push('Disponibilidade é obrigatória.');
     if (!dados.data_aquisicao) erros.push('Data de aquisição é obrigatória.');
     if (!dados.quantidade || dados.quantidade < 1) erros.push('Quantidade deve ser maior que 0.');
-    // if (!dados.obra_id) erros.push('Obra associada é obrigatória.'); 
+    if (!dados.obra_id) erros.push('Obra associada é obrigatória.');
 
     if (erros.length > 0) {
       definirErro(erros.join(' '));
@@ -235,7 +278,7 @@ const Epi = () => {
         await supabase.from('epis').insert([dados]);
         definirSucesso('EPI adicionado com sucesso!');
       }
-      await carregarEpis();
+      await carregarEpis(userId);
       setTimeout(() => {
         ehEdicao ? fecharModalEditarEpi() : fecharModalAdicionarEpi();
       }, 1000);

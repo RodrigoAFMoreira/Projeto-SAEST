@@ -1,7 +1,7 @@
 // usado em epi.jsx
 // Este componente exibe um modal de confirmação para ações críticas, como exclusão de itens.
-import React from 'react';
 
+import React from 'react';
 
 const ModalConfirmacao = ({ estaAberto, fecharModal, confirmar, titulo, mensagem }) => {
   if (!estaAberto) return null;
