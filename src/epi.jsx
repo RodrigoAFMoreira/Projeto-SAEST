@@ -1,4 +1,3 @@
-// src/epi.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
@@ -8,13 +7,14 @@ import TabelaEpi from './componentes/epiTable';
 import ModalFormularioEpi from './componentes/epiFormModal';
 import ModalGerenciarOpcoes from './componentes/opcoesModal';
 import ModalConfirmacao from './componentes/confirmModal';
+import LoadingSpinner from './componentes/carregando'; 
 import '../src/css/epi.css';
 
 const Epi = () => {
-  const navegar = useNavigate();
-  const localizacao = useLocation();
-  const [epis, definirEpis] = useState([]);
-  const [filtros, definirFiltros] = useState({
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [epis, setEpis] = useState([]);
+  const [filtros, setFiltros] = useState({
     'filtro-tipo': '',
     'filtro-condicao': '',
     'filtro-local-uso': '',
@@ -22,107 +22,103 @@ const Epi = () => {
     'filtro-validade': '',
     'filtro-codigo': '',
   });
-  const [exibirModalAdicionar, definirExibirModalAdicionar] = useState(false);
-  const [exibirModalEditar, definirExibirModalEditar] = useState(false);
-  const [exibirModalGerenciar, definirExibirModalGerenciar] = useState(false);
-  const [exibirModalConfirmacao, definirExibirModalConfirmacao] = useState(false);
-  const [epiSelecionadoId, definirEpiSelecionadoId] = useState(null);
-  const [linhasExpandidas, definirLinhasExpandidas] = useState([]);
-  const [tiposEpi, definirTiposEpi] = useState([
+  const [exibirModalAdicionar, setExibirModalAdicionar] = useState(false);
+  const [exibirModalEditar, setExibirModalEditar] = useState(false);
+  const [exibirModalGerenciar, setExibirModalGerenciar] = useState(false);
+  const [exibirModalConfirmacao, setExibirModalConfirmacao] = useState(false);
+  const [epiSelecionadoId, setEpiSelecionadoId] = useState(null);
+  const [linhasExpandidas, setLinhasExpandidas] = useState([]);
+  const [tiposEpi, setTiposEpi] = useState([
     { value: 'capacete', label: 'Capacete' },
     { value: 'luvas', label: 'Luvas' },
     { value: 'botas', label: 'Botas' },
     { value: 'mascara', label: 'Máscara' },
     { value: 'oculos', label: 'Óculos de Proteção' },
   ]);
-  const [locaisUso, definirLocaisUso] = useState([
+  const [locaisUso, setLocaisUso] = useState([
     { value: 'canteiro', label: 'Canteiro de Obras' },
     { value: 'armazem', label: 'Armazém' },
     { value: 'escritorio', label: 'Escritório' },
     { value: 'manutencao', label: 'Manutenção' },
   ]);
-  const [obras, definirObras] = useState([]);
-  const [dadosFormulario, definirDadosFormulario] = useState({});
-  const [formularioGerenciar, definirFormularioGerenciar] = useState({ novoTipo: '', novoLocal: '' });
-  const [erro, definirErro] = useState('');
-  const [sucesso, definirSucesso] = useState('');
-  const [estaAutenticado, definirEstaAutenticado] = useState(null);
-  const [carregando, definirCarregando] = useState(true);
-  const [userId, setUserId] = useState(null); // importante!
+  const [obras, setObras] = useState([]);
+  const [dadosFormulario, setDadosFormulario] = useState({});
+  const [formularioGerenciar, setFormularioGerenciar] = useState({ novoTipo: '', novoLocal: '' });
+  const [erro, setErro] = useState('');
+  const [sucesso, setSucesso] = useState('');
+  const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
+  const [loading, setLoading] = useState(true);
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
   const hoje = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    let ouvinteAutenticacao = null;
-
-    const carregarDados = async () => {
-      definirCarregando(true);
+    const fetchUserAndData = async () => {
+      setLoading(true);
+      setErro('');
       try {
-        ouvinteAutenticacao = supabase.auth.onAuthStateChange((evento, sessao) => {
-          const autenticado = !!sessao;
-          definirEstaAutenticado(autenticado);
-          if (!autenticado) {
-            navegar('/login', { state: { from: localizacao } });
-          } else {
-            setUserId(sessao.user.id); // Armazena o user_id
-          }
-        });
-
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          definirEstaAutenticado(false);
-          navegar('/login', { state: { from: localizacao } });
-          return;
-        }
-        definirEstaAutenticado(true);
-        setUserId(session.user.id);
-
-       
-        const { data: dadosEmpresas, error: erroEmpresas } = await supabase
-          .from('empresa')
-          .select('cnpj')
-          .eq('user_id', session.user.id);
-
-        if (erroEmpresas) {
-          console.error('Erro ao carregar empresas:', erroEmpresas);
-          definirObras([]);
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          setErro('Usuário não está logado. Redirecionando para login...');
+          setTimeout(() => navigate('/login', { state: { from: location } }), 2000);
           return;
         }
 
-        const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
-        const { data: dadosObras, error: erroObras } = await supabase
-          .from('obra')
-          .select('id, cnpj_empresa, status') 
-          .in('cnpj_empresa', cnpjs);
-
-        if (erroObras) {
-          console.error('Erro ao carregar obras:', erroObras);
-          definirObras([]);
+        const { data, error: userError } = await supabase
+          .from('usuarios')
+          .select('id, nome, email, tipo, telefone')
+          .eq('id', user.id)
+          .single();
+        if (userError || !data) {
+          console.warn('Documento do usuário não encontrado, usando padrão user');
+          setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
-          definirObras(
-            dadosObras?.map((o) => ({
-              value: o.id,
-              label: `Obra ${o.id} (${o.status})`, 
-            })) || []
-          );
+          setUserData(data);
         }
 
-        await carregarEpis(session.user.id);
+        if (data && data.tipo !== 'user') {
+          await Promise.all([carregarObras(user.id), carregarEpis(user.id)]);
+        } else {
+          setErro('Acesso não autorizado para este usuário.');
+          setTimeout(() => navigate('/menu'), 2000);
+        }
       } catch (err) {
-        definirErro('Erro ao carregar dados: ' + (err.message || 'Erro desconhecido.'));
+        setErro('Erro ao carregar dados do usuário: ' + (err.message || 'Erro desconhecido.'));
       } finally {
-        definirCarregando(false);
+        setLoading(false);
       }
     };
 
-    carregarDados();
+    fetchUserAndData();
+  }, [navigate, location]);
 
-    return () => {
-      if (ouvinteAutenticacao?.subscription) {
-        ouvinteAutenticacao.subscription.unsubscribe();
-      }
-    };
-  }, [navegar, localizacao]);
+  const carregarObras = async (userId) => {
+    try {
+      const { data: dadosEmpresas, error: erroEmpresas } = await supabase
+        .from('empresa')
+        .select('cnpj')
+        .eq('user_id', userId);
+      if (erroEmpresas) throw erroEmpresas;
+
+      const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
+      const { data: dadosObras, error: erroObras } = await supabase
+        .from('obra')
+        .select('id, cnpj_empresa, status')
+        .in('cnpj_empresa', cnpjs);
+      if (erroObras) throw erroObras;
+
+      setObras(
+        dadosObras?.map((o) => ({
+          value: o.id,
+          label: `Obra ${o.id} (${o.status})`,
+        })) || []
+      );
+    } catch (err) {
+      console.error('Erro ao carregar obras:', err);
+      setErro('Erro ao carregar obras: ' + (err.message || 'Erro desconhecido.'));
+      setObras([]);
+    }
+  };
 
   const carregarEpis = async (userId) => {
     try {
@@ -130,24 +126,20 @@ const Epi = () => {
         .from('empresa')
         .select('cnpj')
         .eq('user_id', userId);
-
       if (erroEmpresas) throw erroEmpresas;
 
       const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
-      
       const { data: dadosObras, error: erroObras } = await supabase
         .from('obra')
         .select('id')
         .in('cnpj_empresa', cnpjs);
-
       if (erroObras) throw erroObras;
 
       const obraIds = dadosObras.map(obra => obra.id);
 
-      // Consultar EPIs filtrando por obra_id
       let consulta = supabase
         .from('epis')
-        .select('*, obra(id, cnpj_empresa)') // Incluir dados da obra
+        .select('*, obra(id, cnpj_empresa)')
         .in('obra_id', obraIds);
 
       if (filtros['filtro-tipo']) consulta = consulta.ilike('tipo', `%${filtros['filtro-tipo']}%`);
@@ -163,83 +155,82 @@ const Epi = () => {
 
       const { data, error } = await consulta;
       if (error) throw error;
-      definirEpis(data || []);
+      setEpis(data || []);
     } catch (err) {
-      definirErro('Erro ao carregar EPIs: ' + (err.message || 'Erro desconhecido.'));
+      console.error('Erro ao carregar EPIs:', err);
+      setErro('Erro ao carregar EPIs: ' + (err.message || 'Erro desconhecido.'));
     }
   };
 
-  useEffect(() => {
-    if (estaAutenticado && userId) {
-      carregarEpis(userId);
-    }
-  }, [filtros, estaAutenticado, userId]);
+  const handleToggleSidebar = () => {
+    setIsSidebarMinimized(!isSidebarMinimized);
+  };
 
   const alterarFiltros = (e) => {
-    definirFiltros({ ...filtros, [e.target.id]: e.target.value });
+    setFiltros({ ...filtros, [e.target.id]: e.target.value });
   };
 
   const abrirModalAdicionarEpi = () => {
-    definirDadosFormulario({ obra_id: obras[0]?.value || '' }); // Predefine a primeira obra
-    definirExibirModalAdicionar(true);
-    definirErro('');
-    definirSucesso('');
+    setDadosFormulario({ obra_id: obras[0]?.value || '' });
+    setExibirModalAdicionar(true);
+    setErro('');
+    setSucesso('');
   };
 
   const fecharModalAdicionarEpi = () => {
-    definirExibirModalAdicionar(false);
-    definirErro('');
-    definirSucesso('');
+    setExibirModalAdicionar(false);
+    setErro('');
+    setSucesso('');
   };
 
   const abrirModalEditarEpi = (epi) => {
-    definirDadosFormulario(epi);
-    definirExibirModalEditar(true);
-    definirErro('');
-    definirSucesso('');
+    setDadosFormulario(epi);
+    setExibirModalEditar(true);
+    setErro('');
+    setSucesso('');
   };
 
   const fecharModalEditarEpi = () => {
-    definirExibirModalEditar(false);
-    definirErro('');
-    definirSucesso('');
+    setExibirModalEditar(false);
+    setErro('');
+    setSucesso('');
   };
 
   const abrirModalGerenciarOpcoes = () => {
-    definirExibirModalGerenciar(true);
-    definirErro('');
-    definirSucesso('');
+    setExibirModalGerenciar(true);
+    setErro('');
+    setSucesso('');
   };
 
   const fecharModalGerenciarOpcoes = () => {
-    definirExibirModalGerenciar(false);
-    definirFormularioGerenciar({ novoTipo: '', novoLocal: '' });
-    definirErro('');
-    definirSucesso('');
+    setExibirModalGerenciar(false);
+    setFormularioGerenciar({ novoTipo: '', novoLocal: '' });
+    setErro('');
+    setSucesso('');
   };
 
   const abrirModalConfirmarExclusao = (epiId) => {
-    definirEpiSelecionadoId(epiId);
-    definirExibirModalConfirmacao(true);
+    setEpiSelecionadoId(epiId);
+    setExibirModalConfirmacao(true);
   };
 
   const fecharModalConfirmarExclusao = () => {
-    definirExibirModalConfirmacao(false);
-    definirEpiSelecionadoId(null);
+    setExibirModalConfirmacao(false);
+    setEpiSelecionadoId(null);
   };
 
   const alterarFormularioEpi = (e) => {
-    definirDadosFormulario({ ...dadosFormulario, [e.target.id]: e.target.value });
+    setDadosFormulario({ ...dadosFormulario, [e.target.id]: e.target.value });
   };
 
   const alterarFormularioGerenciar = (e) => {
-    definirFormularioGerenciar({ ...formularioGerenciar, [e.target.id]: e.target.value });
+    setFormularioGerenciar({ ...formularioGerenciar, [e.target.id]: e.target.value });
   };
 
   const enviarFormularioEpi = async (e, ehEdicao = false) => {
     e.preventDefault();
-    definirErro('');
-    definirSucesso('');
+    setErro('');
+    setSucesso('');
 
     const dados = {
       nome: dadosFormulario.nome?.trim(),
@@ -252,7 +243,7 @@ const Epi = () => {
       ano_fabricacao: dadosFormulario.ano_fabricacao ? parseInt(dadosFormulario.ano_fabricacao) : null,
       descricao: dadosFormulario.descricao?.trim(),
       quantidade: dadosFormulario.quantidade ? parseInt(dadosFormulario.quantidade) : null,
-      obra_id: dadosFormulario.obra_id, // Inclui obra_id
+      obra_id: dadosFormulario.obra_id,
     };
 
     const erros = [];
@@ -266,189 +257,193 @@ const Epi = () => {
     if (!dados.obra_id) erros.push('Obra associada é obrigatória.');
 
     if (erros.length > 0) {
-      definirErro(erros.join(' '));
+      setErro(erros.join(' '));
       return;
     }
 
     try {
       if (ehEdicao) {
         await supabase.from('epis').update(dados).eq('id', dadosFormulario.id);
-        definirSucesso('EPI atualizado com sucesso!');
+        setSucesso('EPI atualizado com sucesso!');
       } else {
         await supabase.from('epis').insert([dados]);
-        definirSucesso('EPI adicionado com sucesso!');
+        setSucesso('EPI adicionado com sucesso!');
       }
-      await carregarEpis(userId);
+      await carregarEpis(userData.id);
       setTimeout(() => {
         ehEdicao ? fecharModalEditarEpi() : fecharModalAdicionarEpi();
       }, 1000);
     } catch (err) {
-      definirErro('Erro: ' + (err.message || 'Falha ao salvar EPI.'));
+      setErro('Erro: ' + (err.message || 'Falha ao salvar EPI.'));
     }
   };
 
   const excluirEpi = async () => {
     try {
       await supabase.from('epis').delete().eq('id', epiSelecionadoId);
-      definirEpis(epis.filter((epi) => epi.id !== epiSelecionadoId));
+      setEpis(epis.filter((epi) => epi.id !== epiSelecionadoId));
       fecharModalConfirmarExclusao();
     } catch (err) {
-      definirErro('Erro ao excluir EPI: ' + (err.message || 'Erro desconhecido.'));
+      setErro('Erro ao excluir EPI: ' + (err.message || 'Erro desconhecido.'));
     }
   };
 
   const adicionarTipoEpi = async () => {
     const novoTipo = formularioGerenciar.novoTipo.trim();
     if (!novoTipo) {
-      definirErro('Digite um tipo de EPI.');
+      setErro('Digite um tipo de EPI.');
       return;
     }
     if (tiposEpi.some((t) => t.label.toLowerCase() === novoTipo.toLowerCase())) {
-      definirErro('Este tipo de EPI já existe.');
+      setErro('Este tipo de EPI já existe.');
       return;
     }
-    definirTiposEpi([...tiposEpi, {
+    setTiposEpi([...tiposEpi, {
       value: novoTipo.toLowerCase().replace(/\s+/g, '-'),
       label: novoTipo,
     }]);
-    definirFormularioGerenciar({ ...formularioGerenciar, novoTipo: '' });
-    definirSucesso('Tipo de EPI adicionado com sucesso!');
-    setTimeout(() => definirSucesso(''), 2000);
+    setFormularioGerenciar({ ...formularioGerenciar, novoTipo: '' });
+    setSucesso('Tipo de EPI adicionado com sucesso!');
+    setTimeout(() => setSucesso(''), 2000);
   };
 
   const adicionarLocalUso = async () => {
     const novoLocal = formularioGerenciar.novoLocal.trim();
     if (!novoLocal) {
-      definirErro('Digite um local de uso.');
+      setErro('Digite um local de uso.');
       return;
     }
     if (locaisUso.some((l) => l.label.toLowerCase() === novoLocal.toLowerCase())) {
-      definirErro('Este local de uso já existe.');
+      setErro('Este local de uso já existe.');
       return;
     }
-    definirLocaisUso([...locaisUso, {
+    setLocaisUso([...locaisUso, {
       value: novoLocal.toLowerCase().replace(/\s+/g, '-'),
       label: novoLocal,
     }]);
-    definirFormularioGerenciar({ ...formularioGerenciar, novoLocal: '' });
-    definirSucesso('Local de uso adicionado com sucesso!');
-    setTimeout(() => definirSucesso(''), 2000);
+    setFormularioGerenciar({ ...formularioGerenciar, novoLocal: '' });
+    setSucesso('Local de uso adicionado com sucesso!');
+    setTimeout(() => setSucesso(''), 2000);
   };
 
   const removerTipoEpi = (indice) => {
-    definirTiposEpi(tiposEpi.filter((_, i) => i !== indice));
-    definirSucesso('Tipo de EPI removido com sucesso!');
-    setTimeout(() => definirSucesso(''), 2000);
+    setTiposEpi(tiposEpi.filter((_, i) => i !== indice));
+    setSucesso('Tipo de EPI removido com sucesso!');
+    setTimeout(() => setSucesso(''), 2000);
   };
 
   const removerLocalUso = (indice) => {
-    definirLocaisUso(locaisUso.filter((_, i) => i !== indice));
-    definirSucesso('Local de uso removido com sucesso!');
-    setTimeout(() => definirSucesso(''), 2000);
+    setLocaisUso(locaisUso.filter((_, i) => i !== indice));
+    setSucesso('Local de uso removido com sucesso!');
+    setTimeout(() => setSucesso(''), 2000);
   };
 
   const alternarExpansao = (epiId) => {
-    definirLinhasExpandidas((anterior) =>
-      anterior.includes(epiId) ? anterior.filter((id) => id !== epiId) : [...anterior, epiId]
+    setLinhasExpandidas((prev) =>
+      prev.includes(epiId) ? prev.filter((id) => id !== epiId) : [...prev, epiId]
     );
   };
 
-  if (estaAutenticado === null || carregando) {
-    return (
-      <div className="container">
-        <Sidebar />
-        <main className="main-content">
-          <div className="loading-container">
-            <div className="spinner"></div>
-            <p>Carregando...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (estaAutenticado === false) {
-    return null;
-  }
+  const ErrorMessage = ({ message, onRetry }) => (
+    <div className="error-container">
+      <p>{message}</p>
+      <button onClick={onRetry}>Tentar novamente</button>
+    </div>
+  );
 
   return (
     <div className="container">
-      <Sidebar />
-      <main className="main-content">
-        <header className="main-header">
-          <div className="header-content">
-            <div className="header-icons">
-              <i className="ri-notification-3-line"></i>
-            </div>
-          </div>
-        </header>
-        <section className="section">
-          <div className="section-header">
-            <h2>Equipamentos de Proteção Individual</h2>
-            <EpiFiltro
-              filtros={filtros}
-              aoAlterarFiltros={alterarFiltros}
-              abrirModalAdicionar={abrirModalAdicionarEpi}
-              abrirModalGerenciar={abrirModalGerenciarOpcoes}
+      {loading ? (
+        <LoadingSpinner />
+      ) : erro ? (
+        <ErrorMessage message={erro} onRetry={() => window.location.reload()} />
+      ) : userData ? (
+        <div className={`dashboard-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
+          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
+            <Sidebar
+              userType={userData.tipo}
+              userEmail={userData.email}
+              isMinimized={isSidebarMinimized}
+              onToggle={handleToggleSidebar}
             />
           </div>
-          <TabelaEpi
-            epis={epis}
-            obras={obras}
-            linhasExpandidas={linhasExpandidas}
-            alternarExpansao={alternarExpansao}
-            editarEpi={abrirModalEditarEpi}
-            excluirEpi={abrirModalConfirmarExclusao}
-          />
-        </section>
-        <ModalFormularioEpi
-          estaAberto={exibirModalAdicionar}
-          fecharModal={fecharModalAdicionarEpi}
-          dadosFormulario={dadosFormulario}
-          alterarFormulario={alterarFormularioEpi}
-          enviarFormulario={enviarFormularioEpi}
-          tiposEpi={tiposEpi}
-          locaisUso={locaisUso}
-          obras={obras}
-          erro={erro}
-          sucesso={sucesso}
-          ehEdicao={false}
-        />
-        <ModalFormularioEpi
-          estaAberto={exibirModalEditar}
-          fecharModal={fecharModalEditarEpi}
-          dadosFormulario={dadosFormulario}
-          alterarFormulario={alterarFormularioEpi}
-          enviarFormulario={enviarFormularioEpi}
-          tiposEpi={tiposEpi}
-          locaisUso={locaisUso}
-          obras={obras}
-          erro={erro}
-          sucesso={sucesso}
-          ehEdicao={true}
-        />
-        <ModalGerenciarOpcoes
-          estaAberto={exibirModalGerenciar}
-          fecharModal={fecharModalGerenciarOpcoes}
-          tiposEpi={tiposEpi}
-          locaisUso={locaisUso}
-          formularioGerenciar={formularioGerenciar}
-          alterarFormularioGerenciar={alterarFormularioGerenciar}
-          adicionarTipo={adicionarTipoEpi}
-          adicionarLocal={adicionarLocalUso}
-          removerTipo={removerTipoEpi}
-          removerLocal={removerLocalUso}
-          erro={erro}
-          sucesso={sucesso}
-        />
-        <ModalConfirmacao
-          estaAberto={exibirModalConfirmacao}
-          fecharModal={fecharModalConfirmarExclusao}
-          confirmar={excluirEpi}
-          titulo="Confirmar Exclusão"
-          mensagem="Tem certeza que deseja excluir este EPI?"
-        />
-      </main>
+          <main className="main-content">
+            <header className="main-header">
+              <div className="header-content">
+                <div className="header-icons">
+                  <i className="ri-notification-3-line"></i>
+                </div>
+              </div>
+            </header>
+            <section className="section">
+              <div className="section-header">
+                <h2>Equipamentos de Proteção Individual</h2>
+                <EpiFiltro
+                  filtros={filtros}
+                  aoAlterarFiltros={alterarFiltros}
+                  abrirModalAdicionar={abrirModalAdicionarEpi}
+                  abrirModalGerenciar={abrirModalGerenciarOpcoes}
+                />
+              </div>
+              <TabelaEpi
+                epis={epis}
+                obras={obras}
+                linhasExpandidas={linhasExpandidas}
+                alternarExpansao={alternarExpansao}
+                editarEpi={abrirModalEditarEpi}
+                excluirEpi={abrirModalConfirmarExclusao}
+              />
+            </section>
+            <ModalFormularioEpi
+              estaAberto={exibirModalAdicionar}
+              fecharModal={fecharModalAdicionarEpi}
+              dadosFormulario={dadosFormulario}
+              alterarFormulario={alterarFormularioEpi}
+              enviarFormulario={enviarFormularioEpi}
+              tiposEpi={tiposEpi}
+              locaisUso={locaisUso}
+              obras={obras}
+              erro={erro}
+              sucesso={sucesso}
+              ehEdicao={false}
+            />
+            <ModalFormularioEpi
+              estaAberto={exibirModalEditar}
+              fecharModal={fecharModalEditarEpi}
+              dadosFormulario={dadosFormulario}
+              alterarFormulario={alterarFormularioEpi}
+              enviarFormulario={enviarFormularioEpi}
+              tiposEpi={tiposEpi}
+              locaisUso={locaisUso}
+              obras={obras}
+              erro={erro}
+              sucesso={sucesso}
+              ehEdicao={true}
+            />
+            <ModalGerenciarOpcoes
+              estaAberto={exibirModalGerenciar}
+              fecharModal={fecharModalGerenciarOpcoes}
+              tiposEpi={tiposEpi}
+              locaisUso={locaisUso}
+              formularioGerenciar={formularioGerenciar}
+              alterarFormularioGerenciar={alterarFormularioGerenciar}
+              adicionarTipo={adicionarTipoEpi}
+              adicionarLocal={adicionarLocalUso}
+              removerTipo={removerTipoEpi}
+              removerLocal={removerLocalUso}
+              erro={erro}
+              sucesso={sucesso}
+            />
+            <ModalConfirmacao
+              estaAberto={exibirModalConfirmacao}
+              fecharModal={fecharModalConfirmarExclusao}
+              confirmar={excluirEpi}
+              titulo="Confirmar Exclusão"
+              mensagem="Tem certeza que deseja excluir este EPI?"
+            />
+          </main>
+        </div>
+      ) : null}
     </div>
   );
 };

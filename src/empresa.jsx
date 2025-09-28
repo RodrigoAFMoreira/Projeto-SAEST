@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
+import Sidebar from './componentes/sidebar'; 
+import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
 import './css/empresaObra.css';
-//import 'remixicon/fonts/remixicon.css';
 
 const Empresa = () => {
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
   const [empresas, setEmpresas] = useState([]);
   const [obras, setObras] = useState([]);
   const [filter, setFilter] = useState('');
@@ -29,25 +31,48 @@ const Empresa = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setFormData((prev) => ({ ...prev, user_id: session.user.id }));
-        document.querySelector('.user-profile .name').textContent =
-          session.user.user_metadata?.displayName || 'Usuário';
-        document.querySelector('.user-profile .email').textContent =
-          session.user.email || 'email@não.disponível';
-        fetchEmpresas();
-        fetchObras();
-      } else {
-        navigate('/login');
-      }
-    });
+    const fetchUser = async () => {
+      setLoading(true);
+      setErrorMessage(null);
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          setErrorMessage('Usuário não está logado. Redirecionando para login...');
+          setTimeout(() => navigate('/login'), 2000);
+          return;
+        }
+        setUser(user);
 
-    return () => authListener.subscription?.unsubscribe();
+        const { data, error: userError } = await supabase
+          .from('usuarios')
+          .select('id, nome, email, tipo, telefone')
+          .eq('id', user.id)
+          .single();
+        if (userError || !data) {
+          console.warn('Documento do usuário não encontrado, usando padrão user');
+          setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
+        } else {
+          setUserData(data);
+        }
+
+        if (data && data.tipo !== 'user') {
+          await Promise.all([fetchEmpresas(), fetchObras()]);
+        } else {
+          setErrorMessage('Acesso não autorizado para este usuário.');
+          setTimeout(() => navigate('/menu'), 2000);
+        }
+      } catch (err) {
+        setErrorMessage('Erro ao carregar dados do usuário. Tente novamente.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
   }, [navigate]);
 
   const fetchEmpresas = async () => {
@@ -121,7 +146,6 @@ const Empresa = () => {
 
     try {
       const cleanedCnpj = cleanCnpj(formData.cnpj);
-      console.log('Saving empresa with cnpj:', cleanedCnpj);
       const { error } = await supabase.from('empresa').insert([
         {
           razao_social: formData.razao_social,
@@ -176,7 +200,6 @@ const Empresa = () => {
 
     try {
       const cleanedCnpj = cleanCnpj(formData.cnpj);
-      console.log('Updating empresa with cnpj:', cleanedCnpj);
       const { error } = await supabase
         .from('empresa')
         .update({
@@ -258,178 +281,156 @@ const Empresa = () => {
     setExpandedRow(expandedRow === cnpj ? null : cnpj);
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarMinimized(!isSidebarMinimized);
+  };
+
   const filteredEmpresas = empresas.filter((empresa) =>
     empresa.razao_social.toLowerCase().includes(filter.toLowerCase())
   );
 
+  const ErrorMessage = ({ message, onRetry }) => (
+    <div className="error-container">
+      <p>{message}</p>
+      <button onClick={onRetry}>Tentar novamente</button>
+    </div>
+  );
+
   return (
     <div className="container">
-      <aside className="sidebar" id="sidebar">
-        <div>
-          <div className="sidebar-header">
-            <div className="logo">SAEST</div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : errorMessage ? (
+        <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
+      ) : user ? (
+        <div className="dashboard-wrapper">
+          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
+            <Sidebar
+              userType={userData.tipo}
+              userEmail={userData.email}
+              isMinimized={isSidebarMinimized}
+              onToggle={handleToggleSidebar}
+            />
           </div>
-          <nav className="sidebar-nav">
-            <ul>
-              <li>
-                <a href="#" onClick={() => navigate('/menu')} className="dashboard-link">
-                  <i className="ri-home-line"></i> Dashboard
-                </a>
-              </li>
-              <li className="active">
-                <a href="#" onClick={() => navigate('/construtoras')} className="construtoras-link">
-                  <i className="ri-building-line"></i> Construtoras
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/obras')} className="obras-link">
-                  <i className="ri-building-2-line"></i> Obras
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/documentos')}>
-                  <i className="ri-file-list-3-line"></i> Documentos
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/epis')} className="epis-link">
-                  <i className="ri-shield-check-line"></i> EPIs
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/configuracoes')} className="configuracoes-link">
-                  <i className="ri-settings-3-line"></i> Configurações
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div className="user-profile">
-          <div className="user-info">
-            <div className="name">Usuário</div>
-            <div className="email">usuario@email.com</div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="main-content">
-        <header className="main-header">
-          <i className="ri-notification-3-line"></i>
-        </header>
-
-        <section className="content-box">
-          <div className="content-header">
-            <h2>Construtoras</h2>
-            <div className="actions">
-              <input
-                type="text"
-                placeholder="Pesquisar por nome"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-              <button className="btn primary" onClick={() => setIsModalOpen(true)}>
-                <i className="ri-add-line"></i> Cadastrar Construtora
-              </button>
-            </div>
-          </div>
-          <table className="empresa-table">
-            <thead>
-              <tr>
-                <th>Construtora</th>
-                <th>Obras Relacionadas</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredEmpresas.length === 0 ? (
-                <tr>
-                  <td colSpan="3">Nenhuma construtora encontrada.</td>
-                </tr>
-              ) : (
-                filteredEmpresas.map((empresa) => (
-                  <React.Fragment key={empresa.cnpj}>
-                    <tr data-cnpj={empresa.cnpj}>
-                      <td>{empresa.razao_social || 'Nome não disponível'}</td>
-                      <td>
-                        {obras
-                          .filter((obra) => obra.cnpj_empresa === empresa.cnpj)
-                          .map((obra) => (
-                            <div key={obra.id}>
-                              {obra.endereco
-                                ? `${obra.endereco.logradouro}, ${obra.endereco.numero || ''}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
-                                : 'Endereço não disponível'} (Status: {obra.status || 'ativo'})
-                            </div>
-                          ))}
-                        {obras.filter((obra) => obra.cnpj_empresa === empresa.cnpj).length === 0 &&
-                          'Nenhuma obra relacionada'}
-                      </td>
-                      <td>
-                        <button title="Editar" onClick={() => editEmpresa(empresa.cnpj)}>
-                          <i className="ri-edit-line"></i>
-                        </button>
-                        <button
-                          title="Expandir"
-                          className="expand-btn"
-                          onClick={() => toggleExpandRow(empresa.cnpj)}
-                        >
-                          <i
-                            className={
-                              expandedRow === empresa.cnpj
-                                ? 'ri-arrow-up-s-line'
-                                : 'ri-arrow-down-s-line'
-                            }
-                          ></i>
-                        </button>
-                        <button
-                          title="Deletar"
-                          onClick={() =>
-                            setDeleteEmpresa({
-                              cnpj: empresa.cnpj,
-                              razao_social: empresa.razao_social,
-                            })
-                          }
-                        >
-                          <i className="ri-delete-bin-line"></i>
-                        </button>
-                      </td>
+          <main className="main-content">
+            <header className="main-header">
+              <i className="ri-notification-3-line"></i>
+            </header>
+            <section className="content-box">
+              <div className="content-header">
+                <h2>Construtoras</h2>
+                <div className="actions">
+                  <input
+                    type="text"
+                    placeholder="Pesquisar por nome"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                  />
+                  <button className="btn primary" onClick={() => setIsModalOpen(true)}>
+                    <i className="ri-add-line"></i> Cadastrar Construtora
+                  </button>
+                </div>
+              </div>
+              <table className="empresa-table">
+                <thead>
+                  <tr>
+                    <th>Construtora</th>
+                    <th>Obras Relacionadas</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredEmpresas.length === 0 ? (
+                    <tr>
+                      <td colSpan="3">Nenhuma construtora encontrada.</td>
                     </tr>
-                    {expandedRow === empresa.cnpj && (
-                      <tr className="expanded-row" data-cnpj={empresa.cnpj}>
-                        <td colSpan="3">
-                          <div className="expanded-details">
-                            <p>
-                              <strong>Nome Fantasia:</strong> {empresa.nome_fantasia || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>E-mail:</strong> {empresa.email || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>Porte da Construtora:</strong> {empresa.porte || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>Telefone:</strong> {empresa.telefone || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>Responsável Técnico:</strong>{' '}
-                              {empresa.responsavel_tecnico || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>CNPJ:</strong> {empresa.cnpj || 'N/A'}
-                            </p>
-                            <p>
-                              <strong>Nacionalidade:</strong> {empresa.nacionalidade || 'N/A'}
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
-      </main>
+                  ) : (
+                    filteredEmpresas.map((empresa) => (
+                      <React.Fragment key={empresa.cnpj}>
+                        <tr data-cnpj={empresa.cnpj}>
+                          <td>{empresa.razao_social || 'Nome não disponível'}</td>
+                          <td>
+                            {obras
+                              .filter((obra) => obra.cnpj_empresa === empresa.cnpj)
+                              .map((obra) => (
+                                <div key={obra.id}>
+                                  {obra.endereco
+                                    ? `${obra.endereco.logradouro}, ${obra.endereco.numero || ''}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
+                                    : 'Endereço não disponível'} (Status: {obra.status || 'ativo'})
+                                </div>
+                              ))}
+                            {obras.filter((obra) => obra.cnpj_empresa === empresa.cnpj).length === 0 &&
+                              'Nenhuma obra relacionada'}
+                          </td>
+                          <td>
+                            <button title="Editar" onClick={() => editEmpresa(empresa.cnpj)}>
+                              <i className="ri-edit-line"></i>
+                            </button>
+                            <button
+                              title="Expandir"
+                              className="expand-btn"
+                              onClick={() => toggleExpandRow(empresa.cnpj)}
+                            >
+                              <i
+                                className={
+                                  expandedRow === empresa.cnpj
+                                    ? 'ri-arrow-up-s-line'
+                                    : 'ri-arrow-down-s-line'
+                                }
+                              ></i>
+                            </button>
+                            <button
+                              title="Deletar"
+                              onClick={() =>
+                                setDeleteEmpresa({
+                                  cnpj: empresa.cnpj,
+                                  razao_social: empresa.razao_social,
+                                })
+                              }
+                            >
+                              <i className="ri-delete-bin-line"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedRow === empresa.cnpj && (
+                          <tr className="expanded-row" data-cnpj={empresa.cnpj}>
+                            <td colSpan="3">
+                              <div className="expanded-details">
+                                <p>
+                                  <strong>Nome Fantasia:</strong> {empresa.nome_fantasia || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>E-mail:</strong> {empresa.email || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>Porte da Construtora:</strong> {empresa.porte || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>Telefone:</strong> {empresa.telefone || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>Responsável Técnico:</strong>{' '}
+                                  {empresa.responsavel_tecnico || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>CNPJ:</strong> {empresa.cnpj || 'N/A'}
+                                </p>
+                                <p>
+                                  <strong>Nacionalidade:</strong> {empresa.nacionalidade || 'N/A'}
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </section>
+          </main>
+        </div>
+      ) : null}
 
       {isModalOpen && (
         <div className="modal-overlay" role="dialog" aria-labelledby="modal-create-title">

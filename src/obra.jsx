@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
+import Sidebar from './componentes/sidebar'; 
+import LoadingSpinner from './componentes/carregando'; 
 import './css/menuEsquerdo.css';
 import './css/empresaObra.css';
-//import 'remixicon/fonts/remixicon.css';
 
 const Obra = () => {
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
   const [obras, setObras] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [filter, setFilter] = useState('');
@@ -28,67 +30,65 @@ const Obra = () => {
     data_inicio: '',
     data_termino: '',
     responsavel_tecnico: '',
-    alvara: null, 
-    registro_crea: null, 
-    registro_cal: null, 
+    alvara: null,
+    registro_crea: null,
+    registro_cal: null,
     cnpj_empresa: '',
     user_id: '',
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
+  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error fetching session:', error);
-        navigate('/login');
-        return;
-      }
-      if (session?.user) {
-        setUser(session.user);
-        setFormData((prev) => ({ ...prev, user_id: session.user.id }));
-        document.querySelector('.user-profile .name').textContent =
-          session.user.user_metadata?.displayName || 'Usuário';
-        document.querySelector('.user-profile .email').textContent =
-          session.user.email || 'email@não.disponível';
-        fetchObras();
-        fetchEmpresas();
-      } else {
-        navigate('/login');
+    const fetchUser = async () => {
+      setLoading(true);
+      setErrorMessage('');
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          setErrorMessage('Usuário não está logado. Redirecionando para login...');
+          setTimeout(() => navigate('/login'), 2000);
+          return;
+        }
+        setUser(user);
+
+        const { data, error: userError } = await supabase
+          .from('usuarios')
+          .select('id, nome, email, tipo, telefone')
+          .eq('id', user.id)
+          .single();
+        if (userError || !data) {
+          console.warn('Documento do usuário não encontrado, usando padrão user');
+          setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
+        } else {
+          setUserData(data);
+        }
+
+        if (data && data.tipo !== 'user') {
+          await Promise.all([fetchObras(), fetchEmpresas()]);
+        } else {
+          setErrorMessage('Acesso não autorizado para este usuário.');
+          setTimeout(() => navigate('/menu'), 2000);
+        }
+      } catch (err) {
+        setErrorMessage('Erro ao carregar dados do usuário. Tente novamente.');
+      } finally {
+        setLoading(false);
       }
     };
-
-    checkSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setFormData((prev) => ({ ...prev, user_id: session.user.id }));
-        document.querySelector('.user-profile .name').textContent =
-          session.user.user_metadata?.displayName || 'Usuário';
-        document.querySelector('.user-profile .email').textContent =
-          session.user.email || 'email@não.disponível';
-        fetchObras();
-        fetchEmpresas();
-      } else {
-        navigate('/login');
-      }
-    });
-
-    return () => authListener.subscription?.unsubscribe();
+    fetchUser();
   }, [navigate]);
 
   const fetchEmpresas = async () => {
     try {
-      console.log('Fetching all empresas');
       const { data, error } = await supabase
         .from('empresa')
         .select('cnpj, razao_social');
       if (error) throw error;
-      console.log('Empresas fetched:', data);
       setEmpresas(data || []);
     } catch (error) {
       console.error('Erro ao carregar empresas:', error);
@@ -227,7 +227,6 @@ const Obra = () => {
 
     try {
       const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      console.log('Checking empresa with cnpj:', cleanedCnpj);
       const { data: empresaExists, error: empresaError } = await supabase
         .from('empresa')
         .select('cnpj')
@@ -235,7 +234,6 @@ const Obra = () => {
         .single();
       if (empresaError || !empresaExists) throw new Error('Construtora não encontrada.');
 
-      // upload dos pDFs
       const alvaraUrl = await uploadFileToSupabase(formData.alvara, 'alvara');
       const registroCreaUrl = await uploadFileToSupabase(formData.registro_crea, 'registro_crea');
       const registroCalUrl = await uploadFileToSupabase(formData.registro_cal, 'registro_cal');
@@ -350,7 +348,6 @@ const Obra = () => {
 
     try {
       const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      console.log('Checking empresa with cnpj:', cleanedCnpj);
       const { data: empresaExists, error: empresaError } = await supabase
         .from('empresa')
         .select('cnpj')
@@ -443,7 +440,6 @@ const Obra = () => {
 
   const handleDelete = async () => {
     try {
-      // deletar !!!
       const { data: obraData, error: obraError } = await supabase
         .from('obra')
         .select('obras_documentos(alvara, registro_crea, registro_cal)')
@@ -454,7 +450,7 @@ const Obra = () => {
       const { alvara, registro_crea, registro_cal } = obraData.obras_documentos;
       const filesToDelete = [alvara, registro_crea, registro_cal]
         .filter(url => url)
-        .map(url => url.split('/').slice(-2).join('/')); 
+        .map(url => url.split('/').slice(-2).join('/'));
 
       if (filesToDelete.length > 0) {
         await supabase.storage.from('documents').remove(filesToDelete);
@@ -524,6 +520,10 @@ const Obra = () => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
+  const handleToggleSidebar = () => {
+    setIsSidebarMinimized(!isSidebarMinimized);
+  };
+
   const filteredObras = obras.filter((obra) => {
     const endereco = `${obra.endereco?.logradouro || ''}, ${obra.endereco?.cidade || ''} - ${obra.endereco?.uf || ''}`;
     return (
@@ -532,186 +532,160 @@ const Obra = () => {
     );
   });
 
+  const ErrorMessage = ({ message, onRetry }) => (
+    <div className="error-container">
+      <p>{message}</p>
+      <button onClick={onRetry}>Tentar novamente</button>
+    </div>
+  );
+
   return (
     <div className="container">
-      <aside className="sidebar" id="sidebar">
-        <div>
-          <div className="sidebar-header">
-            <div className="logo">SAEST</div>
+      {loading ? (
+        <LoadingSpinner />
+      ) : errorMessage ? (
+        <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
+      ) : user ? (
+        <div className="dashboard-wrapper">
+          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
+            <Sidebar
+              userType={userData.tipo}
+              userEmail={userData.email}
+              isMinimized={isSidebarMinimized}
+              onToggle={handleToggleSidebar}
+            />
           </div>
-          <nav className="sidebar-nav">
-            <ul>
-              <li>
-                <a href="#" onClick={() => navigate('/menu')} className="dashboard-link">
-                  <i className="ri-home-line"></i> Dashboard
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/construtoras')} className="construtoras-link">
-                  <i className="ri-building-line"></i> Construtoras
-                </a>
-              </li>
-              <li className="active">
-                <a href="#" onClick={() => navigate('/obras')} className="obras-link">
-                  <i className="ri-building-2-line"></i> Obras
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/documentos')}>
-                  <i className="ri-file-list-3-line"></i> Documentos
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/epis')} className="epis-link">
-                  <i className="ri-shield-check-line"></i> EPIs
-                </a>
-              </li>
-              <li>
-                <a href="#" onClick={() => navigate('/configuracoes')} className="configuracoes-link">
-                  <i className="ri-settings-3-line"></i> Configurações
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div className="user-profile">
-          <div className="user-info">
-            <div className="name">Usuário</div>
-            <div className="email">usuario@email.com</div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="main-content">
-        <header className="main-header">
-          <i className="ri-notification-3-line"></i>
-        </header>
-
-        <section className="content-box">
-          <div className="content-header">
-            <h2>Obras</h2>
-            <div className="actions">
-              <input
-                type="text"
-                placeholder="Pesquisar por endereço"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-              />
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="">Todas</option>
-                <option value="ativa">Ativas</option>
-                <option value="inativa">Inativas</option>
-                <option value="concluida">Concluídas</option>
-              </select>
-              <button className="btn primary" onClick={() => setIsModalOpen(true)}>
-                <i className="ri-add-line"></i> Cadastrar Obra
-              </button>
-            </div>
-          </div>
-          <table className="obra-table">
-            <thead>
-              <tr>
-                <th>Obra</th>
-                <th>Empresa Associada</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredObras.length === 0 ? (
-                <tr>
-                  <td colSpan="3">Nenhuma obra encontrada.</td>
-                </tr>
-              ) : (
-                filteredObras.map((obra) => (
-                  <React.Fragment key={obra.id}>
-                    <tr data-id={obra.id}>
-                      <td>
-                        {obra.endereco
-                          ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
-                          : 'Endereço não disponível'}
-                      </td>
-                      <td>{obra.empresa?.razao_social || 'Empresa não encontrada'}</td>
-                      <td>
-                        <button title="Editar" onClick={() => editObra(obra.id)}>
-                          <i className="ri-edit-line"></i>
-                        </button>
-                        <button
-                          title="Expandir"
-                          className="expand-btn"
-                          onClick={() => toggleExpandRow(obra.id)}
-                        >
-                          <i
-                            className={
-                              expandedRow === obra.id
-                                ? 'ri-arrow-up-s-line'
-                                : 'ri-arrow-down-s-line'
-                            }
-                          ></i>
-                        </button>
-                        <button
-                          title="Deletar"
-                          onClick={() =>
-                            setDeleteObra({
-                              id: obra.id,
-                              endereco: obra.endereco
-                                ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
-                                : 'Obra sem endereço',
-                            })
-                          }
-                        >
-                          <i className="ri-delete-bin-line"></i>
-                        </button>
-                      </td>
+          <main className="main-content">
+            <header className="main-header">
+              <i className="ri-notification-3-line"></i>
+            </header>
+            <section className="content-box">
+              <div className="content-header">
+                <h2>Obras</h2>
+                <div className="actions">
+                  <input
+                    type="text"
+                    placeholder="Pesquisar por endereço"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                  />
+                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                    <option value="">Todas</option>
+                    <option value="ativa">Ativas</option>
+                    <option value="inativa">Inativas</option>
+                    <option value="concluida">Concluídas</option>
+                  </select>
+                  <button className="btn primary" onClick={() => setIsModalOpen(true)}>
+                    <i className="ri-add-line"></i> Cadastrar Obra
+                  </button>
+                </div>
+              </div>
+              <table className="obra-table">
+                <thead>
+                  <tr>
+                    <th>Obra</th>
+                    <th>Empresa Associada</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredObras.length === 0 ? (
+                    <tr>
+                      <td colSpan="3">Nenhuma obra encontrada.</td>
                     </tr>
-                    {expandedRow === obra.id && (
-                      <tr className="expanded-row" data-id={obra.id}>
-                        <td colSpan="3">
-                          <div className="expanded-details">
-                            <p><strong>Status:</strong> {obra.status || 'N/A'}</p>
-                            <p><strong>Data de Início:</strong> {obra.data_inicio || 'N/A'}</p>
-                            <p><strong>Data de Término:</strong> {obra.data_termino || 'N/A'}</p>
-                            <p><strong>Responsável Técnico:</strong> {obra.responsavel_tecnico || 'N/A'}</p>
-                            <p>
-                              <strong>Alvará:</strong>{' '}
-                              {obra.obras_documentos?.alvara ? (
-                                <a href={obra.obras_documentos.alvara} target="_blank" rel="noopener noreferrer">
-                                  Visualizar PDF
-                                </a>
-                              ) : (
-                                'N/A'
-                              )}
-                            </p>
-                            <p>
-                              <strong>Registro CREA:</strong>{' '}
-                              {obra.obras_documentos?.registro_crea ? (
-                                <a href={obra.obras_documentos.registro_crea} target="_blank" rel="noopener noreferrer">
-                                  Visualizar PDF
-                                </a>
-                              ) : (
-                                'N/A'
-                              )}
-                            </p>
-                            <p>
-                              <strong>Registro CAL:</strong>{' '}
-                              {obra.obras_documentos?.registro_cal ? (
-                                <a href={obra.obras_documentos.registro_cal} target="_blank" rel="noopener noreferrer">
-                                  Visualizar PDF
-                                </a>
-                              ) : (
-                                'N/A'
-                              )}
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
-        </section>
-      </main>
+                  ) : (
+                    filteredObras.map((obra) => (
+                      <React.Fragment key={obra.id}>
+                        <tr data-id={obra.id}>
+                          <td>
+                            {obra.endereco
+                              ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
+                              : 'Endereço não disponível'}
+                          </td>
+                          <td>{obra.empresa?.razao_social || 'Empresa não encontrada'}</td>
+                          <td>
+                            <button title="Editar" onClick={() => editObra(obra.id)}>
+                              <i className="ri-edit-line"></i>
+                            </button>
+                            <button
+                              title="Expandir"
+                              className="expand-btn"
+                              onClick={() => toggleExpandRow(obra.id)}
+                            >
+                              <i
+                                className={
+                                  expandedRow === obra.id
+                                    ? 'ri-arrow-up-s-line'
+                                    : 'ri-arrow-down-s-line'
+                                }
+                              ></i>
+                            </button>
+                            <button
+                              title="Deletar"
+                              onClick={() =>
+                                setDeleteObra({
+                                  id: obra.id,
+                                  endereco: obra.endereco
+                                    ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
+                                    : 'Obra sem endereço',
+                                })
+                              }
+                            >
+                              <i className="ri-delete-bin-line"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedRow === obra.id && (
+                          <tr className="expanded-row" data-id={obra.id}>
+                            <td colSpan="3">
+                              <div className="expanded-details">
+                                <p><strong>Status:</strong> {obra.status || 'N/A'}</p>
+                                <p><strong>Data de Início:</strong> {obra.data_inicio || 'N/A'}</p>
+                                <p><strong>Data de Término:</strong> {obra.data_termino || 'N/A'}</p>
+                                <p><strong>Responsável Técnico:</strong> {obra.responsavel_tecnico || 'N/A'}</p>
+                                <p>
+                                  <strong>Alvará:</strong>{' '}
+                                  {obra.obras_documentos?.alvara ? (
+                                    <a href={obra.obras_documentos.alvara} target="_blank" rel="noopener noreferrer">
+                                      Visualizar PDF
+                                    </a>
+                                  ) : (
+                                    'N/A'
+                                  )}
+                                </p>
+                                <p>
+                                  <strong>Registro CREA:</strong>{' '}
+                                  {obra.obras_documentos?.registro_crea ? (
+                                    <a href={obra.obras_documentos.registro_crea} target="_blank" rel="noopener noreferrer">
+                                      Visualizar PDF
+                                    </a>
+                                  ) : (
+                                    'N/A'
+                                  )}
+                                </p>
+                                <p>
+                                  <strong>Registro CAL:</strong>{' '}
+                                  {obra.obras_documentos?.registro_cal ? (
+                                    <a href={obra.obras_documentos.registro_cal} target="_blank" rel="noopener noreferrer">
+                                      Visualizar PDF
+                                    </a>
+                                  ) : (
+                                    'N/A'
+                                  )}
+                                </p>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </section>
+          </main>
+        </div>
+      ) : null}
 
       {isModalOpen && (
         <div className="modal-overlay" role="dialog" aria-labelledby="modal-create-title">
