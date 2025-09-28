@@ -1,10 +1,8 @@
-// usado em dasboard, menu, menuConstrutora, menuObra, menuDocumentosObra, epi, informacoes, certificacoes, configuracoes
-// Componente Sidebar que exibe a barra lateral de navegação com base no tipo de usuário.
 
-import React from 'react';
-import { NavLink } from 'react-router-dom'; 
-import { Info, FileText, Settings, Home, Building, Building2, File, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Info, FileText, Settings, Home, Building, Building2, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import '../css/menuEsquerdo.css';
+import TipoUser from './TipoUser';
 
 const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
   const items = userType === 'user'
@@ -15,9 +13,8 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
       ]
     : [
         { text: 'Dashboard', path: '/menu', icon: <Home /> },
-        { text: 'Construtoras', path: '/construtoras', icon: <Building /> }, 
-        { text: 'Obras', path: '/obras', icon: <Building2 /> }, 
-        { text: 'Documentos', path: '/documentos', icon: <File /> }, 
+        { text: 'Construtoras', path: '/construtoras', icon: <Building /> },
+        { text: 'Obras', path: '/obras', icon: <Building2 /> },
         { text: 'EPIs', path: '/epis', icon: <ShieldCheck /> },
         { text: 'Configurações', path: '/configuracoes', icon: <Settings /> },
       ];
@@ -49,7 +46,11 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
       </div>
       <div className="user-profile">
         <div className="user-info">
-          <div className={`name role-${userType}`}>{!isMinimized && userType}</div>
+          {!isMinimized && (
+            <div className={`name role-${userType}`}>
+              <TipoUser userType={userType} />
+            </div>
+          )}
           {!isMinimized && <div className="email" id="user-email">{userEmail || 'carregando...'}</div>}
         </div>
       </div>

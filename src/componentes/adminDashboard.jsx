@@ -1,16 +1,11 @@
-// Em uso em dashboard.jsx
-// Componente para visualização do painel de administração e gerente
-
 import React from 'react';
-import { LayoutDashboard, Building2, Building, ShieldCheck, Bell } from 'lucide-react';
+import { Bell, Building2, Building, ShieldCheck, LayoutDashboard } from 'lucide-react';
 
-const AdminGestorDashboard = ({ isSidebarMinimized }) => (
+const AdminDashboard = ({ isSidebarMinimized, counts }) => (
   <main className={`main-content admin-dashboard ${isSidebarMinimized ? 'shifted-left' : ''}`}>
     <header className="main-header">
       <Bell />
     </header>
-    {/* Silenced stats section */}
-    {/*
     <section className="stats-container">
       <div className="stat-card">
         <div className="stat-icon"><LayoutDashboard /></div>
@@ -41,7 +36,6 @@ const AdminGestorDashboard = ({ isSidebarMinimized }) => (
         </div>
       </div>
     </section>
-    */}
     <section className="section">
       <div className="section-header">
         <h2>Construtoras</h2>
@@ -93,11 +87,7 @@ const AdminGestorDashboard = ({ isSidebarMinimized }) => (
         <p>DataTable for usuarios to be implemented</p>
       </div>
     </section>
-    {/* Silenced chart section */}
-    {/*
-    <ChartSection chartData={chartData} chartOptions={chartOptions} />
-    */}
   </main>
 );
 
-export default AdminGestorDashboard;
+export default AdminDashboard;

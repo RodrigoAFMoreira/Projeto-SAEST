@@ -28,9 +28,9 @@ const Obra = () => {
     data_inicio: '',
     data_termino: '',
     responsavel_tecnico: '',
-    alvara: '',
-    registro_crea: '',
-    registro_cal: '',
+    alvara: null, 
+    registro_crea: null, 
+    registro_cal: null, 
     cnpj_empresa: '',
     user_id: '',
   });
@@ -175,6 +175,20 @@ const Obra = () => {
     }
   };
 
+  const uploadFileToSupabase = async (file, fileName) => {
+    if (!file) return null;
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .upload(`obras/${fileName}_${Date.now()}.pdf`, file, {
+        contentType: 'application/pdf',
+      });
+    if (error) throw error;
+    const { data: publicUrlData } = supabase.storage
+      .from('documents')
+      .getPublicUrl(data.path);
+    return publicUrlData.publicUrl;
+  };
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
@@ -189,9 +203,9 @@ const Obra = () => {
     if (!formData.status) return setErrorMessage('Por favor, selecione o status.');
     if (!formData.data_inicio) return setErrorMessage('Por favor, insira a data de início.');
     if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.alvara) return setErrorMessage('Por favor, insira o alvará.');
-    if (!formData.registro_crea) return setErrorMessage('Por favor, insira o registro no CREA.');
-    if (!formData.registro_cal) return setErrorMessage('Por favor, insira o registro no CAL.');
+    if (!formData.alvara) return setErrorMessage('Por favor, selecione um arquivo PDF para o alvará.');
+    if (!formData.registro_crea) return setErrorMessage('Por favor, selecione um arquivo PDF para o registro CREA.');
+    if (!formData.registro_cal) return setErrorMessage('Por favor, selecione um arquivo PDF para o registro CAL.');
     if (!formData.cnpj_empresa) return setErrorMessage('Por favor, selecione uma construtora.');
     if (empresas.length === 0) return setErrorMessage('Nenhuma construtora disponível. Cadastre uma construtora primeiro.');
 
@@ -221,6 +235,11 @@ const Obra = () => {
         .single();
       if (empresaError || !empresaExists) throw new Error('Construtora não encontrada.');
 
+      // upload dos pDFs
+      const alvaraUrl = await uploadFileToSupabase(formData.alvara, 'alvara');
+      const registroCreaUrl = await uploadFileToSupabase(formData.registro_crea, 'registro_crea');
+      const registroCalUrl = await uploadFileToSupabase(formData.registro_cal, 'registro_cal');
+
       const { data: enderecoData, error: enderecoError } = await supabase
         .from('endereco')
         .insert([
@@ -248,7 +267,6 @@ const Obra = () => {
             data_termino: formData.data_termino || null,
             responsavel_tecnico: formData.responsavel_tecnico,
             cnpj_empresa: cleanedCnpj,
-            // user_id: user?.id, // Commented out for temporary workaround
           },
         ])
         .select()
@@ -260,9 +278,9 @@ const Obra = () => {
         .insert([
           {
             obra_id: obraData.id,
-            alvara: formData.alvara,
-            registro_crea: formData.registro_crea,
-            registro_cal: formData.registro_cal,
+            alvara: alvaraUrl,
+            registro_crea: registroCreaUrl,
+            registro_cal: registroCalUrl,
           },
         ]);
       if (docError) throw docError;
@@ -280,9 +298,9 @@ const Obra = () => {
         data_inicio: '',
         data_termino: '',
         responsavel_tecnico: '',
-        alvara: '',
-        registro_crea: '',
-        registro_cal: '',
+        alvara: null,
+        registro_crea: null,
+        registro_cal: null,
         cnpj_empresa: '',
         user_id: user?.id || '',
       });
@@ -311,9 +329,6 @@ const Obra = () => {
     if (!formData.status) return setErrorMessage('Por favor, selecione o status.');
     if (!formData.data_inicio) return setErrorMessage('Por favor, insira a data de início.');
     if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.alvara) return setErrorMessage('Por favor, insira o alvará.');
-    if (!formData.registro_crea) return setErrorMessage('Por favor, insira o registro no CREA.');
-    if (!formData.registro_cal) return setErrorMessage('Por favor, insira o registro no CAL.');
     if (!formData.cnpj_empresa) return setErrorMessage('Por favor, selecione uma construtora.');
     if (empresas.length === 0) return setErrorMessage('Nenhuma construtora disponível. Cadastre uma construtora primeiro.');
 
@@ -372,17 +387,26 @@ const Obra = () => {
           data_termino: formData.data_termino || null,
           responsavel_tecnico: formData.responsavel_tecnico,
           cnpj_empresa: cleanedCnpj,
-          // user_id: user?.id, // Commented out for temporary workaround
         })
         .eq('id', editObraId);
       if (updateObraError) throw updateObraError;
 
+      const alvaraUrl = formData.alvara instanceof File
+        ? await uploadFileToSupabase(formData.alvara, 'alvara')
+        : formData.alvara;
+      const registroCreaUrl = formData.registro_crea instanceof File
+        ? await uploadFileToSupabase(formData.registro_crea, 'registro_crea')
+        : formData.registro_crea;
+      const registroCalUrl = formData.registro_cal instanceof File
+        ? await uploadFileToSupabase(formData.registro_cal, 'registro_cal')
+        : formData.registro_cal;
+
       const { error: docError } = await supabase
         .from('obras_documentos')
         .update({
-          alvara: formData.alvara,
-          registro_crea: formData.registro_crea,
-          registro_cal: formData.registro_cal,
+          alvara: alvaraUrl,
+          registro_crea: registroCreaUrl,
+          registro_cal: registroCalUrl,
         })
         .eq('obra_id', editObraId);
       if (docError) throw docError;
@@ -400,9 +424,9 @@ const Obra = () => {
         data_inicio: '',
         data_termino: '',
         responsavel_tecnico: '',
-        alvara: '',
-        registro_crea: '',
-        registro_cal: '',
+        alvara: null,
+        registro_crea: null,
+        registro_cal: null,
         cnpj_empresa: '',
         user_id: user?.id || '',
       });
@@ -419,6 +443,23 @@ const Obra = () => {
 
   const handleDelete = async () => {
     try {
+      // deletar !!!
+      const { data: obraData, error: obraError } = await supabase
+        .from('obra')
+        .select('obras_documentos(alvara, registro_crea, registro_cal)')
+        .eq('id', deleteObra.id)
+        .single();
+      if (obraError) throw obraError;
+
+      const { alvara, registro_crea, registro_cal } = obraData.obras_documentos;
+      const filesToDelete = [alvara, registro_crea, registro_cal]
+        .filter(url => url)
+        .map(url => url.split('/').slice(-2).join('/')); 
+
+      if (filesToDelete.length > 0) {
+        await supabase.storage.from('documents').remove(filesToDelete);
+      }
+
       const { error } = await supabase.from('obra').delete().eq('id', deleteObra.id);
       if (error) throw error;
       fetchObras();
@@ -465,9 +506,9 @@ const Obra = () => {
         data_inicio: data.data_inicio || '',
         data_termino: data.data_termino || '',
         responsavel_tecnico: data.responsavel_tecnico || '',
-        alvara: data.obras_documentos?.alvara || '',
-        registro_crea: data.obras_documentos?.registro_crea || '',
-        registro_cal: data.obras_documentos?.registro_cal || '',
+        alvara: data.obras_documentos?.alvara || null,
+        registro_crea: data.obras_documentos?.registro_crea || null,
+        registro_cal: data.obras_documentos?.registro_cal || null,
         cnpj_empresa: data.cnpj_empresa || '',
         user_id: data.user_id || user?.id || '',
       });
@@ -630,9 +671,36 @@ const Obra = () => {
                             <p><strong>Data de Início:</strong> {obra.data_inicio || 'N/A'}</p>
                             <p><strong>Data de Término:</strong> {obra.data_termino || 'N/A'}</p>
                             <p><strong>Responsável Técnico:</strong> {obra.responsavel_tecnico || 'N/A'}</p>
-                            <p><strong>Alvará:</strong> {obra.obras_documentos?.alvara || 'N/A'}</p>
-                            <p><strong>Registro CREA:</strong> {obra.obras_documentos?.registro_crea || 'N/A'}</p>
-                            <p><strong>Registro CAL:</strong> {obra.obras_documentos?.registro_cal || 'N/A'}</p>
+                            <p>
+                              <strong>Alvará:</strong>{' '}
+                              {obra.obras_documentos?.alvara ? (
+                                <a href={obra.obras_documentos.alvara} target="_blank" rel="noopener noreferrer">
+                                  Visualizar PDF
+                                </a>
+                              ) : (
+                                'N/A'
+                              )}
+                            </p>
+                            <p>
+                              <strong>Registro CREA:</strong>{' '}
+                              {obra.obras_documentos?.registro_crea ? (
+                                <a href={obra.obras_documentos.registro_crea} target="_blank" rel="noopener noreferrer">
+                                  Visualizar PDF
+                                </a>
+                              ) : (
+                                'N/A'
+                              )}
+                            </p>
+                            <p>
+                              <strong>Registro CAL:</strong>{' '}
+                              {obra.obras_documentos?.registro_cal ? (
+                                <a href={obra.obras_documentos.registro_cal} target="_blank" rel="noopener noreferrer">
+                                  Visualizar PDF
+                                </a>
+                              ) : (
+                                'N/A'
+                              )}
+                            </p>
                           </div>
                         </td>
                       </tr>
@@ -665,9 +733,9 @@ const Obra = () => {
                   data_inicio: '',
                   data_termino: '',
                   responsavel_tecnico: '',
-                  alvara: '',
-                  registro_crea: '',
-                  registro_cal: '',
+                  alvara: null,
+                  registro_crea: null,
+                  registro_cal: null,
                   cnpj_empresa: '',
                   user_id: user?.id || '',
                 });
@@ -819,37 +887,37 @@ const Obra = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="alvara">Alvará</label>
+                  <label htmlFor="alvara">Alvará (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="alvara"
                     name="alvara"
-                    value={formData.alvara}
-                    onChange={(e) => setFormData({ ...formData, alvara: e.target.value })}
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, alvara: e.target.files[0] })}
                     required
                   />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="registro-crea">Registro no CREA</label>
+                  <label htmlFor="registro-crea">Registro no CREA (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="registro-crea"
                     name="registro-crea"
-                    value={formData.registro_crea}
-                    onChange={(e) => setFormData({ ...formData, registro_crea: e.target.value })}
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, registro_crea: e.target.files[0] })}
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="registro-cal">Registro no CAL</label>
+                  <label htmlFor="registro-cal">Registro no CAL (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="registro-cal"
                     name="registro-cal"
-                    value={formData.registro_cal}
-                    onChange={(e) => setFormData({ ...formData, registro_cal: e.target.value })}
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, registro_cal: e.target.files[0] })}
                     required
                   />
                 </div>
@@ -895,9 +963,9 @@ const Obra = () => {
                       data_inicio: '',
                       data_termino: '',
                       responsavel_tecnico: '',
-                      alvara: '',
-                      registro_crea: '',
-                      registro_cal: '',
+                      alvara: null,
+                      registro_crea: null,
+                      registro_cal: null,
                       cnpj_empresa: '',
                       user_id: user?.id || '',
                     });
@@ -938,9 +1006,9 @@ const Obra = () => {
                   data_inicio: '',
                   data_termino: '',
                   responsavel_tecnico: '',
-                  alvara: '',
-                  registro_crea: '',
-                  registro_cal: '',
+                  alvara: null,
+                  registro_crea: null,
+                  registro_cal: null,
                   cnpj_empresa: '',
                   user_id: user?.id || '',
                 });
@@ -1093,39 +1161,60 @@ const Obra = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="edit-alvara">Alvará</label>
+                  <label htmlFor="edit-alvara">Alvará (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="edit-alvara"
                     name="alvara"
-                    value={formData.alvara}
-                    onChange={(e) => setFormData({ ...formData, alvara: e.target.value })}
-                    required
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, alvara: e.target.files[0] })}
                   />
+                  {formData.alvara && typeof formData.alvara === 'string' && (
+                    <p>
+                      Arquivo atual:{' '}
+                      <a href={formData.alvara} target="_blank" rel="noopener noreferrer">
+                        Visualizar PDF
+                      </a>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="edit-registro-crea">Registro no CREA</label>
+                  <label htmlFor="edit-registro-crea">Registro no CREA (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="edit-registro-crea"
                     name="registro-crea"
-                    value={formData.registro_crea}
-                    onChange={(e) => setFormData({ ...formData, registro_crea: e.target.value })}
-                    required
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, registro_crea: e.target.files[0] })}
                   />
+                  {formData.registro_crea && typeof formData.registro_crea === 'string' && (
+                    <p>
+                      Arquivo atual:{' '}
+                      <a href={formData.registro_crea} target="_blank" rel="noopener noreferrer">
+                        Visualizar PDF
+                      </a>
+                    </p>
+                  )}
                 </div>
                 <div className="form-group">
-                  <label htmlFor="edit-registro-cal">Registro no CAL</label>
+                  <label htmlFor="edit-registro-cal">Registro no CAL (PDF)</label>
                   <input
-                    type="text"
+                    type="file"
                     id="edit-registro-cal"
                     name="registro-cal"
-                    value={formData.registro_cal}
-                    onChange={(e) => setFormData({ ...formData, registro_cal: e.target.value })}
-                    required
+                    accept="application/pdf"
+                    onChange={(e) => setFormData({ ...formData, registro_cal: e.target.files[0] })}
                   />
+                  {formData.registro_cal && typeof formData.registro_cal === 'string' && (
+                    <p>
+                      Arquivo atual:{' '}
+                      <a href={formData.registro_cal} target="_blank" rel="noopener noreferrer">
+                        Visualizar PDF
+                      </a>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="form-row">
@@ -1169,9 +1258,9 @@ const Obra = () => {
                       data_inicio: '',
                       data_termino: '',
                       responsavel_tecnico: '',
-                      alvara: '',
-                      registro_crea: '',
-                      registro_cal: '',
+                      alvara: null,
+                      registro_crea: null,
+                      registro_cal: null,
                       cnpj_empresa: '',
                       user_id: user?.id || '',
                     });

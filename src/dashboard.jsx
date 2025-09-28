@@ -1,16 +1,14 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler } from 'chart.js';
 import LoadingSpinner from './componentes/carregando';
 import UserDashboard from './componentes/userDashboard';
-import AdminGestorDashboard from './componentes/adminGestorDashboard';
+import AdminDashboard from './componentes/adminDashboard';
+import GestorDashboard from './componentes/gestorDashboard';
 import Sidebar from './componentes/sidebar';
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 
 const formatCriadoEm = (date) => {
   if (date) {
@@ -69,8 +67,6 @@ const Dashboard = () => {
     fetchUser();
   }, [navigate]);
 
-  // silenciados por hora
-  /*
   const [counts, setCounts] = useState({ users: 0, empresas: 0, obras: 0, epis: 0 });
 
   useEffect(() => {
@@ -94,73 +90,10 @@ const Dashboard = () => {
       }
     };
 
-    const fetchChartData = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('obras')
-          .select('created_at')
-          .order('created_at', { ascending: true });
-        if (error) throw error;
-
-        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        const countsByMonth = data.reduce((acc, item) => {
-          const month = new Date(item.created_at).getMonth();
-          acc[month] = (acc[month] || 0) + 1;
-          return acc;
-        }, {});
-        const chartData = {
-          labels: months.slice(0, 7),
-          datasets: [
-            {
-              label: 'Obras',
-              data: months.slice(0, 7).map((_, i) => countsByMonth[i] || 0),
-              borderColor: '#1e3a8a',
-              tension: 0.4,
-              fill: true,
-              backgroundColor: 'rgba(30, 58, 138, 0.1)',
-            },
-          ],
-        };
-        setChartData(chartData);
-      } catch (error) {
-        console.error('Erro ao carregar dados do gráfico:', error.message);
-      }
-    };
-
     if (!loading && userData.tipo !== 'user') {
       fetchCounts();
-      fetchChartData();
     }
   }, [loading, userData.tipo]);
-
-  const [chartData, setChartData] = useState({
-    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul'],
-    datasets: [
-      {
-        label: 'Obras',
-        data: [0, 0, 0, 0, 0, 0, 0],
-        borderColor: '#1e3a8a',
-        tension: 0.4,
-        fill: true,
-        backgroundColor: 'rgba(30, 58, 138, 0.1)',
-      },
-    ],
-  });
-
-  const chartOptions = useMemo(
-    () => ({
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: (val) => val / 1000 + 'K' },
-        },
-      },
-    }),
-    []
-  );
-  */
 
   const handleToggleSidebar = () => {
     setIsSidebarMinimized(!isSidebarMinimized);
@@ -191,13 +124,10 @@ const Dashboard = () => {
           </div>
           {userData.tipo === 'user' ? (
             <UserDashboard isSidebarMinimized={isSidebarMinimized} user={userData} />
+          ) : userData.tipo === 'administrador' ? (
+            <AdminDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
           ) : (
-            <AdminGestorDashboard
-              isSidebarMinimized={isSidebarMinimized}
-              // counts={counts}
-              // chartData={chartData}
-              // chartOptions={chartOptions}
-            />
+            <GestorDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
           )}
         </div>
       ) : null}
