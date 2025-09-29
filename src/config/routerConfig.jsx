@@ -13,10 +13,7 @@ import Epi from '../epi';
 import Carregando from '../componentes/carregando'; 
 import Empresa from '../empresa';
 import Obra from '../obra';
-//import Documento from '../documento'; 
-import '../css/index.css';
-
-
+import Certifications from '../certificacaoUser'; 
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -58,9 +55,10 @@ const AppRoutes = () => {
           <Route path="/menu" element={<Dashboard />} />
           <Route path="/construtoras" element={<Empresa />} />
           <Route path="/obras" element={<Obra />} />
-          {/* <Route path="/documento" element={<Documento />} /> */}
+          <Route path="/certificacoes" element={<Certifications />} /> {/* Add Certifications route */}
           <Route path="/epis" element={<Epi />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/informacoes" element={<Informacao />} /> {/* Ensure Informacao route is included */}
         </Route>
       </Route>
       
