@@ -2,6 +2,7 @@
 // Componente de dashboard para gestores
 
 import { Bell, Building2, Building, ShieldCheck } from 'lucide-react';
+import '../css/adminDash.css';
 
 const GestorDashboard = ({ isSidebarMinimized, counts }) => (
   <main className={`main-content gestor-dashboard ${isSidebarMinimized ? 'shifted-left' : ''}`}>

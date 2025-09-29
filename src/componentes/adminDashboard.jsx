@@ -1,95 +1,238 @@
 // Em uso em dashboard.jsx
 // Componente de dashboard para administradores
 
+import React, { useState, useEffect } from 'react';
 import { Bell, Building2, Building, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import supabase from '../config/supabaseClient';
+import '../css/adminDash.css';
 
-const AdminDashboard = ({ isSidebarMinimized, counts }) => (
-  <main className={`main-content admin-dashboard ${isSidebarMinimized ? 'shifted-left' : ''}`}>
-    <header className="main-header">
-      <Bell />
-    </header>
-    <section className="stats-container">
-      <div className="stat-card">
-        <div className="stat-icon"><LayoutDashboard /></div>
-        <div className="stat-content">
-          <h3>Usuários</h3>
-          <p>{counts.users}</p>
-        </div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-icon"><Building /></div>
-        <div className="stat-content">
-          <h3>Construtoras</h3>
-          <p>{counts.empresas}</p>
-        </div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-icon"><Building2 /></div>
-        <div className="stat-content">
-          <h3>Obras</h3>
-          <p>{counts.obras}</p>
-        </div>
-      </div>
-      <div className="stat-card">
-        <div className="stat-icon"><ShieldCheck /></div>
-        <div className="stat-content">
-          <h3>EPIs</h3>
-          <p>{counts.epis}</p>
-        </div>
-      </div>
-    </section>
-    <section className="section">
-      <div className="section-header">
-        <h2>Construtoras</h2>
-      </div>
-      <p>EmpresasTable component to be implemented</p>
-    </section>
-    <section className="section">
-      <div className="section-header">
-        <h2>Obras</h2>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Endereço</th>
-            <th>Responsável</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colSpan="4">DataTable for obras to be implemented</td></tr>
-        </tbody>
-      </table>
-    </section>
-    <section className="section">
-      <div className="section-header">
-        <h2>EPIs</h2>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Obra</th>
-            <th>Qtd</th>
-            <th>Status</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colSpan="5">DataTable for epis to be implemented</td></tr>
-        </tbody>
-      </table>
-    </section>
-    <section className="section">
-      <div className="section-header">
-        <h2>Usuários</h2>
-      </div>
-      <div>
-        <p>DataTable for usuarios to be implemented</p>
-      </div>
-    </section>
-  </main>
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
 );
+const AdminDashboard = ({ isSidebarMinimized, counts }) => {
+  const [data, setData] = useState({
+    obrasPorTempo: [],
+    obrasPorEmpresa: [],
+    empresasCount: 0,
+    obrasCount: 0,
+    episCount: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) throw new Error('Usuário não autenticado');
+
+        const { count: empresasCount, error: empresasError } = await supabase
+          .from('empresa')
+          .select('*', { count: 'exact' });
+        if (empresasError) throw new Error(empresasError.message);
+
+        const { count: obrasCount, error: obrasError } = await supabase
+          .from('obra')
+          .select('*', { count: 'exact' });
+        if (obrasError) throw new Error(obrasError.message);
+
+        const { count: episCount, error: episError } = await supabase
+          .from('epis')
+          .select('*', { count: 'exact' });
+        if (episError) throw new Error(episError.message);
+
+        const { data: obrasPorTempoData, error: obrasPorTempoError } = await supabase
+          .from('obra')
+          .select('data_inicio')
+          .not('data_inicio', 'is', null);
+
+        if (obrasPorTempoError) throw new Error(obrasPorTempoError.message);
+
+        const obrasPorTempo = obrasPorTempoData
+          .reduce((acc, obra) => {
+            const mesAno = new Date(obra.data_inicio).toISOString().slice(0, 7);
+            acc[mesAno] = (acc[mesAno] || 0) + 1;
+            return acc;
+          }, {});
+        
+        const obrasPorTempoFormatted = Object.entries(obrasPorTempo)
+          .map(([mes_ano, quantidade]) => ({ mes_ano, quantidade: Math.round(quantidade) }))
+          .sort((a, b) => a.mes_ano.localeCompare(b.mes_ano));
+
+        const { data: obrasPorEmpresaData, error: obrasPorEmpresaError } = await supabase
+          .from('obra')
+          .select('cnpj_empresa, empresa!inner(nome_fantasia)');
+
+        if (obrasPorEmpresaError) throw new Error(obrasPorEmpresaError.message);
+
+        const obrasPorEmpresa = obrasPorEmpresaData
+          .reduce((acc, obra) => {
+            const nomeFantasia = obra.empresa.nome_fantasia || 'Sem Nome';
+            acc[nomeFantasia] = (acc[nomeFantasia] || 0) + 1;
+            return acc;
+          }, {});
+        
+        const obrasPorEmpresaFormatted = Object.entries(obrasPorEmpresa)
+          .map(([nome_fantasia, quantidade]) => ({ nome_fantasia, quantidade: Math.round(quantidade) }))
+          .sort((a, b) => b.quantidade - a.quantidade);
+
+        setData({
+          obrasPorTempo: obrasPorTempoFormatted,
+          obrasPorEmpresa: obrasPorEmpresaFormatted,
+          empresasCount,
+          obrasCount,
+          episCount,
+        });
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const obrasPorTempoData = {
+    labels: data.obrasPorTempo.length
+      ? data.obrasPorTempo.map(item => item.mes_ano)
+      : ['2025-09'],
+    datasets: [
+      {
+        label: 'Obras Iniciadas',
+        data: data.obrasPorTempo.length
+          ? data.obrasPorTempo.map(item => item.quantidade)
+          : [5],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: true,
+        tension: 0,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+    ],
+  };
+
+  const obrasPorEmpresaData = {
+    labels: data.obrasPorEmpresa.length
+      ? data.obrasPorEmpresa.map(item => item.nome_fantasia)
+      : ['Curitibas'],
+    datasets: [
+      {
+        label: 'Obras por Empresa',
+        data: data.obrasPorEmpresa.length
+          ? data.obrasPorEmpresa.map(item => item.quantidade)
+          : [2],
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.5)',
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function(value) {
+            return Number.isInteger(value) ? value : null;
+          }
+        }
+      }
+    }
+  };
+
+  return (
+    <main className={`main-content admin-dashboard ${isSidebarMinimized ? 'shifted-left' : ''}`}>
+      <header className="main-header">
+        <Bell />
+      </header>
+      <section className="stats-container">
+        <div className="stat-card">
+          <div className="stat-icon"><LayoutDashboard /></div>
+          <div className="stat-content">
+            <h3>Usuários</h3>
+            <p>{counts.users || 0}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon"><Building /></div>
+          <div className="stat-content">
+            <h3>Construtoras</h3>
+            <p>{data.empresasCount}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon"><Building2 /></div>
+          <div className="stat-content">
+            <h3>Obras</h3>
+            <p>{data.obrasCount}</p>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon"><ShieldCheck /></div>
+          <div className="stat-content">
+            <h3>EPIs</h3>
+            <p>{data.episCount}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-header">
+          <h2>Estatísticas de Obras</h2>
+        </div>
+        {loading && <p>Carregando gráficos...</p>}
+        {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
+        {!loading && !error && (
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1', minWidth: '300px', maxWidth: '600px' }}>
+              <h3>Obras por Tempo</h3>
+              <Line data={obrasPorTempoData} options={chartOptions} />
+            </div>
+            <div style={{ flex: '1', minWidth: '300px', maxWidth: '600px' }}>
+              <h3>Obras por Empresa</h3>
+              <Bar data={obrasPorEmpresaData} options={chartOptions} />
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+};
 
 export default AdminDashboard;
