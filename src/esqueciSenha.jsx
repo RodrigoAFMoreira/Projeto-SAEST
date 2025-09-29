@@ -1,3 +1,5 @@
+// Elemento de recuperação e redefinição de senha usando Supabase Auth
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from './config/supabaseClient';

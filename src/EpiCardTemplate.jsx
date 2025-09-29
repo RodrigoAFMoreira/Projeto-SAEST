@@ -1,4 +1,6 @@
 // src/EpiCardTemplate.jsx
+// Componente de cartão informativo genérico para EPIs (template)
+
 import React from "react";
 import templateImage from "./assets/template.png";
 import "./css/epiCard.css";

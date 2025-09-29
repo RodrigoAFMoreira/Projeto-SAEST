@@ -1,4 +1,6 @@
-import React from 'react';
+// Em uso em dashboard.jsx
+// Componente de dashboard para administradores
+
 import { Bell, Building2, Building, ShieldCheck, LayoutDashboard } from 'lucide-react';
 
 const AdminDashboard = ({ isSidebarMinimized, counts }) => (

@@ -1,4 +1,6 @@
-import React from 'react';
+// Em uso em dashboard.jsx
+// Componente de dashboard para gestores
+
 import { Bell, Building2, Building, ShieldCheck } from 'lucide-react';
 
 const GestorDashboard = ({ isSidebarMinimized, counts }) => (

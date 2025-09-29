@@ -1,5 +1,6 @@
 // src/epiCardOculos.jsx
-import React from "react";
+// Componente de cartão informativo para Óculos de Segurança Incolor
+
 import oculosImage from "./assets/oculosDeSegurancaIncolor.png";
 import "./css/epiCard.css";
 

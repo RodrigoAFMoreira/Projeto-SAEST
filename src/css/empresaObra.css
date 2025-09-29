@@ -141,6 +141,9 @@ button[title="Deletar"] i:hover {
   width: 600px;
   max-width: 90%;
   position: relative;
+  max-height: 80vh;
+  min-height: 600px;
+  overflow-y: auto;
 }
 
 .modal-close {

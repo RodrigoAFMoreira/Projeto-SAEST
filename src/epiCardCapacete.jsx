@@ -1,4 +1,6 @@
 // src/epiCardCapacete.jsx
+// Componente de cartão informativo para Capacete de Segurança com Jugular
+
 import React from "react";
 import capaceteImage from "./assets/capaceteDeSegurancaComJugular.png";
 import "./css/epiCard.css";

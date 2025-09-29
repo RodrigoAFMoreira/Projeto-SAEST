@@ -1,4 +1,6 @@
-// src/services/AuthService.js
+// Em uso em login, registro, resetSenha, navbar
+// Serviço de autenticação usando Supabase
+
 import supabase from "../config/supabaseClient";
 import { validatePhoneNumber, validatePassword } from "./validacao";
 

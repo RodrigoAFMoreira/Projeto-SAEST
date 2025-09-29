@@ -1,3 +1,5 @@
+// Elemento principal do dashboard que gerencia a exibição condicional com base no tipo de usuário e estado de autenticação
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
@@ -6,6 +8,7 @@ import UserDashboard from './componentes/userDashboard';
 import AdminDashboard from './componentes/adminDashboard';
 import GestorDashboard from './componentes/gestorDashboard';
 import Sidebar from './componentes/sidebar';
+import BuscaObras from './buscaObra'; 
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';
@@ -126,8 +129,16 @@ const Dashboard = () => {
             <UserDashboard isSidebarMinimized={isSidebarMinimized} user={userData} />
           ) : userData.tipo === 'administrador' ? (
             <AdminDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
+          ) : userData.tipo === 'gestor' ? (
+            window.location.pathname === '/busca-obras' ? (
+              <BuscaObras isSidebarMinimized={isSidebarMinimized} userData={userData} />
+            ) : (
+              <GestorDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
+            )
           ) : (
-            <GestorDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
+            <div className="error-container">
+              <p>Tipo de usuário inválido.</p>
+            </div>
           )}
         </div>
       ) : null}

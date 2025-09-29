@@ -1,3 +1,6 @@
+// Elemento de gerenciamento de construtoras e suas obras, incluindo criação, edição, remoção e 
+// listagem com filtros e detalhes expandidos
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';

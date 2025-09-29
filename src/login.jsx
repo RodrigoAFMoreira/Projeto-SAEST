@@ -1,4 +1,6 @@
 // src/Login.jsx
+// Elemento de login com autenticação via Supabase Auth
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthService from "../src/componentes/authService";

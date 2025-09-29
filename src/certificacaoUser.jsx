@@ -1,3 +1,5 @@
+// Elemento de gerenciamento de certificações do usuário, incluindo upload, listagem, download e remoção de certificados em PDF
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient'; 

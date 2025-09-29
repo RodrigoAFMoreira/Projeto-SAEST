@@ -1,3 +1,5 @@
+//Elemento de verificação de e-mail e reenvio de e-mail de verificação usando Supabase Auth
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
