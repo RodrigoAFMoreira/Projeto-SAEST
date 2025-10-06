@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ForcaSenha from "./componentes/forcaSenha";
+import AuthService from "./componentes/authService";
 
 const Cadastro = () => {
   const [nome, setNome] = useState("");

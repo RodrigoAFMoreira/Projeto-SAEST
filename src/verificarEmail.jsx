@@ -20,14 +20,14 @@ const VerificarEmail = () => {
       }
       if (session?.user?.email_confirmed_at) {
         setMessage('E-mail verificado! Redirecionando para o login...');
-        setTimeout(() => navigate('/login'), 2000);
+        setTimeout(() => navigate('/login'), 6000);
       }
     };
 
     const handleAuthEvent = async ({ event, session }) => {
       if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
         setMessage('E-mail verificado! Redirecionando para o login...');
-        setTimeout(() => navigate('/login'), 2000);
+        setTimeout(() => navigate('/login'), 6000);
       }
     };
 
