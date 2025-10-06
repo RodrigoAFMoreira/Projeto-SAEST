@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
-import Sidebar from './componentes/sidebar'; 
-import LoadingSpinner from './componentes/carregando'; 
+import Sidebar from './componentes/sidebar';
+import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
 import './css/empresaObra.css';
 
@@ -16,7 +16,7 @@ const Obra = () => {
   const [filter, setFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editObraId, setEditObraId] = useState(null);
   const [deleteObra, setDeleteObra] = useState({ id: null, endereco: '' });
@@ -36,7 +36,6 @@ const Obra = () => {
     registro_crea: null,
     registro_cal: null,
     cnpj_empresa: '',
-    user_id: '',
   });
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -48,12 +47,11 @@ const Obra = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      setErrorMessage('');
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) {
-          setErrorMessage('Usuário não está logado. Redirecionando para login...');
-          setTimeout(() => navigate('/login'), 2000);
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          setErrorMessage('Usuário não está logado.');
+          navigate('/login');
           return;
         }
         setUser(user);
@@ -64,20 +62,19 @@ const Obra = () => {
           .eq('id', user.id)
           .single();
         if (userError || !data) {
-          console.warn('Documento do usuário não encontrado, usando padrão user');
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
           setUserData(data);
         }
 
-        if (data && data.tipo !== 'user') {
-          await Promise.all([fetchObras(), fetchEmpresas()]);
+        if (data?.tipo !== 'user') {
+          await Promise.all([fetchEmpresas(user.id), fetchObras(user.id)]);
         } else {
-          setErrorMessage('Acesso não autorizado para este usuário.');
-          setTimeout(() => navigate('/menu'), 2000);
+          setErrorMessage('Acesso não autorizado.');
+          navigate('/menu');
         }
-      } catch (err) {
-        setErrorMessage('Erro ao carregar dados do usuário. Tente novamente.');
+      } catch {
+        setErrorMessage('Erro ao carregar dados do usuário.');
       } finally {
         setLoading(false);
       }
@@ -85,78 +82,79 @@ const Obra = () => {
     fetchUser();
   }, [navigate]);
 
-  const fetchEmpresas = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('empresa')
-        .select('cnpj, razao_social');
-      if (error) throw error;
-      setEmpresas(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar empresas:', error);
-      setErrorMessage(`Erro ao carregar empresas: ${error.message}`);
-    }
+  const fetchEmpresas = async (userId) => {
+    const { data, error } = await supabase
+      .from('empresa')
+      .select('cnpj, razao_social')
+      .eq('user_id', userId); // adicionado igual ao empresas
+    if (error) setErrorMessage('Erro ao carregar empresas.');
+    setEmpresas(data || []);
   };
 
-  const fetchObras = async () => {
+  const fetchObras = async (userId) => {
     try {
+      const { data: empresasData, error: empresasError } = await supabase
+        .from('empresa')
+        .select('cnpj')
+        .eq('user_id', userId);
+      if (empresasError) throw empresasError;
+
+      const cnpjs = empresasData.map(empresa => empresa.cnpj);
+
       const { data, error } = await supabase
         .from('obra')
         .select(`
           *,
-          endereco (
-            logradouro,
-            numero,
-            complemento,
-            bairro,
-            cidade,
-            uf,
-            cep
-          ),
+          endereco (logradouro, numero, complemento, bairro, cidade, uf, cep),
           empresa (razao_social),
           obras_documentos (alvara, registro_crea, registro_cal)
-        `);
+        `)
+        .in('cnpj_empresa', cnpjs); //filtra obras pelas empresas do user
       if (error) throw error;
-      setObras(data);
+      setObras(data || []);
     } catch (error) {
-      console.error('Erro ao carregar obras:', error);
       setErrorMessage(`Erro ao carregar obras: ${error.message}`);
     }
   };
 
-  const validateCep = (cep) => {
-    const cepRegex = /^\d{5}-\d{3}$/;
-    return cepRegex.test(cep);
+  const validateForm = () => {
+    if (!formData.logradouro) return 'Logradouro é obrigatório.';
+    if (!formData.cidade) return 'Cidade é obrigatória.';
+    if (!formData.uf || !/^[A-Z]{2}$/.test(formData.uf)) return 'UF inválida (ex.: SP).';
+    if (formData.cep && !/^\d{5}-\d{3}$/.test(formData.cep)) return 'CEP inválido (ex.: 12345-678).';
+    if (formData.numero && !/^\d*$/.test(formData.numero)) return 'Número deve conter apenas dígitos.';
+    if (!formData.status) return 'Status é obrigatório.';
+    if (!formData.data_inicio) return 'Data de início é obrigatória.';
+    if (!formData.responsavel_tecnico) return 'Responsável técnico é obrigatório.';
+    if (!isEditMode && !formData.alvara) return 'Alvará é obrigatório.';
+    if (!isEditMode && !formData.registro_crea) return 'Registro CREA é obrigatório.';
+    if (!isEditMode && !formData.registro_cal) return 'Registro CAL é obrigatório.';
+    if (!formData.cnpj_empresa) return 'Construtora é obrigatória.';
+    if (empresas.length === 0) return 'Nenhuma construtora disponível.';
+
+    const inicio = new Date(formData.data_inicio);
+    if (inicio.getFullYear() < 1950 || inicio.getFullYear() > 2050) {
+      return 'Data de início deve estar entre 1950 e 2050.';
+    }
+    if (formData.data_termino) {
+      const termino = new Date(formData.data_termino);
+      if (termino.getFullYear() < 1950 || termino.getFullYear() > 2050) {
+        return 'Data de término deve estar entre 1950 e 2050.';
+      }
+      if (termino < inicio) {
+        return 'Data de término não pode ser anterior à data de início.';
+      }
+    }
+    return null;
   };
 
-  const validateUf = (uf) => {
-    const ufRegex = /^[A-Z]{2}$/;
-    return ufRegex.test(uf);
-  };
-
-  const validateNumero = (numero) => {
-    if (numero === '') return true;
-    const numeroRegex = /^\d+$/;
-    return numeroRegex.test(numero);
-  };
-
-  const formatCepForDb = (cep) => {
-    return cep.replace(/\D/g, '');
-  };
-
+  const formatCepForDb = (cep) => cep.replace(/\D/g, '');
   const formatCepForDisplay = (cep) => {
     if (!cep) return '';
     const cleanCep = cep.replace(/\D/g, '');
-    if (cleanCep.length === 8) {
-      return `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}`;
-    }
-    return cep;
+    return cleanCep.length === 8 ? `${cleanCep.slice(0, 5)}-${cleanCep.slice(5)}` : cep;
   };
-
-  const cleanCnpj = (cnpj) => {
-    return cnpj.replace(/[\.\-\/]/g, '');
-  };
-
+  const cleanCnpj = (cnpj) => cnpj.replace(/[\.\-\/]/g, '');
   const formatCnpjForDisplay = (cnpj) => {
     if (!cnpj || cnpj.length !== 14) return cnpj;
     return `${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`;
@@ -164,15 +162,13 @@ const Obra = () => {
 
   const handleCepChange = (e) => {
     let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 5) {
-      value = `${value.slice(0, 5)}-${value.slice(5, 8)}`;
-    }
+    if (value.length > 5) value = `${value.slice(0, 5)}-${value.slice(5, 8)}`;
     setFormData({ ...formData, cep: value });
   };
 
   const handleNumeroChange = (e) => {
     const value = e.target.value;
-    if (value === '' || validateNumero(value)) {
+    if (value === '' || /^\d*$/.test(value)) {
       setFormData({ ...formData, numero: value });
     }
   };
@@ -181,214 +177,29 @@ const Obra = () => {
     if (!file) return null;
     const { data, error } = await supabase.storage
       .from('documents')
-      .upload(`obras/${fileName}_${Date.now()}.pdf`, file, {
-        contentType: 'application/pdf',
-      });
+      .upload(`obras/${fileName}_${Date.now()}.pdf`, file, { contentType: 'application/pdf' });
     if (error) throw error;
-    const { data: publicUrlData } = supabase.storage
-      .from('documents')
-      .getPublicUrl(data.path);
+    const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(data.path);
     return publicUrlData.publicUrl;
   };
 
-  const handleCreateSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!formData.logradouro) return setErrorMessage('Por favor, insira o logradouro.');
-    if (!formData.cidade) return setErrorMessage('Por favor, insira a cidade.');
-    if (!formData.uf) return setErrorMessage('Por favor, insira a UF.');
-    if (!validateUf(formData.uf)) return setErrorMessage('Por favor, insira uma UF válida (ex.: SP).');
-    if (formData.cep && !validateCep(formData.cep)) return setErrorMessage('Por favor, insira um CEP válido (ex.: 12345-678).');
-    if (formData.numero && !validateNumero(formData.numero)) return setErrorMessage('O número deve conter apenas dígitos.');
-    if (!formData.status) return setErrorMessage('Por favor, selecione o status.');
-    if (!formData.data_inicio) return setErrorMessage('Por favor, insira a data de início.');
-    if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.alvara) return setErrorMessage('Por favor, selecione um arquivo PDF para o alvará.');
-    if (!formData.registro_crea) return setErrorMessage('Por favor, selecione um arquivo PDF para o registro CREA.');
-    if (!formData.registro_cal) return setErrorMessage('Por favor, selecione um arquivo PDF para o registro CAL.');
-    if (!formData.cnpj_empresa) return setErrorMessage('Por favor, selecione uma construtora.');
-    if (empresas.length === 0) return setErrorMessage('Nenhuma construtora disponível. Cadastre uma construtora primeiro.');
-
-    const inicio = new Date(formData.data_inicio);
-    const anoInicio = inicio.getFullYear();
-    if (anoInicio < 1950 || anoInicio > 2050) {
-      return setErrorMessage('A data de início deve estar entre 1950 e 2050.');
-    }
-    if (formData.data_termino) {
-      const termino = new Date(formData.data_termino);
-      const anoTermino = termino.getFullYear();
-      if (anoTermino < 1950 || anoTermino > 2050) {
-        return setErrorMessage('A data de término deve estar entre 1950 e 2050.');
-      }
-      if (termino < inicio) {
-        return setErrorMessage('A data de término não pode ser anterior à data de início.');
-      }
-    }
+    const validationError = validateForm();
+    if (validationError) return setErrorMessage(validationError);
 
     try {
       const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      const { data: empresaExists, error: empresaError } = await supabase
+      const { data: empresaExists } = await supabase
         .from('empresa')
         .select('cnpj')
         .eq('cnpj', cleanedCnpj)
+        .eq('user_id', user.id) //empresa pertence ao usuario?
         .single();
-      if (empresaError || !empresaExists) throw new Error('Construtora não encontrada.');
-
-      const alvaraUrl = await uploadFileToSupabase(formData.alvara, 'alvara');
-      const registroCreaUrl = await uploadFileToSupabase(formData.registro_crea, 'registro_crea');
-      const registroCalUrl = await uploadFileToSupabase(formData.registro_cal, 'registro_cal');
-
-      const { data: enderecoData, error: enderecoError } = await supabase
-        .from('endereco')
-        .insert([
-          {
-            logradouro: formData.logradouro,
-            numero: formData.numero ? parseInt(formData.numero, 10) : null,
-            complemento: formData.complemento || null,
-            bairro: formData.bairro || null,
-            cidade: formData.cidade,
-            uf: formData.uf.toUpperCase(),
-            cep: formData.cep ? formatCepForDb(formData.cep) : null,
-          },
-        ])
-        .select()
-        .single();
-      if (enderecoError) throw enderecoError;
-
-      const { data: obraData, error: obraError } = await supabase
-        .from('obra')
-        .insert([
-          {
-            endereco_id: enderecoData.id,
-            status: formData.status,
-            data_inicio: formData.data_inicio,
-            data_termino: formData.data_termino || null,
-            responsavel_tecnico: formData.responsavel_tecnico,
-            cnpj_empresa: cleanedCnpj,
-          },
-        ])
-        .select()
-        .single();
-      if (obraError) throw obraError;
-
-      const { error: docError } = await supabase
-        .from('obras_documentos')
-        .insert([
-          {
-            obra_id: obraData.id,
-            alvara: alvaraUrl,
-            registro_crea: registroCreaUrl,
-            registro_cal: registroCalUrl,
-          },
-        ]);
-      if (docError) throw docError;
-
-      setSuccessMessage('Obra cadastrada com sucesso!');
-      setFormData({
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        uf: '',
-        cep: '',
-        status: '',
-        data_inicio: '',
-        data_termino: '',
-        responsavel_tecnico: '',
-        alvara: null,
-        registro_crea: null,
-        registro_cal: null,
-        cnpj_empresa: '',
-        user_id: user?.id || '',
-      });
-      fetchObras();
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setSuccessMessage('');
-      }, 2000);
-    } catch (error) {
-      console.error('Erro ao cadastrar obra:', error);
-      setErrorMessage(`Erro ao cadastrar obra: ${error.message}`);
-    }
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
-
-    if (!formData.logradouro) return setErrorMessage('Por favor, insira o logradouro.');
-    if (!formData.cidade) return setErrorMessage('Por favor, insira a cidade.');
-    if (!formData.uf) return setErrorMessage('Por favor, insira a UF.');
-    if (!validateUf(formData.uf)) return setErrorMessage('Por favor, insira uma UF válida (ex.: SP).');
-    if (formData.cep && !validateCep(formData.cep)) return setErrorMessage('Por favor, insira um CEP válido (ex.: 12345-678).');
-    if (formData.numero && !validateNumero(formData.numero)) return setErrorMessage('O número deve conter apenas dígitos.');
-    if (!formData.status) return setErrorMessage('Por favor, selecione o status.');
-    if (!formData.data_inicio) return setErrorMessage('Por favor, insira a data de início.');
-    if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.cnpj_empresa) return setErrorMessage('Por favor, selecione uma construtora.');
-    if (empresas.length === 0) return setErrorMessage('Nenhuma construtora disponível. Cadastre uma construtora primeiro.');
-
-    const inicio = new Date(formData.data_inicio);
-    const anoInicio = inicio.getFullYear();
-    if (anoInicio < 1950 || anoInicio > 2050) {
-      return setErrorMessage('A data de início deve estar entre 1950 e 2050.');
-    }
-    if (formData.data_termino) {
-      const termino = new Date(formData.data_termino);
-      const anoTermino = termino.getFullYear();
-      if (anoTermino < 1950 || anoTermino > 2050) {
-        return setErrorMessage('A data de término deve estar entre 1950 e 2050.');
-      }
-      if (termino < inicio) {
-        return setErrorMessage('A data de término não pode ser anterior à data de início.');
-      }
-    }
-
-    try {
-      const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      const { data: empresaExists, error: empresaError } = await supabase
-        .from('empresa')
-        .select('cnpj')
-        .eq('cnpj', cleanedCnpj)
-        .single();
-      if (empresaError || !empresaExists) throw new Error('Construtora não encontrada.');
-
-      const { data: obraData, error: obraError } = await supabase
-        .from('obra')
-        .select('endereco_id')
-        .eq('id', editObraId)
-        .single();
-      if (obraError) throw obraError;
-
-      const { error: enderecoError } = await supabase
-        .from('endereco')
-        .update({
-          logradouro: formData.logradouro,
-          numero: formData.numero ? parseInt(formData.numero, 10) : null,
-          complemento: formData.complemento || null,
-          bairro: formData.bairro || null,
-          cidade: formData.cidade,
-          uf: formData.uf.toUpperCase(),
-          cep: formData.cep ? formatCepForDb(formData.cep) : null,
-        })
-        .eq('id', obraData.endereco_id);
-      if (enderecoError) throw enderecoError;
-
-      const { error: updateObraError } = await supabase
-        .from('obra')
-        .update({
-          status: formData.status,
-          data_inicio: formData.data_inicio,
-          data_termino: formData.data_termino || null,
-          responsavel_tecnico: formData.responsavel_tecnico,
-          cnpj_empresa: cleanedCnpj,
-        })
-        .eq('id', editObraId);
-      if (updateObraError) throw updateObraError;
+      if (!empresaExists) throw new Error('Construtora não encontrada ou não pertence ao usuário.');
 
       const alvaraUrl = formData.alvara instanceof File
         ? await uploadFileToSupabase(formData.alvara, 'alvara')
@@ -400,153 +211,201 @@ const Obra = () => {
         ? await uploadFileToSupabase(formData.registro_cal, 'registro_cal')
         : formData.registro_cal;
 
-      const { error: docError } = await supabase
-        .from('obras_documentos')
-        .update({
-          alvara: alvaraUrl,
-          registro_crea: registroCreaUrl,
-          registro_cal: registroCalUrl,
-        })
-        .eq('obra_id', editObraId);
-      if (docError) throw docError;
+      let enderecoId;
+      if (isEditMode) {
+        const { data: obraData } = await supabase.from('obra').select('endereco_id').eq('id', editObraId).single();
+        enderecoId = obraData.endereco_id;
+        await supabase
+          .from('endereco')
+          .update({
+            logradouro: formData.logradouro,
+            numero: formData.numero ? parseInt(formData.numero, 10) : null,
+            complemento: formData.complemento || null,
+            bairro: formData.bairro || null,
+            cidade: formData.cidade,
+            uf: formData.uf.toUpperCase(),
+            cep: formData.cep ? formatCepForDb(formData.cep) : null,
+          })
+          .eq('id', enderecoId);
+      } else {
+        const { data: enderecoData } = await supabase
+          .from('endereco')
+          .insert({
+            logradouro: formData.logradouro,
+            numero: formData.numero ? parseInt(formData.numero, 10) : null,
+            complemento: formData.complemento || null,
+            bairro: formData.bairro || null,
+            cidade: formData.cidade,
+            uf: formData.uf.toUpperCase(),
+            cep: formData.cep ? formatCepForDb(formData.cep) : null,
+          })
+          .select()
+          .single();
+        enderecoId = enderecoData.id;
+      }
 
-      setSuccessMessage('Obra atualizada com sucesso!');
-      setFormData({
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        uf: '',
-        cep: '',
-        status: '',
-        data_inicio: '',
-        data_termino: '',
-        responsavel_tecnico: '',
-        alvara: null,
-        registro_crea: null,
-        registro_cal: null,
-        cnpj_empresa: '',
-        user_id: user?.id || '',
-      });
-      fetchObras();
+      const obraPayload = {
+        endereco_id: enderecoId,
+        status: formData.status,
+        data_inicio: formData.data_inicio,
+        data_termino: formData.data_termino || null,
+        responsavel_tecnico: formData.responsavel_tecnico,
+        cnpj_empresa: cleanedCnpj,
+      };
+
+      let obraId;
+      if (isEditMode) {
+        await supabase.from('obra').update(obraPayload).eq('id', editObraId);
+        obraId = editObraId;
+      } else {
+        const { data: obraData } = await supabase.from('obra').insert(obraPayload).select().single();
+        obraId = obraData.id;
+      }
+
+      if (alvaraUrl || registroCreaUrl || registroCalUrl) {
+        const docPayload = { obra_id: obraId, alvara: alvaraUrl, registro_crea: registroCreaUrl, registro_cal: registroCalUrl };
+        if (isEditMode) {
+          await supabase.from('obras_documentos').update(docPayload).eq('obra_id', obraId);
+        } else {
+          await supabase.from('obras_documentos').insert(docPayload);
+        }
+      }
+
+      setSuccessMessage(`Obra ${isEditMode ? 'atualizada' : 'cadastrada'} com sucesso!`);
+      resetForm();
+      fetchObras(user.id); 
       setTimeout(() => {
-        setIsEditModalOpen(false);
+        setIsModalOpen(false);
         setSuccessMessage('');
-      }, 2000);
+      }, 1500);
     } catch (error) {
-      console.error('Erro ao atualizar obra:', error);
-      setErrorMessage(`Erro ao atualizar obra: ${error.message}`);
+      setErrorMessage(`Erro ao ${isEditMode ? 'atualizar' : 'cadastrar'} obra: ${error.message}`);
     }
   };
 
   const handleDelete = async () => {
     try {
-      const { data: obraData, error: obraError } = await supabase
+      const { data: obraData, error: fetchError } = await supabase
         .from('obra')
-        .select('obras_documentos(alvara, registro_crea, registro_cal)')
+        .select('obras_documentos(alvara, registro_crea, registro_cal), cnpj_empresa')
         .eq('id', deleteObra.id)
         .single();
-      if (obraError) throw obraError;
+      if (fetchError) throw new Error('Erro ao buscar documentos da obra.');
 
-      const { alvara, registro_crea, registro_cal } = obraData.obras_documentos;
-      const filesToDelete = [alvara, registro_crea, registro_cal]
-        .filter(url => url)
-        .map(url => url.split('/').slice(-2).join('/'));
-
-      if (filesToDelete.length > 0) {
-        await supabase.storage.from('documents').remove(filesToDelete);
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresa')
+        .select('user_id')
+        .eq('cnpj', obraData.cnpj_empresa)
+        .single();
+      if (empresaError || empresaData.user_id !== user.id) {
+        throw new Error('Obra não pertence ao usuário.');
       }
 
-      const { error } = await supabase.from('obra').delete().eq('id', deleteObra.id);
-      if (error) throw error;
-      fetchObras();
+      const filesToDelete = [
+        obraData.obras_documentos?.alvara,
+        obraData.obras_documentos?.registro_crea,
+        obraData.obras_documentos?.registro_cal,
+      ]
+        .filter(url => url)
+        .map(url => url.split('/').slice(-2).join('/'));
+      if (filesToDelete.length > 0) {
+        const { error: storageError } = await supabase.storage.from('documents').remove(filesToDelete);
+        if (storageError) throw new Error('Erro ao remover documentos.');
+      }
+
+      const { error: deleteError } = await supabase.from('obra').delete().eq('id', deleteObra.id);
+      if (deleteError) throw new Error('Erro ao excluir obra.');
+
+      await fetchObras(user.id); 
       setIsDeleteModalOpen(false);
+      setSuccessMessage('Obra removida com sucesso!');
+      setTimeout(() => setSuccessMessage(''), 1500);
     } catch (error) {
-      console.error('Erro ao remover obra:', error);
       setErrorMessage(`Erro ao remover obra: ${error.message}`);
     }
   };
 
   const editObra = async (id) => {
-    try {
-      const { data, error } = await supabase
-        .from('obra')
-        .select(`
-          *,
-          endereco (
-            logradouro,
-            numero,
-            complemento,
-            bairro,
-            cidade,
-            uf,
-            cep
-          ),
-          obras_documentos (
-            alvara,
-            registro_crea,
-            registro_cal
-          )
-        `)
-        .eq('id', id)
-        .single();
-      if (error) throw error;
-      setFormData({
-        logradouro: data.endereco?.logradouro || '',
-        numero: data.endereco?.numero?.toString() || '',
-        complemento: data.endereco?.complemento || '',
-        bairro: data.endereco?.bairro || '',
-        cidade: data.endereco?.cidade || '',
-        uf: data.endereco?.uf || '',
-        cep: formatCepForDisplay(data.endereco?.cep || ''),
-        status: data.status || '',
-        data_inicio: data.data_inicio || '',
-        data_termino: data.data_termino || '',
-        responsavel_tecnico: data.responsavel_tecnico || '',
-        alvara: data.obras_documentos?.alvara || null,
-        registro_crea: data.obras_documentos?.registro_crea || null,
-        registro_cal: data.obras_documentos?.registro_cal || null,
-        cnpj_empresa: data.cnpj_empresa || '',
-        user_id: data.user_id || user?.id || '',
-      });
-      setEditObraId(id);
-      setIsEditModalOpen(true);
-    } catch (error) {
-      console.error('Erro ao buscar dados da obra para edição:', error);
-      setErrorMessage(`Erro ao preparar edição: ${error.message}`);
+    const { data } = await supabase
+      .from('obra')
+      .select(`
+        *,
+        endereco (logradouro, numero, complemento, bairro, cidade, uf, cep),
+        obras_documentos (alvara, registro_crea, registro_cal),
+        empresa (user_id)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (data.empresa.user_id !== user.id) {
+      setErrorMessage('Acesso não autorizado para editar esta obra.');
+      return;
     }
+
+    setFormData({
+      logradouro: data.endereco?.logradouro || '',
+      numero: data.endereco?.numero?.toString() || '',
+      complemento: data.endereco?.complemento || '',
+      bairro: data.endereco?.bairro || '',
+      cidade: data.endereco?.cidade || '',
+      uf: data.endereco?.uf || '',
+      cep: formatCepForDisplay(data.endereco?.cep || ''),
+      status: data.status || '',
+      data_inicio: data.data_inicio || '',
+      data_termino: data.data_termino || '',
+      responsavel_tecnico: data.responsavel_tecnico || '',
+      alvara: data.obras_documentos?.alvara || null,
+      registro_crea: data.obras_documentos?.registro_crea || null,
+      registro_cal: data.obras_documentos?.registro_cal || null,
+      cnpj_empresa: data.cnpj_empresa || '',
+    });
+    setEditObraId(id);
+    setIsEditMode(true);
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      uf: '',
+      cep: '',
+      status: '',
+      data_inicio: '',
+      data_termino: '',
+      responsavel_tecnico: '',
+      alvara: null,
+      registro_crea: null,
+      registro_cal: null,
+      cnpj_empresa: '',
+    });
+    setIsEditMode(false);
+    setEditObraId(null);
+    setErrorMessage('');
+    setSuccessMessage('');
   };
 
   const toggleExpandRow = (id) => {
     setExpandedRow(expandedRow === id ? null : id);
   };
 
-  const handleToggleSidebar = () => {
-    setIsSidebarMinimized(!isSidebarMinimized);
-  };
-
   const filteredObras = obras.filter((obra) => {
     const endereco = `${obra.endereco?.logradouro || ''}, ${obra.endereco?.cidade || ''} - ${obra.endereco?.uf || ''}`;
-    return (
-      (!statusFilter || obra.status === statusFilter) &&
-      endereco.toLowerCase().includes(filter.toLowerCase())
-    );
+    return (!statusFilter || obra.status === statusFilter) && endereco.toLowerCase().includes(filter.toLowerCase());
   });
-
-  const ErrorMessage = ({ message, onRetry }) => (
-    <div className="error-container">
-      <p>{message}</p>
-      <button onClick={onRetry}>Tentar novamente</button>
-    </div>
-  );
 
   return (
     <div className="container">
       {loading ? (
         <LoadingSpinner />
-      ) : errorMessage ? (
-        <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
+      ) : errorMessage && !user ? (
+        <div className="error-container">
+          <p>{errorMessage}</p>
+          <button onClick={() => window.location.reload()}>Tentar novamente</button>
+        </div>
       ) : user ? (
         <div className="dashboard-wrapper">
           <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
@@ -554,7 +413,7 @@ const Obra = () => {
               userType={userData.tipo}
               userEmail={userData.email}
               isMinimized={isSidebarMinimized}
-              onToggle={handleToggleSidebar}
+              onToggle={() => setIsSidebarMinimized(!isSidebarMinimized)}
             />
           </div>
           <main className="main-content">
@@ -598,7 +457,7 @@ const Obra = () => {
                   ) : (
                     filteredObras.map((obra) => (
                       <React.Fragment key={obra.id}>
-                        <tr data-id={obra.id}>
+                        <tr>
                           <td>
                             {obra.endereco
                               ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
@@ -609,36 +468,27 @@ const Obra = () => {
                             <button title="Editar" onClick={() => editObra(obra.id)}>
                               <i className="ri-edit-line"></i>
                             </button>
-                            <button
-                              title="Expandir"
-                              className="expand-btn"
-                              onClick={() => toggleExpandRow(obra.id)}
-                            >
-                              <i
-                                className={
-                                  expandedRow === obra.id
-                                    ? 'ri-arrow-up-s-line'
-                                    : 'ri-arrow-down-s-line'
-                                }
-                              ></i>
+                            <button title="Expandir" onClick={() => toggleExpandRow(obra.id)}>
+                              <i className={expandedRow === obra.id ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
                             </button>
                             <button
                               title="Deletar"
-                              onClick={() =>
+                              onClick={() => {
                                 setDeleteObra({
                                   id: obra.id,
                                   endereco: obra.endereco
                                     ? `${obra.endereco.logradouro}, ${obra.endereco.cidade} - ${obra.endereco.uf}`
                                     : 'Obra sem endereço',
-                                })
-                              }
+                                });
+                                setIsDeleteModalOpen(true);
+                              }}
                             >
                               <i className="ri-delete-bin-line"></i>
                             </button>
                           </td>
                         </tr>
                         {expandedRow === obra.id && (
-                          <tr className="expanded-row" data-id={obra.id}>
+                          <tr className="expanded-row">
                             <td colSpan="3">
                               <div className="expanded-details">
                                 <p><strong>Status:</strong> {obra.status || 'N/A'}</p>
@@ -690,46 +540,19 @@ const Obra = () => {
       ) : null}
 
       {isModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-labelledby="modal-create-title">
+        <div className="modal-overlay" role="dialog" aria-labelledby="modal-title">
           <div className="modal">
-            <button
-              className="modal-close"
-              aria-label="Fechar modal"
-              onClick={() => {
-                setIsModalOpen(false);
-                setFormData({
-                  logradouro: '',
-                  numero: '',
-                  complemento: '',
-                  bairro: '',
-                  cidade: '',
-                  uf: '',
-                  cep: '',
-                  status: '',
-                  data_inicio: '',
-                  data_termino: '',
-                  responsavel_tecnico: '',
-                  alvara: null,
-                  registro_crea: null,
-                  registro_cal: null,
-                  cnpj_empresa: '',
-                  user_id: user?.id || '',
-                });
-                setErrorMessage('');
-                setSuccessMessage('');
-              }}
-            >
+            <button className="modal-close" aria-label="Fechar modal" onClick={() => setIsModalOpen(false)}>
               <i className="ri-close-line"></i>
             </button>
-            <h2 id="modal-create-title">Cadastrar Obra</h2>
-            <form onSubmit={handleCreateSubmit}>
+            <h2 id="modal-title">{isEditMode ? 'Editar Obra' : 'Cadastrar Obra'}</h2>
+            <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="logradouro">Logradouro</label>
                   <input
                     type="text"
                     id="logradouro"
-                    name="logradouro"
                     value={formData.logradouro}
                     onChange={(e) => setFormData({ ...formData, logradouro: e.target.value })}
                     required
@@ -740,7 +563,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="numero"
-                    name="numero"
                     value={formData.numero}
                     onChange={handleNumeroChange}
                     placeholder="Ex.: 123"
@@ -753,7 +575,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="complemento"
-                    name="complemento"
                     value={formData.complemento}
                     onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
                   />
@@ -763,7 +584,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="bairro"
-                    name="bairro"
                     value={formData.bairro}
                     onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
                   />
@@ -775,7 +595,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="cidade"
-                    name="cidade"
                     value={formData.cidade}
                     onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
                     required
@@ -786,7 +605,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="uf"
-                    name="uf"
                     value={formData.uf}
                     onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })}
                     maxLength="2"
@@ -800,7 +618,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="cep"
-                    name="cep"
                     value={formData.cep}
                     onChange={handleCepChange}
                     placeholder="12345-678"
@@ -811,7 +628,6 @@ const Obra = () => {
                   <label htmlFor="status">Status</label>
                   <select
                     id="status"
-                    name="status"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     required
@@ -829,7 +645,6 @@ const Obra = () => {
                   <input
                     type="date"
                     id="data-inicio"
-                    name="data-inicio"
                     value={formData.data_inicio}
                     onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
                     min="1950-01-01"
@@ -842,7 +657,6 @@ const Obra = () => {
                   <input
                     type="date"
                     id="data-termino"
-                    name="data-termino"
                     value={formData.data_termino}
                     onChange={(e) => setFormData({ ...formData, data_termino: e.target.value })}
                     min="1950-01-01"
@@ -856,7 +670,6 @@ const Obra = () => {
                   <input
                     type="text"
                     id="responsavel-tecnico"
-                    name="responsavel-tecnico"
                     value={formData.responsavel_tecnico}
                     onChange={(e) => setFormData({ ...formData, responsavel_tecnico: e.target.value })}
                     required
@@ -867,11 +680,15 @@ const Obra = () => {
                   <input
                     type="file"
                     id="alvara"
-                    name="alvara"
                     accept="application/pdf"
                     onChange={(e) => setFormData({ ...formData, alvara: e.target.files[0] })}
-                    required
+                    required={!isEditMode}
                   />
+                  {isEditMode && formData.alvara && typeof formData.alvara === 'string' && (
+                    <p>
+                      Arquivo atual: <a href={formData.alvara} target="_blank" rel="noopener noreferrer">Visualizar PDF</a>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="form-row">
@@ -880,22 +697,30 @@ const Obra = () => {
                   <input
                     type="file"
                     id="registro-crea"
-                    name="registro-crea"
                     accept="application/pdf"
                     onChange={(e) => setFormData({ ...formData, registro_crea: e.target.files[0] })}
-                    required
+                    required={!isEditMode}
                   />
+                  {isEditMode && formData.registro_crea && typeof formData.registro_crea === 'string' && (
+                    <p>
+                      Arquivo atual: <a href={formData.registro_crea} target="_blank" rel="noopener noreferrer">Visualizar PDF</a>
+                    </p>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="registro-cal">Registro no CAL (PDF)</label>
                   <input
                     type="file"
                     id="registro-cal"
-                    name="registro-cal"
                     accept="application/pdf"
                     onChange={(e) => setFormData({ ...formData, registro_cal: e.target.files[0] })}
-                    required
+                    required={!isEditMode}
                   />
+                  {isEditMode && formData.registro_cal && typeof formData.registro_cal === 'string' && (
+                    <p>
+                      Arquivo atual: <a href={formData.registro_cal} target="_blank" rel="noopener noreferrer">Visualizar PDF</a>
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="form-row">
@@ -903,352 +728,24 @@ const Obra = () => {
                   <label htmlFor="empresa">Empresa Associada</label>
                   <select
                     id="empresa"
-                    name="empresa"
                     value={formData.cnpj_empresa}
                     onChange={(e) => setFormData({ ...formData, cnpj_empresa: e.target.value })}
                     required
                   >
                     <option value="" disabled>Selecione uma empresa</option>
-                    {empresas.length === 0 ? (
-                      <option value="" disabled>Nenhuma empresa disponível</option>
-                    ) : (
-                      empresas.map((empresa) => (
-                        <option key={empresa.cnpj} value={empresa.cnpj}>
-                          {formatCnpjForDisplay(empresa.cnpj)} - {empresa.razao_social}
-                        </option>
-                      ))
-                    )}
+                    {empresas.map((empresa) => (
+                      <option key={empresa.cnpj} value={empresa.cnpj}>
+                        {formatCnpjForDisplay(empresa.cnpj)} - {empresa.razao_social}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
               <div className="modal-buttons">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setFormData({
-                      logradouro: '',
-                      numero: '',
-                      complemento: '',
-                      bairro: '',
-                      cidade: '',
-                      uf: '',
-                      cep: '',
-                      status: '',
-                      data_inicio: '',
-                      data_termino: '',
-                      responsavel_tecnico: '',
-                      alvara: null,
-                      registro_crea: null,
-                      registro_cal: null,
-                      cnpj_empresa: '',
-                      user_id: user?.id || '',
-                    });
-                    setErrorMessage('');
-                    setSuccessMessage('');
-                  }}
-                >
+                <button type="button" className="cancel-btn" onClick={() => setIsModalOpen(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="save-btn">
-                  Cadastrar
-                </button>
-              </div>
-              {errorMessage && <div className="error-message">{errorMessage}</div>}
-              {successMessage && <div className="success-message">{successMessage}</div>}
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isEditModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-labelledby="modal-edit-title">
-          <div className="modal">
-            <button
-              className="modal-close"
-              aria-label="Fechar modal"
-              onClick={() => {
-                setIsEditModalOpen(false);
-                setFormData({
-                  logradouro: '',
-                  numero: '',
-                  complemento: '',
-                  bairro: '',
-                  cidade: '',
-                  uf: '',
-                  cep: '',
-                  status: '',
-                  data_inicio: '',
-                  data_termino: '',
-                  responsavel_tecnico: '',
-                  alvara: null,
-                  registro_crea: null,
-                  registro_cal: null,
-                  cnpj_empresa: '',
-                  user_id: user?.id || '',
-                });
-                setErrorMessage('');
-                setSuccessMessage('');
-              }}
-            >
-              <i className="ri-close-line"></i>
-            </button>
-            <h2 id="modal-edit-title">Editar Obra</h2>
-            <form onSubmit={handleEditSubmit}>
-              <input type="hidden" id="edit-obra-id" name="obra-id" value={editObraId} />
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-logradouro">Logradouro</label>
-                  <input
-                    type="text"
-                    id="edit-logradouro"
-                    name="logradouro"
-                    value={formData.logradouro}
-                    onChange={(e) => setFormData({ ...formData, logradouro: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-numero">Número</label>
-                  <input
-                    type="text"
-                    id="edit-numero"
-                    name="numero"
-                    value={formData.numero}
-                    onChange={handleNumeroChange}
-                    placeholder="Ex.: 123"
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-complemento">Complemento</label>
-                  <input
-                    type="text"
-                    id="edit-complemento"
-                    name="complemento"
-                    value={formData.complemento}
-                    onChange={(e) => setFormData({ ...formData, complemento: e.target.value })}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-bairro">Bairro</label>
-                  <input
-                    type="text"
-                    id="edit-bairro"
-                    name="bairro"
-                    value={formData.bairro}
-                    onChange={(e) => setFormData({ ...formData, bairro: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-cidade">Cidade</label>
-                  <input
-                    type="text"
-                    id="edit-cidade"
-                    name="cidade"
-                    value={formData.cidade}
-                    onChange={(e) => setFormData({ ...formData, cidade: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-uf">UF</label>
-                  <input
-                    type="text"
-                    id="edit-uf"
-                    name="uf"
-                    value={formData.uf}
-                    onChange={(e) => setFormData({ ...formData, uf: e.target.value.toUpperCase() })}
-                    maxLength="2"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-cep">CEP</label>
-                  <input
-                    type="text"
-                    id="edit-cep"
-                    name="cep"
-                    value={formData.cep}
-                    onChange={handleCepChange}
-                    placeholder="12345-678"
-                    maxLength="9"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-status">Status</label>
-                  <select
-                    id="edit-status"
-                    name="status"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    required
-                  >
-                    <option value="" disabled>Selecione</option>
-                    <option value="ativa">Ativa</option>
-                    <option value="inativa">Inativa</option>
-                    <option value="concluida">Concluída</option>
-                  </select>
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-data-inicio">Data de Início</label>
-                  <input
-                    type="date"
-                    id="edit-data-inicio"
-                    name="data-inicio"
-                    value={formData.data_inicio}
-                    onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
-                    min="1950-01-01"
-                    max="2050-12-31"
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-data-termino">Data de Término</label>
-                  <input
-                    type="date"
-                    id="edit-data-termino"
-                    name="data-termino"
-                    value={formData.data_termino}
-                    onChange={(e) => setFormData({ ...formData, data_termino: e.target.value })}
-                    min="1950-01-01"
-                    max="2050-12-31"
-                  />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-responsavel-tecnico">Responsável Técnico</label>
-                  <input
-                    type="text"
-                    id="edit-responsavel-tecnico"
-                    name="responsavel-tecnico"
-                    value={formData.responsavel_tecnico}
-                    onChange={(e) => setFormData({ ...formData, responsavel_tecnico: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-alvara">Alvará (PDF)</label>
-                  <input
-                    type="file"
-                    id="edit-alvara"
-                    name="alvara"
-                    accept="application/pdf"
-                    onChange={(e) => setFormData({ ...formData, alvara: e.target.files[0] })}
-                  />
-                  {formData.alvara && typeof formData.alvara === 'string' && (
-                    <p>
-                      Arquivo atual:{' '}
-                      <a href={formData.alvara} target="_blank" rel="noopener noreferrer">
-                        Visualizar PDF
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-registro-crea">Registro no CREA (PDF)</label>
-                  <input
-                    type="file"
-                    id="edit-registro-crea"
-                    name="registro-crea"
-                    accept="application/pdf"
-                    onChange={(e) => setFormData({ ...formData, registro_crea: e.target.files[0] })}
-                  />
-                  {formData.registro_crea && typeof formData.registro_crea === 'string' && (
-                    <p>
-                      Arquivo atual:{' '}
-                      <a href={formData.registro_crea} target="_blank" rel="noopener noreferrer">
-                        Visualizar PDF
-                      </a>
-                    </p>
-                  )}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="edit-registro-cal">Registro no CAL (PDF)</label>
-                  <input
-                    type="file"
-                    id="edit-registro-cal"
-                    name="registro-cal"
-                    accept="application/pdf"
-                    onChange={(e) => setFormData({ ...formData, registro_cal: e.target.files[0] })}
-                  />
-                  {formData.registro_cal && typeof formData.registro_cal === 'string' && (
-                    <p>
-                      Arquivo atual:{' '}
-                      <a href={formData.registro_cal} target="_blank" rel="noopener noreferrer">
-                        Visualizar PDF
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="edit-empresa">Empresa Associada</label>
-                  <select
-                    id="edit-empresa"
-                    name="empresa"
-                    value={formData.cnpj_empresa}
-                    onChange={(e) => setFormData({ ...formData, cnpj_empresa: e.target.value })}
-                    required
-                  >
-                    <option value="" disabled>Selecione uma empresa</option>
-                    {empresas.length === 0 ? (
-                      <option value="" disabled>Nenhuma empresa disponível</option>
-                    ) : (
-                      empresas.map((empresa) => (
-                        <option key={empresa.cnpj} value={empresa.cnpj}>
-                          {formatCnpjForDisplay(empresa.cnpj)} - {empresa.razao_social}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-              </div>
-              <div className="modal-buttons">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={() => {
-                    setIsEditModalOpen(false);
-                    setFormData({
-                      logradouro: '',
-                      numero: '',
-                      complemento: '',
-                      bairro: '',
-                      cidade: '',
-                      uf: '',
-                      cep: '',
-                      status: '',
-                      data_inicio: '',
-                      data_termino: '',
-                      responsavel_tecnico: '',
-                      alvara: null,
-                      registro_crea: null,
-                      registro_cal: null,
-                      cnpj_empresa: '',
-                      user_id: user?.id || '',
-                    });
-                    setErrorMessage('');
-                    setSuccessMessage('');
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button type="submit" className="save-btn">
-                  Salvar
-                </button>
+                <button type="submit" className="save-btn">{isEditMode ? 'Salvar' : 'Cadastrar'}</button>
               </div>
               {errorMessage && <div className="error-message">{errorMessage}</div>}
               {successMessage && <div className="success-message">{successMessage}</div>}
@@ -1268,9 +765,7 @@ const Obra = () => {
               <i className="ri-close-line"></i>
             </button>
             <h2 id="modal-delete-title">Confirmar Exclusão</h2>
-            <p>
-              Tem certeza que deseja remover a obra "<span>{deleteObra.endereco}</span>"?
-            </p>
+            <p>Tem certeza que deseja remover a obra "{deleteObra.endereco}"?</p>
             <div className="modal-buttons">
               <button
                 type="button"
@@ -1283,6 +778,8 @@ const Obra = () => {
                 Confirmar
               </button>
             </div>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
           </div>
         </div>
       )}
