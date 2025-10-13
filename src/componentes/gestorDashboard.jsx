@@ -14,21 +14,21 @@ const GestorDashboard = ({ isSidebarMinimized, counts }) => (
         <div className="stat-icon"><Building /></div>
         <div className="stat-content">
           <h3>Construtoras</h3>
-          <p>{counts.empresas}</p>
+          <p>{counts.empresas || 0}</p>
         </div>
       </div>
       <div className="stat-card">
         <div className="stat-icon"><Building2 /></div>
         <div className="stat-content">
           <h3>Obras</h3>
-          <p>{counts.obras}</p>
+          <p>{counts.obras || 0}</p>
         </div>
       </div>
       <div className="stat-card">
         <div className="stat-icon"><ShieldCheck /></div>
         <div className="stat-content">
           <h3>EPIs</h3>
-          <p>{counts.epis}</p>
+          <p>{counts.epis || 0}</p>
         </div>
       </div>
     </section>
@@ -36,7 +36,7 @@ const GestorDashboard = ({ isSidebarMinimized, counts }) => (
       <div className="section-header">
         <h2>Construtoras</h2>
       </div>
-      <p>EmpresasTable component to be implemented</p>
+      <p>to be implemented</p>
     </section>
     <section className="section">
       <div className="section-header">
@@ -52,7 +52,7 @@ const GestorDashboard = ({ isSidebarMinimized, counts }) => (
           </tr>
         </thead>
         <tbody>
-          <tr><td colSpan="4">DataTable for obras to be implemented</td></tr>
+          <tr><td colSpan="4">to be implemented</td></tr>
         </tbody>
       </table>
     </section>
@@ -71,7 +71,7 @@ const GestorDashboard = ({ isSidebarMinimized, counts }) => (
           </tr>
         </thead>
         <tbody>
-          <tr><td colSpan="5">DataTable for epis to be implemented</td></tr>
+          <tr><td colSpan="5">to be implemented</td></tr>
         </tbody>
       </table>
     </section>

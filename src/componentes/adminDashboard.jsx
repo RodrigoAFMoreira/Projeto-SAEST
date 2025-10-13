@@ -28,15 +28,12 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-const AdminDashboard = ({ isSidebarMinimized, counts }) => {
+
+const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
   const [data, setData] = useState({
     obrasPorTempo: [],
     obrasPorEmpresa: [],
-    empresasCount: 0,
-    obrasCount: 0,
-    episCount: 0,
   });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,32 +42,22 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
       try {
         setLoading(true);
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) throw new Error('Usuário não autenticado');
-
-        const { count: empresasCount, error: empresasError } = await supabase
+        const { data: empresasData, error: empresasError } = await supabase
           .from('empresa')
-          .select('*', { count: 'exact' });
+          .select('cnpj, nome_fantasia')
+          .eq('user_id', userId);
         if (empresasError) throw new Error(empresasError.message);
 
-        const { count: obrasCount, error: obrasError } = await supabase
+        const cnpjs = empresasData ? empresasData.map(emp => emp.cnpj) : [];
+
+        const { data: obrasData, error: obrasError } = await supabase
           .from('obra')
-          .select('*', { count: 'exact' });
+          .select('data_inicio, cnpj_empresa')
+          .in('cnpj_empresa', cnpjs.length > 0 ? cnpjs : [''])
+          .not('data_inicio', 'is', null);
         if (obrasError) throw new Error(obrasError.message);
 
-        const { count: episCount, error: episError } = await supabase
-          .from('epis')
-          .select('*', { count: 'exact' });
-        if (episError) throw new Error(episError.message);
-
-        const { data: obrasPorTempoData, error: obrasPorTempoError } = await supabase
-          .from('obra')
-          .select('data_inicio')
-          .not('data_inicio', 'is', null);
-
-        if (obrasPorTempoError) throw new Error(obrasPorTempoError.message);
-
-        const obrasPorTempo = obrasPorTempoData
+        const obrasPorTempo = obrasData
           .reduce((acc, obra) => {
             const mesAno = new Date(obra.data_inicio).toISOString().slice(0, 7);
             acc[mesAno] = (acc[mesAno] || 0) + 1;
@@ -81,15 +68,10 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
           .map(([mes_ano, quantidade]) => ({ mes_ano, quantidade: Math.round(quantidade) }))
           .sort((a, b) => a.mes_ano.localeCompare(b.mes_ano));
 
-        const { data: obrasPorEmpresaData, error: obrasPorEmpresaError } = await supabase
-          .from('obra')
-          .select('cnpj_empresa, empresa!inner(nome_fantasia)');
-
-        if (obrasPorEmpresaError) throw new Error(obrasPorEmpresaError.message);
-
-        const obrasPorEmpresa = obrasPorEmpresaData
+        const obrasPorEmpresa = obrasData
           .reduce((acc, obra) => {
-            const nomeFantasia = obra.empresa.nome_fantasia || 'Sem Nome';
+            const empresa = empresasData.find(emp => emp.cnpj === obra.cnpj_empresa);
+            const nomeFantasia = empresa ? empresa.nome_fantasia : 'Sem Nome';
             acc[nomeFantasia] = (acc[nomeFantasia] || 0) + 1;
             return acc;
           }, {});
@@ -101,9 +83,6 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
         setData({
           obrasPorTempo: obrasPorTempoFormatted,
           obrasPorEmpresa: obrasPorEmpresaFormatted,
-          empresasCount,
-          obrasCount,
-          episCount,
         });
         setLoading(false);
       } catch (err) {
@@ -112,8 +91,10 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
       }
     };
 
-    fetchData();
-  }, []);
+    if (userId) {
+      fetchData();
+    }
+  }, [userId]);
 
   const obrasPorTempoData = {
     labels: data.obrasPorTempo.length
@@ -124,7 +105,7 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
         label: 'Obras Iniciadas',
         data: data.obrasPorTempo.length
           ? data.obrasPorTempo.map(item => item.quantidade)
-          : [5],
+          : [0],
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         fill: true,
@@ -138,19 +119,15 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
   const obrasPorEmpresaData = {
     labels: data.obrasPorEmpresa.length
       ? data.obrasPorEmpresa.map(item => item.nome_fantasia)
-      : ['Curitibas'],
+      : ['Nenhuma Empresa'],
     datasets: [
       {
         label: 'Obras por Empresa',
         data: data.obrasPorEmpresa.length
           ? data.obrasPorEmpresa.map(item => item.quantidade)
-          : [2],
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.5)',
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-        ],
+          : [0],
+        backgroundColor: ['rgba(255, 99, 132, 0.5)'],
+        borderColor: ['rgba(255, 99, 132, 1)'],
         borderWidth: 1,
       },
     ],
@@ -193,21 +170,21 @@ const AdminDashboard = ({ isSidebarMinimized, counts }) => {
           <div className="stat-icon"><Building /></div>
           <div className="stat-content">
             <h3>Construtoras</h3>
-            <p>{data.empresasCount}</p>
+            <p>{counts.empresas}</p>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-icon"><Building2 /></div>
           <div className="stat-content">
             <h3>Obras</h3>
-            <p>{data.obrasCount}</p>
+            <p>{counts.obras}</p>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-icon"><ShieldCheck /></div>
           <div className="stat-content">
             <h3>EPIs</h3>
-            <p>{data.episCount}</p>
+            <p>{counts.epis}</p>
           </div>
         </div>
       </section>

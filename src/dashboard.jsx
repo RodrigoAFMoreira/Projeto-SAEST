@@ -8,7 +8,7 @@ import UserDashboard from './componentes/userDashboard';
 import AdminDashboard from './componentes/adminDashboard';
 import GestorDashboard from './componentes/gestorDashboard';
 import Sidebar from './componentes/sidebar';
-import BuscaObras from './buscaObra'; 
+import BuscaObras from './buscaObra';
 import './css/dashboard.css';
 import './css/menuEsquerdo.css';
 import './css/menu.css';
@@ -35,6 +35,7 @@ const Dashboard = () => {
   const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [counts, setCounts] = useState({ users: 0, empresas: 0, obras: 0, epis: 0 });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -70,22 +71,37 @@ const Dashboard = () => {
     fetchUser();
   }, [navigate]);
 
-  const [counts, setCounts] = useState({ users: 0, empresas: 0, obras: 0, epis: 0 });
-
   useEffect(() => {
-    const fetchCounts = async () => {
+    const fetchCounts = async (userId) => {
       try {
-        const [users, empresas, obras, epis] = await Promise.all([
-          supabase.from('usuarios').select('id', { count: 'exact' }),
-          supabase.from('empresas').select('id', { count: 'exact' }),
-          supabase.from('obras').select('id', { count: 'exact' }),
-          supabase.from('epis').select('id', { count: 'exact' }),
-        ]);
+        console.log(`ID do usuario para debug (vai ser retirado no futuro esta menssagem):${userId}`);
+        const { data: empresasData, error: empresasError } = await supabase
+          .from('empresa')
+          .select('cnpj')
+          .eq('user_id', userId);
+        if (empresasError) throw empresasError;
+
+        const cnpjs = empresasData ? empresasData.map(emp => emp.cnpj) : [];
+
+        const { data: obrasData, error: obrasError, count: obrasCount } = await supabase
+          .from('obra')
+          .select('id', { count: 'exact' })
+          .in('cnpj_empresa', cnpjs.length > 0 ? cnpjs : ['']);
+        if (obrasError) throw obrasError;
+
+        const obraIds = obrasData ? obrasData.map(obra => obra.id) : [];
+
+        const { count: episCount, error: episError } = await supabase
+          .from('epis')
+          .select('id', { count: 'exact' })
+          .in('obra_id', obraIds.length > 0 ? obraIds : ['']);
+        if (episError) throw episError;
+
         setCounts({
-          users: users.count || 0,
-          empresas: empresas.count || 0,
-          obras: obras.count || 0,
-          epis: epis.count || 0,
+          users: 1,
+          empresas: empresasData ? empresasData.length : 0,
+          obras: obrasCount || 0,
+          epis: episCount || 0,
         });
       } catch (error) {
         console.error('Erro ao carregar contadores:', error.message);
@@ -93,10 +109,10 @@ const Dashboard = () => {
       }
     };
 
-    if (!loading && userData.tipo !== 'user') {
-      fetchCounts();
+    if (!loading && userData.tipo !== 'user' && userData.id) {
+      fetchCounts(userData.id);
     }
-  }, [loading, userData.tipo]);
+  }, [loading, userData.tipo, userData.id]);
 
   const handleToggleSidebar = () => {
     setIsSidebarMinimized(!isSidebarMinimized);
@@ -128,7 +144,7 @@ const Dashboard = () => {
           {userData.tipo === 'user' ? (
             <UserDashboard isSidebarMinimized={isSidebarMinimized} user={userData} />
           ) : userData.tipo === 'administrador' ? (
-            <AdminDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
+            <AdminDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} userId={userData.id} />
           ) : userData.tipo === 'gestor' ? (
             window.location.pathname === '/busca-obras' ? (
               <BuscaObras isSidebarMinimized={isSidebarMinimized} userData={userData} />
