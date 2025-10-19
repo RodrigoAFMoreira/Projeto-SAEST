@@ -4,10 +4,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
-import Sidebar from './componentes/sidebar'; 
+import Sidebar from './componentes/sidebar';
 import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
-import './css/empresaObra.css';
+import './css/empresa.css';
 
 const Empresa = () => {
   const [user, setUser] = useState(null);
@@ -41,7 +41,7 @@ const Empresa = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      setErrorMessage(null);
+      setErrorMessage('');
       try {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
@@ -63,8 +63,9 @@ const Empresa = () => {
           setUserData(data);
         }
 
+        // Only fetch empresas and obras if user type is not 'user'
         if (data && data.tipo !== 'user') {
-          await Promise.all([fetchEmpresas(), fetchObras()]);
+          await Promise.all([fetchEmpresas(user.id), fetchObras()]);
         } else {
           setErrorMessage('Acesso não autorizado para este usuário.');
           setTimeout(() => navigate('/menu'), 2000);
@@ -78,13 +79,15 @@ const Empresa = () => {
     fetchUser();
   }, [navigate]);
 
-  const fetchEmpresas = async () => {
+  const fetchEmpresas = async (userId) => {
     try {
-      const { data, error } = await supabase.from('empresa').select('*');
+      const { data, error } = await supabase
+        .from('empresa')
+        .select('*')
+        .eq('user_id', userId);
       if (error) throw error;
       setEmpresas(data);
     } catch (error) {
-      console.error('Erro ao carregar construtoras:', error);
       setErrorMessage(`Erro ao carregar construtoras: ${error.message}`);
     }
   };
@@ -108,7 +111,6 @@ const Empresa = () => {
       if (error) throw error;
       setObras(data);
     } catch (error) {
-      console.error('Erro ao carregar obras:', error);
       setErrorMessage(`Erro ao carregar obras: ${error.message}`);
     }
   };
@@ -175,13 +177,12 @@ const Empresa = () => {
         nacionalidade: '',
         user_id: user?.id || '',
       });
-      fetchEmpresas();
+      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
       setTimeout(() => {
         setIsModalOpen(false);
         setSuccessMessage('');
-      }, 2000);
+      }, 1500);
     } catch (error) {
-      console.error('Erro ao cadastrar construtora:', error);
       setErrorMessage(`Erro ao cadastrar construtora: ${error.message}`);
     }
   };
@@ -230,25 +231,54 @@ const Empresa = () => {
         nacionalidade: '',
         user_id: user?.id || '',
       });
-      fetchEmpresas();
+      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
       setTimeout(() => {
         setIsEditModalOpen(false);
         setSuccessMessage('');
-      }, 2000);
+      }, 1500);
     } catch (error) {
-      console.error('Erro ao atualizar construtora:', error);
       setErrorMessage(`Erro ao atualizar construtora: ${error.message}`);
     }
   };
 
   const handleDelete = async () => {
+    setErrorMessage('');
+    setSuccessMessage('');
     try {
-      const { error } = await supabase.from('empresa').delete().eq('cnpj', deleteEmpresa.cnpj);
-      if (error) throw error;
-      fetchEmpresas();
+      // Check if the company belongs to the logged-in user
+      const { data: empresaData, error: fetchError } = await supabase
+        .from('empresa')
+        .select('user_id')
+        .eq('cnpj', deleteEmpresa.cnpj)
+        .single();
+      if (fetchError) throw new Error('Erro ao buscar dados da construtora.');
+      if (empresaData.user_id !== user.id) {
+        throw new Error('Acesso não autorizado para excluir esta construtora.');
+      }
+
+      // Check for related obras
+      const { data: obrasData, error: obrasError } = await supabase
+        .from('obra')
+        .select('id')
+        .eq('cnpj_empresa', deleteEmpresa.cnpj);
+      if (obrasError) throw new Error('Erro ao verificar obras relacionadas.');
+      if (obrasData.length > 0) {
+        throw new Error('Não é possível excluir a construtora, pois ela possui obras relacionadas.');
+      }
+
+      // Delete the company
+      const { error: deleteError } = await supabase
+        .from('empresa')
+        .delete()
+        .eq('cnpj', deleteEmpresa.cnpj);
+      if (deleteError) throw new Error('Erro ao excluir construtora.');
+
+      // Refresh the company list
+      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
       setIsDeleteModalOpen(false);
+      setSuccessMessage('Construtora removida com sucesso!');
+      setTimeout(() => setSuccessMessage(''), 1500);
     } catch (error) {
-      console.error('Erro ao remover construtora:', error);
       setErrorMessage(`Erro ao remover construtora: ${error.message}`);
     }
   };
@@ -275,7 +305,6 @@ const Empresa = () => {
       setEditEmpresaCnpj(cnpj);
       setIsEditModalOpen(true);
     } catch (error) {
-      console.error('Erro ao buscar dados da construtora para edição:', error);
       setErrorMessage(`Erro ao preparar edição: ${error.message}`);
     }
   };
@@ -365,13 +394,13 @@ const Empresa = () => {
                             {obras.filter((obra) => obra.cnpj_empresa === empresa.cnpj).length === 0 &&
                               'Nenhuma obra relacionada'}
                           </td>
-                          <td>
-                            <button title="Editar" onClick={() => editEmpresa(empresa.cnpj)}>
-                              <i className="ri-edit-line"></i>
+                          <td className="action-buttons">
+                            <button className="edit-btn" title="Editar" onClick={() => editEmpresa(empresa.cnpj)}>
+                              <i className="ri-edit-line"></i> Editar
                             </button>
                             <button
-                              title="Expandir"
                               className="expand-btn"
+                              title="Expandir"
                               onClick={() => toggleExpandRow(empresa.cnpj)}
                             >
                               <i
@@ -381,17 +410,20 @@ const Empresa = () => {
                                     : 'ri-arrow-down-s-line'
                                 }
                               ></i>
+                              {expandedRow === empresa.cnpj ? 'Recolher' : 'Expandir'}
                             </button>
                             <button
+                              className="delete-btn"
                               title="Deletar"
-                              onClick={() =>
+                              onClick={() => {
                                 setDeleteEmpresa({
                                   cnpj: empresa.cnpj,
                                   razao_social: empresa.razao_social,
-                                })
-                              }
+                                });
+                                setIsDeleteModalOpen(true);
+                              }}
                             >
-                              <i className="ri-delete-bin-line"></i>
+                              <i className="ri-delete-bin-line"></i> Deletar
                             </button>
                           </td>
                         </tr>
@@ -786,6 +818,8 @@ const Empresa = () => {
                 Confirmar
               </button>
             </div>
+            {errorMessage && <div className="error-message">{errorMessage}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
           </div>
         </div>
       )}

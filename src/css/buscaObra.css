@@ -1,4 +1,4 @@
-/* Shared Styles for Empresa and Obra */
+
 .container {
   display: flex;
   min-height: 100vh;
@@ -237,7 +237,6 @@ button[title="Deletar"] i:hover {
   margin-top: 10px;
 }
 
-/* Empresa-Specific Styles */
 .empresa-table th:first-child {
   width: 40%;
 }
@@ -246,7 +245,6 @@ button[title="Deletar"] i:hover {
   width: 30%;
 }
 
-/* Obra-Specific Styles */
 .obra-table th:first-child {
   width: 50%;
 }
@@ -276,7 +274,6 @@ button[title="Deletar"] i:hover {
   color: #3498db;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .main-content {
     margin-left: 70px;

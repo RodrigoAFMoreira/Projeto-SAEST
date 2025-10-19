@@ -15,77 +15,17 @@
   --border-radius: 4px;
   --button-size: 36px; 
 }
-
-
 .container {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background-color: var(--background-color);
+  color: var(--text-color);
 }
 
-.sidebar {
-  width: 250px;
-  background-color: #2c3e50;
-  color: #fff;
+.dashboard-wrapper {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: width 0.3s ease;
-}
-
-.sidebar-header {
-  padding: 20px;
-  text-align: center;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-  color: #3498db;
-}
-
-.sidebar-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar-nav li {
-  margin: 10px 0;
-}
-
-.sidebar-nav a {
-  display: flex;
-  align-items: center;
-  padding: 15px 20px;
-  color: #fff;
-  text-decoration: none;
-  transition: background 0.2s;
-}
-
-.sidebar-nav a:hover,
-.sidebar-nav a.active {
-  background-color: #3498db;
-}
-
-.sidebar-nav i {
-  margin-right: 10px;
-  font-size: 20px;
-}
-
-.user-profile {
-  padding: 20px;
-  border-top: 1px solid #34495e;
-}
-
-.user-info .name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.user-info .email {
-  font-size: 14px;
-  color: #bdc3c7;
+  flex: 1;
 }
 
 .main-content {
@@ -142,34 +82,35 @@
   gap: var(--spacing-sm);
 }
 
-.empresa-table {
+
+.obra-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: var(--spacing-md);
 }
 
-.empresa-table th,
-.empresa-table td {
+.obra-table th,
+.obra-table td {
   padding: var(--spacing-md);
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
-.empresa-table th {
+.obra-table th {
   background-color: #f1f1f1;
   font-weight: bold;
 }
 
-.empresa-table td {
+.obra-table td {
   font-size: 0.9rem;
 }
 
-.empresa-table .action-buttons {
+.obra-table .action-buttons {
   display: flex;
   gap: var(--spacing-sm);
 }
 
-.empresa-table button {
+.obra-table button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,35 +127,27 @@
   transition: background-color 0.2s;
 }
 
-.empresa-table button:hover {
+.obra-table button:hover {
   background-color: var(--primary-color);
 }
 
-.empresa-table button.edit-btn {
+.obra-table button.edit-btn {
   background-color: #159cd1;
 }
 
-.empresa-table button.edit-btn:hover {
+.obra-table button.edit-btn:hover {
   background-color: #0c939c;
 }
 
-.empresa-table button.delete-btn {
+.obra-table button.delete-btn {
   background-color: var(--error-color);
 }
 
-.empresa-table button.delete-btn:hover {
+.obra-table button.delete-btn:hover {
   background-color: #b85c65;
 }
 
-.empresa-table button.expand-btn {
-  background-color: var(--secondary-color);
-}
-
-.empresa-table button.expand-btn:hover {
-  background-color: var(--primary-color);
-}
-
-.empresa-table button i {
+.obra-table button i {
   font-size: 1rem;
 }
 
@@ -309,8 +242,8 @@
   font-size: 0.9rem;
 }
 
-.form-group input:disabled {
-  background-color: #f1f1f1;
+.form-group input[type="file"] {
+  padding: 3px;
 }
 
 .modal-buttons {
@@ -391,7 +324,6 @@
   background-color: #0056b3;
 }
 
-/* responsividade */
 @media (max-width: 768px) {
   .dashboard-wrapper {
     flex-direction: column;
@@ -425,13 +357,13 @@
     width: 95%;
   }
 
-  .empresa-table th,
-  .empresa-table td {
+  .obra-table th,
+  .obra-table td {
     font-size: 0.85rem;
     padding: var(--spacing-sm);
   }
 
-  .empresa-table button {
+  .obra-table button {
     width: 80px;
     font-size: 0.8rem;
   }

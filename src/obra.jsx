@@ -6,7 +6,7 @@ import supabase from '../src/config/supabaseClient';
 import Sidebar from './componentes/sidebar';
 import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
-import './css/empresaObra.css';
+import './css/obra.css';
 
 const Obra = () => {
   const [user, setUser] = useState(null);
@@ -86,7 +86,7 @@ const Obra = () => {
     const { data, error } = await supabase
       .from('empresa')
       .select('cnpj, razao_social')
-      .eq('user_id', userId); // adicionado igual ao empresas
+      .eq('user_id', userId);
     if (error) setErrorMessage('Erro ao carregar empresas.');
     setEmpresas(data || []);
   };
@@ -109,7 +109,7 @@ const Obra = () => {
           empresa (razao_social),
           obras_documentos (alvara, registro_crea, registro_cal)
         `)
-        .in('cnpj_empresa', cnpjs); //filtra obras pelas empresas do user
+        .in('cnpj_empresa', cnpjs);
       if (error) throw error;
       setObras(data || []);
     } catch (error) {
@@ -197,7 +197,7 @@ const Obra = () => {
         .from('empresa')
         .select('cnpj')
         .eq('cnpj', cleanedCnpj)
-        .eq('user_id', user.id) //empresa pertence ao usuario?
+        .eq('user_id', user.id)
         .single();
       if (!empresaExists) throw new Error('Construtora não encontrada ou não pertence ao usuário.');
 
@@ -273,7 +273,7 @@ const Obra = () => {
 
       setSuccessMessage(`Obra ${isEditMode ? 'atualizada' : 'cadastrada'} com sucesso!`);
       resetForm();
-      fetchObras(user.id); 
+      fetchObras(user.id);
       setTimeout(() => {
         setIsModalOpen(false);
         setSuccessMessage('');
@@ -316,7 +316,7 @@ const Obra = () => {
       const { error: deleteError } = await supabase.from('obra').delete().eq('id', deleteObra.id);
       if (deleteError) throw new Error('Erro ao excluir obra.');
 
-      await fetchObras(user.id); 
+      await fetchObras(user.id);
       setIsDeleteModalOpen(false);
       setSuccessMessage('Obra removida com sucesso!');
       setTimeout(() => setSuccessMessage(''), 1500);
@@ -464,14 +464,16 @@ const Obra = () => {
                               : 'Endereço não disponível'}
                           </td>
                           <td>{obra.empresa?.razao_social || 'Empresa não encontrada'}</td>
-                          <td>
-                            <button title="Editar" onClick={() => editObra(obra.id)}>
-                              <i className="ri-edit-line"></i>
+                          <td className="action-buttons">
+                            <button className="edit-btn" title="Editar" onClick={() => editObra(obra.id)}>
+                              <i className="ri-edit-line"></i> Editar
                             </button>
-                            <button title="Expandir" onClick={() => toggleExpandRow(obra.id)}>
+                            <button className="expand-btn" title="Expandir" onClick={() => toggleExpandRow(obra.id)}>
                               <i className={expandedRow === obra.id ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}></i>
+                              {expandedRow === obra.id ? 'Recolher' : 'Expandir'}
                             </button>
                             <button
+                              className="delete-btn"
                               title="Deletar"
                               onClick={() => {
                                 setDeleteObra({
@@ -483,7 +485,7 @@ const Obra = () => {
                                 setIsDeleteModalOpen(true);
                               }}
                             >
-                              <i className="ri-delete-bin-line"></i>
+                              <i className="ri-delete-bin-line"></i> Deletar
                             </button>
                           </td>
                         </tr>
@@ -546,6 +548,7 @@ const Obra = () => {
               <i className="ri-close-line"></i>
             </button>
             <h2 id="modal-title">{isEditMode ? 'Editar Obra' : 'Cadastrar Obra'}</h2>
+            <i className="ri-settings-3-line modal-icon"></i>
             <form onSubmit={handleSubmit}>
               <div className="form-row">
                 <div className="form-group">

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
 import Sidebar from './componentes/sidebar';
 import LoadingSpinner from './componentes/carregando';
-import './css/empresaObra.css';
+import './css/buscaObra.css';
 
 
 const BuscaObras = ({ isSidebarMinimized, userData }) => {
