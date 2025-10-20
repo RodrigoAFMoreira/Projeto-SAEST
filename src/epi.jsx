@@ -7,7 +7,7 @@ import TabelaEpi from './componentes/epiTable';
 import ModalFormularioEpi from './componentes/epiFormModal';
 import ModalGerenciarOpcoes from './componentes/opcoesModal';
 import ModalConfirmacao from './componentes/confirmModal';
-import LoadingSpinner from './componentes/carregando'; 
+import LoadingSpinner from './componentes/carregando';
 import '../src/css/epi.css';
 
 const Epi = () => {
@@ -103,14 +103,20 @@ const Epi = () => {
       const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
       const { data: dadosObras, error: erroObras } = await supabase
         .from('obra')
-        .select('id, cnpj_empresa, status')
+        .select(`
+          id,
+          cnpj_empresa,
+          status,
+          endereco_id,
+          endereco:endereco_id (logradouro)
+        `)
         .in('cnpj_empresa', cnpjs);
       if (erroObras) throw erroObras;
 
       setObras(
         dadosObras?.map((o) => ({
           value: o.id,
-          label: `Obra ${o.id} (${o.status})`,
+          label: o.endereco?.logradouro || 'Sem Endereço', 
         })) || []
       );
     } catch (err) {

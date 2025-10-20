@@ -8,7 +8,7 @@ import { Chart as ChartJS, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import supabase from '../config/supabaseClient';
 import '../css/dashboard.css';
-ChartJS.register(ArcElement, Title, Tooltip, Legend, ChartDataLabels); //chart components/plugin
+ChartJS.register(ArcElement, Title, Tooltip, Legend, ChartDataLabels);
 
 const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
   const [data, setData] = useState({
@@ -46,7 +46,13 @@ const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
 
         let obrasQuery = supabase
           .from('obra')
-          .select('id, cnpj_empresa, data_inicio')
+          .select(`
+            id,
+            cnpj_empresa,
+            data_inicio,
+            endereco_id,
+            endereco:endereco_id (logradouro)
+          `)
           .in('cnpj_empresa', cnpjs.length > 0 ? cnpjs : ['']);
 
         if (construtoraFilter) {
@@ -146,7 +152,7 @@ const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
         setAvailableConstrutoras(empresasData ? empresasData.map(emp => emp.nome_fantasia) : []);
         setAvailableObras(obrasData ? obrasData.map(obra => ({
           id: obra.id,
-          display: `${obra.id}${obra.data_inicio ? ` (${new Date(obra.data_inicio).toISOString().slice(0, 10)})` : ''}`
+          display: obra.endereco?.logradouro || 'Sem Endereço', 
         })) : []);
         setLoading(false);
       } catch (err) {
@@ -161,7 +167,7 @@ const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
   const handleMonthFilterChange = e => setMonthFilter(e.target.value);
   const handleConstrutoraFilterChange = e => {
     setConstrutoraFilter(e.target.value);
-    setObraFilter(''); //reset obra quando construtora muda!!
+    setObraFilter('');
   };
   const handleObraFilterChange = e => setObraFilter(e.target.value);
   const handleEpiTypeFilterChange = e => setEpiTypeFilter(e.target.value);
