@@ -34,7 +34,16 @@ const Cadastro = () => {
       navigate("/verificar-email");
     } catch (err) {
       console.error("Erro ao registrar:", err);
-      setMessage("Erro ao registrar: " + (err.message || "Tente novamente."));
+      const errorMessage = err.message.includes("409")
+        ? "Este e-mail já está registrado. Use outro e-mail ou faça login."
+        : err.message.includes("429")
+        ? "Muitas tentativas. Tente novamente em alguns minutos."
+        : err.message.includes("503")
+        ? "Problema de conexão com o servidor. Tente novamente."
+        : err.message.includes("400")
+        ? `Erro ao registrar: ${err.message}`
+        : `Erro ao registrar: ${err.message || "Tente novamente."}`;
+      setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

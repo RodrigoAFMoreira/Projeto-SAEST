@@ -22,12 +22,18 @@ const Login = () => {
       navigate("/menu");
     } catch (err) {
       console.error("Login error:", err);
-      setMessage("Erro ao fazer login: " + (err.message || "Tente novamente."));
+      const errorMessage = err.message.includes("401")
+        ? "E-mail ou senha incorretos. Verifique suas credenciais."
+        : err.message.includes("429")
+        ? "Muitas tentativas. Tente novamente em alguns minutos."
+        : err.message.includes("503")
+        ? "Problema de conexão com o servidor. Tente novamente."
+        : `Erro ao fazer login: ${err.message}`;
+      setMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const handleCadastroClick = (e) => {
     e.preventDefault();
     console.log("Navigating to /cadastro");

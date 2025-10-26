@@ -10,6 +10,25 @@ import Sidebar from './componentes/sidebar';
 import LoadingSpinner from './componentes/carregando';
 import './css/configuracao.css';
 
+const mapSupabaseErrorToHttpCode = (error) => {
+  if (!error) return { code: 500, message: "Erro interno desconhecido no servidor." };
+
+  const errorMessage = error.message.toLowerCase();
+  if (errorMessage.includes("invalid login") || errorMessage.includes("email not confirmed")) {
+    return { code: 401, message: "Senha atual incorreta ou e-mail não verificado." };
+  }
+  if (errorMessage.includes("rate limit")) {
+    return { code: 429, message: "Limite de tentativas excedido. Tente novamente mais tarde." };
+  }
+  if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+    return { code: 503, message: "Erro de rede. Verifique sua conexão e tente novamente." };
+  }
+  if (errorMessage.includes("invalid")) {
+    return { code: 400, message: "Dados inválidos fornecidos." };
+  }
+  return { code: 500, message: "Erro interno do servidor. Tente novamente mais tarde." };
+};
+
 const Configuracoes = () => {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -31,13 +50,16 @@ const Configuracoes = () => {
       setLoading(true);
       setMessage('');
       try {
+        console.log("GET /auth/user - Obtendo dados do usuário");
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
+          console.error("GET /auth/user - Erro 401: Usuário não autenticado", authError?.message);
           setMessage('Usuário não está logado. Redirecionando para login...');
           setTimeout(() => navigate('/login'), 2000);
           return;
         }
 
+        console.log("GET /usuarios - Buscando dados do usuário no banco", { userId: user.id });
         const { data, error: userError } = await supabase
           .from('usuarios')
           .select('id, nome, email, tipo, telefone')
@@ -45,21 +67,24 @@ const Configuracoes = () => {
           .single();
 
         if (userError || !data) {
-          console.warn('Documento do usuário não encontrado, usando padrão user');
+          console.warn("GET /usuarios - Erro 404: Documento do usuário não encontrado", userError?.message);
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
           setUserData(data);
           setNome(data.nome || '');
           setEmail(data.email || user.email);
           setTelefone(data.telefone || '');
+          console.log("GET /usuarios - Sucesso, código 200", { userId: user.id });
         }
 
         if (data && data.tipo === 'user') {
+          console.warn("GET /usuarios - Erro 403: Acesso não autorizado para tipo 'user'");
           setMessage('Acesso não autorizado para este usuário.');
           setTimeout(() => navigate('/menu'), 2000);
         }
       } catch (err) {
-        setMessage('Erro ao carregar dados do usuário: ' + (err.message || 'Erro desconhecido.'));
+        console.error(`GET /auth/user - Erro ${mapSupabaseErrorToHttpCode(err).code}:`, err.message);
+        setMessage(`Erro ao carregar dados do usuário: ${mapSupabaseErrorToHttpCode(err).message}`);
       } finally {
         setLoading(false);
       }
@@ -69,50 +94,70 @@ const Configuracoes = () => {
 
   const handleLogout = async () => {
     try {
+      console.log("POST /auth/logout - Iniciando logout");
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`POST /auth/logout - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("POST /auth/logout - Sucesso, código 200");
       navigate('/login', { replace: true });
     } catch (err) {
-      setMessage('Erro ao sair: ' + (err.message || 'Erro desconhecido.'));
+      console.error(`POST /auth/logout - Erro ${err.code || 500}:`, err.message);
+      setMessage(`Erro ao sair: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
   };
 
   const handleConfirmPassword = async () => {
     try {
+      console.log("POST /auth/verify-password - Verificando senha atual", { email });
+      if (!currentPassword) {
+        console.error("POST /auth/verify-password - Erro 400: Senha atual é obrigatória");
+        setMessage('Por favor, insira sua senha atual.');
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email: email,
         password: currentPassword,
       });
       if (error) {
-        setMessage('Senha atual incorreta.');
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`POST /auth/verify-password - Erro ${mappedError.code}:`, error.message);
+        setMessage(mappedError.message);
         return;
       }
+      console.log("POST /auth/verify-password - Sucesso, código 200");
       setShowConfirmModal(false);
       setCurrentPassword('');
       handleSubmitInternal();
     } catch (err) {
-      setMessage('Erro ao verificar senha: ' + (err.message || 'Erro desconhecido.'));
+      console.error(`POST /auth/verify-password - Erro ${err.code || 500}:`, err.message);
+      setMessage(`Erro ao verificar senha: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setMessage('');
     const emailError = document.getElementById('email-error');
     const nomeError = document.getElementById('nome-error');
     const telefoneError = document.getElementById('telefone-error');
 
-    setMessage('');
     if (emailError) emailError.textContent = '';
     if (nomeError) nomeError.textContent = '';
     if (telefoneError) telefoneError.textContent = '';
 
     if (!email.includes('@') || !email.includes('.')) {
+      console.error("PUT /auth/update - Erro 400: E-mail inválido");
       setMessage('Digite um e-mail válido (ex: usuario@dominio.com)');
       if (emailError) emailError.textContent = 'E-mail inválido.';
       return;
     }
 
     if (!nome) {
+      console.error("PUT /auth/update - Erro 400: Nome é obrigatório");
       setMessage('Preencha seu nome completo.');
       if (nomeError) nomeError.textContent = 'Nome é obrigatório.';
       return;
@@ -120,6 +165,7 @@ const Configuracoes = () => {
 
     const erroTelefone = validatePhoneNumber(telefone);
     if (erroTelefone) {
+      console.error("PUT /auth/update - Erro 400:", erroTelefone);
       setMessage(erroTelefone);
       if (telefoneError) telefoneError.textContent = erroTelefone;
       return;
@@ -128,20 +174,24 @@ const Configuracoes = () => {
     if (showPasswordFields) {
       if (senha && validatePassword(senha, email, nome).length > 0) {
         const errosSenha = validatePassword(senha, email, nome);
+        console.error("PUT /auth/update - Erro 400: Senha inválida", errosSenha);
         setMessage('Senha inválida:\n' + errosSenha.join('\n'));
         return;
       }
       if (senha !== confirmarSenha) {
+        console.error("PUT /auth/update - Erro 400: Senhas não coincidem");
         setMessage('As senhas não coincidem.');
         return;
       }
     }
 
+    console.log("PUT /auth/update - Solicitando confirmação de senha");
     setShowConfirmModal(true);
   };
 
   const handleSubmitInternal = async () => {
     try {
+      console.log("PUT /auth/update - Iniciando atualização de dados", { email, nome, telefone, hasPassword: !!senha });
       setIsSubmitting(true);
       const updates = {};
       if (email) updates.email = email;
@@ -154,22 +204,31 @@ const Configuracoes = () => {
       }
 
       const { error: authError } = await supabase.auth.updateUser(updates);
-      if (authError) throw authError;
+      if (authError) {
+        const mappedError = mapSupabaseErrorToHttpCode(authError);
+        console.error(`PUT /auth/update - Erro ${mappedError.code}:`, authError.message);
+        throw new Error(mappedError.message);
+      }
 
+      console.log("PUT /usuarios - Atualizando dados no banco", { userId: (await supabase.auth.getUser()).data.user.id });
       const { error: dbError } = await supabase
         .from('usuarios')
         .update({ nome, email, telefone })
         .eq('id', (await supabase.auth.getUser()).data.user.id);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error(`PUT /usuarios - Erro ${mapSupabaseErrorToHttpCode(dbError).code}:`, dbError.message);
+        throw new Error(mapSupabaseErrorToHttpCode(dbError).message);
+      }
 
+      console.log("PUT /auth/update - Sucesso, código 204");
       setMessage('Dados atualizados com sucesso!');
       setSenha('');
       setConfirmarSenha('');
       setShowPasswordFields(false);
     } catch (err) {
-      console.error('Erro ao atualizar dados:', err);
-      setMessage('Erro ao atualizar: ' + (err.message || 'Erro desconhecido. Tente novamente.'));
+      console.error(`PUT /auth/update - Erro ${err.code || 500}:`, err.message);
+      setMessage(`Erro ao atualizar: ${mapSupabaseErrorToHttpCode(err).message}`);
     } finally {
       setIsSubmitting(false);
     }

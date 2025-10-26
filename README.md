@@ -13,6 +13,10 @@ Desenvolver uma aplicação web que facilite a gestão de normas de segurança, 
 - **Estilização**: CSS, Tailwind CSS
 - **Outros**: JSX, React Router
 
+## Comandos no Terminal Para Execução do Projeto
+npm install @vitejs/plugin-react
+npm run dev
+
 ## Progresso do Projeto (2º Semestre de 2025)
 
 Abaixo está o resumo dos commits realizados até o momento:
@@ -111,9 +115,79 @@ Abaixo está o resumo dos commits realizados até o momento:
 - **Impacto**: Boas práticas <<<<<<< HEAD
 - **Próximos passos**: Corrigir as novas rotas de gerenciamento de usuario, e fazer o front-end das seguintes páginas: cadastro, configuração, dashboard, documento, empresas, obras, epi's, informações (gerente). verificar email, criar componente para admnistrador, gestor e funcionario já são existentes. adicionar compatibilidade com dispositivos moveis. inserção de gráficos analiticos.
 
-#### **27/09/2025** - Rodrigo (Commit: ``)
+#### **27/09/2025** - Rodrigo (Commit: `85c513da3b702dc8f5183d6fa4e8a768fe0ef786`)
 - **Descrição**: Finalizada conversao (empresa/obra), implantado login seguindo normas de JWT, feitas melhorias diversas.
 - **Contexto**: Transição para Vite + React
 - **Alterações principais**: Adicionado log in seguro.
 - **Impacto**: Maior segurança no login.
 - **Próximos passos**: fazer a página de irregularidades abrangendo o tópico "Registrar o progresso de situação de irregularidades de segurança do trabalho em uma obra com lembrete enviado por Email."
+
+#### **28/09/2025** - Rodrigo (Commit: `14bb7c42f0410925fac2ac9e0629ef7b1c3ace05`)
+- **Descrição**: Foram criadas interfaçes com objetivos diferentes para admin e para gestor de segurança
+- **Contexto**: Melhorias
+- **Alterações principais**: Feitos ajustes para as paginas dos respectivos atores
+- **Impacto**: melhor separação de cargos
+- **Próximos passos**: Fazer o mesmo para user comum
+
+#### **28/09/2025** - Rodrigo (Commit: `61e72f85d125322982c6d49f8feb9f1b11da1555`)
+- **Descrição**: Adicionado logout com segurança (Json web tokens) 
+- **Contexto**: Segurança
+- **Alterações principais**: Adicionado logout por meio de JWT, o que agora permite um log out verdadeiro
+- **Impacto**: permitir vários usuários distintos das 3 categorias (user, admin e gestor) possam fazer novo login
+- **Próximos passos**: Fazer melhor interfaçe para user comum
+
+#### **28/09/2025** - Rodrigo (Commit: `2b7aa7d4c47f92ff789cbdb638c59a8fe4d802e8`)
+- **Descrição**: Adicionado possibilidade do user enviar certificações em pdf
+- **Contexto**: Melhorias
+- **Alterações principais**: Adicionado possibilidade do funcionario enviar suas certificações em pdf
+- **Impacto**: envio de arquivo pdf para vertificacoes
+- **Próximos passos**: Implementar busca obra e graficos
+
+#### **29/09/2025** - Rodrigo (Commit: `4355339bfe9479d1e04c8709ef04ae840b55ea53`)
+- **Descrição**: Adicionado busca obra, para o gestor
+- **Contexto**: Melhorias
+- **Alterações principais**: Alterações principais: Adicionado (porém não totalmente completo) a ação de busca de obra criada por um admin pelo gestor de segurança pelo ID
+- **Impacto**: Impacto futuro, não esta completamente funcional
+- **Próximos passos**: Implementar gráficos
+
+#### **29/09/2025** - Rodrigo (Commit: `eef22a2bd8920bf75c148a8c089fb3eb0f3b36df`)
+- **Descrição**: Adicionado gráficos
+- **Contexto**: Melhorias
+- **Alterações principais**: Adicionado primeiros gráficos
+- **Impacto**: Impacto de mostrar informações relevantes ao admin
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação
+
+#### **06/10/2025** - Rodrigo (Commit: `ae28f5b77ffb3d99e9d6cc7f460862007bbfbaa0`,`54549f985c039add6a740c5981081758f66c4d98`)
+- **Descrição**: Corrigido equívoco na importação da classe Authservice; Remoção de redundâncias e corrigido erro de obras serem as mesmas para todos os administradores
+- **Contexto**: Melhorias
+- **Alterações principais**: Remoção de redundâncias e correção de equívocos
+- **Impacto**: Diminuição de clutter nas páginas
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação
+
+#### **13/10/2025** - Rodrigo (Commit: `07f6c1950c1b2c515a782d94bcb5f668ad37064b`)
+- **Descrição**: Informaçoes de dashboard são agora baseadas em id do usuário logado no momento, ou seja dados diferentes para tipos diferentes do mesmo user.
+- **Contexto**: Melhorias e correções
+- **Alterações principais**: Melhorias para leitura de dados relevantes para o user específico
+- **Impacto**: Demonstração precisa de informações relevantes
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação
+
+#### **13/10/2025** - Rodrigo (Commit: `475e632df3ccb5987919e105a4c75d6b954507c7`)
+- **Descrição**: Adição de gráficos mais relevantes
+- **Contexto**: Melhorias e correções
+- **Alterações principais**: Melhorias para leitura de dados relevantes
+- **Impacto**: Demonstração precisa de informações relevantes ao cargo logado
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação
+
+#### **19/10/2025 e 20/10/2025** - Rodrigo (Commit: `3f4e0ed0ca099ed11835d6c283fbdb4d3741911a`,`38db4d3dd4e701285016b715bc51cd22bf653a36`)
+- **Descrição**: Adição de filtros para gráficos e Simples correção visual para mostrar endereço ao invés de id para o user final
+- **Contexto**: Melhorias e correções
+- **Alterações principais**: Melhorias para leitura de dados relevantes
+- **Impacto**: Demonstração precisa de informações relevantes ao filtro selecionad
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação
+
+#### **26/10/2025** - Rodrigo (Commit: ``)
+- **Descrição**: Adição de verbos "put","delete","get","post"...; menssagens de erro claras, e informações relevantes no console
+- **Contexto**: Verbos HTTP e tratamento de erros
+- **Alterações principais**:  Nas classes login, cadastro, obra,empresa, configuração, e authservice foram adicionados Verbos HTTP e tratamento de erros.
+- **Impacto**: Melhor controle do sistema & administração de erros
+- **Próximos passos**: Implementar melhorias para a parte de frontend para toda a aplicação

@@ -8,6 +8,31 @@ import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
 import './css/obra.css';
 
+const mapSupabaseErrorToHttpCode = (error) => {
+  if (!error) return { code: 500, message: "Erro interno desconhecido no servidor." };
+
+  const errorMessage = error.message.toLowerCase();
+  if (errorMessage.includes("invalid login") || errorMessage.includes("email not confirmed")) {
+    return { code: 401, message: "Credenciais inválidas ou e-mail não verificado." };
+  }
+  if (errorMessage.includes("duplicate key") || errorMessage.includes("already exists")) {
+    return { code: 409, message: "Recurso já existe." };
+  }
+  if (errorMessage.includes("rate limit")) {
+    return { code: 429, message: "Limite de tentativas excedido. Tente novamente mais tarde." };
+  }
+  if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+    return { code: 503, message: "Erro de rede. Verifique sua conexão e tente novamente." };
+  }
+  if (errorMessage.includes("not found")) {
+    return { code: 404, message: "Recurso não encontrado." };
+  }
+  if (errorMessage.includes("forbidden")) {
+    return { code: 403, message: "Acesso não autorizado." };
+  }
+  return { code: 500, message: "Erro interno do servidor. Tente novamente mais tarde." };
+};
+
 const Obra = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
@@ -47,34 +72,42 @@ const Obra = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
+      setErrorMessage('');
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
-          setErrorMessage('Usuário não está logado.');
-          navigate('/login');
+        console.log("GET /auth/user - Obtendo dados do usuário");
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.error("GET /auth/user - Erro 401: Usuário não autenticado", authError?.message);
+          setErrorMessage('Usuário não está logado. Redirecionando para login...');
+          setTimeout(() => navigate('/login'), 2000);
           return;
         }
         setUser(user);
 
+        console.log("GET /usuarios - Buscando dados do usuário no banco", { userId: user.id });
         const { data, error: userError } = await supabase
           .from('usuarios')
           .select('id, nome, email, tipo, telefone')
           .eq('id', user.id)
           .single();
         if (userError || !data) {
+          console.warn("GET /usuarios - Erro 404: Documento do usuário não encontrado", userError?.message);
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
           setUserData(data);
+          console.log("GET /usuarios - Sucesso, código 200", { userId: user.id });
         }
 
         if (data?.tipo !== 'user') {
           await Promise.all([fetchEmpresas(user.id), fetchObras(user.id)]);
         } else {
-          setErrorMessage('Acesso não autorizado.');
-          navigate('/menu');
+          console.warn("GET /usuarios - Erro 403: Acesso não autorizado para tipo 'user'");
+          setErrorMessage('Acesso não autorizado para este usuário.');
+          setTimeout(() => navigate('/menu'), 2000);
         }
-      } catch {
-        setErrorMessage('Erro ao carregar dados do usuário.');
+      } catch (err) {
+        console.error(`GET /auth/user - Erro ${mapSupabaseErrorToHttpCode(err).code}:`, err.message);
+        setErrorMessage(`Erro ao carregar dados do usuário: ${mapSupabaseErrorToHttpCode(err).message}`);
       } finally {
         setLoading(false);
       }
@@ -83,24 +116,39 @@ const Obra = () => {
   }, [navigate]);
 
   const fetchEmpresas = async (userId) => {
-    const { data, error } = await supabase
-      .from('empresa')
-      .select('cnpj, razao_social')
-      .eq('user_id', userId);
-    if (error) setErrorMessage('Erro ao carregar empresas.');
-    setEmpresas(data || []);
+    try {
+      console.log("GET /empresas - Buscando empresas", { userId });
+      const { data, error } = await supabase
+        .from('empresa')
+        .select('cnpj, razao_social')
+        .eq('user_id', userId);
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /empresas - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("GET /empresas - Sucesso, código 200");
+      setEmpresas(data || []);
+    } catch (error) {
+      console.error(`GET /empresas - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao carregar empresas: ${mapSupabaseErrorToHttpCode(error).message}`);
+    }
   };
 
   const fetchObras = async (userId) => {
     try {
+      console.log("GET /obras - Buscando obras", { userId });
       const { data: empresasData, error: empresasError } = await supabase
         .from('empresa')
         .select('cnpj')
         .eq('user_id', userId);
-      if (empresasError) throw empresasError;
+      if (empresasError) {
+        const mappedError = mapSupabaseErrorToHttpCode(empresasError);
+        console.error(`GET /empresas/verify - Erro ${mappedError.code}:`, empresasError.message);
+        throw new Error(mappedError.message);
+      }
 
       const cnpjs = empresasData.map(empresa => empresa.cnpj);
-
       const { data, error } = await supabase
         .from('obra')
         .select(`
@@ -110,38 +158,86 @@ const Obra = () => {
           obras_documentos (alvara, registro_crea, registro_cal)
         `)
         .in('cnpj_empresa', cnpjs);
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /obras - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("GET /obras - Sucesso, código 200");
       setObras(data || []);
     } catch (error) {
-      setErrorMessage(`Erro ao carregar obras: ${error.message}`);
+      console.error(`GET /obras - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao carregar obras: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const validateForm = () => {
-    if (!formData.logradouro) return 'Logradouro é obrigatório.';
-    if (!formData.cidade) return 'Cidade é obrigatória.';
-    if (!formData.uf || !/^[A-Z]{2}$/.test(formData.uf)) return 'UF inválida (ex.: SP).';
-    if (formData.cep && !/^\d{5}-\d{3}$/.test(formData.cep)) return 'CEP inválido (ex.: 12345-678).';
-    if (formData.numero && !/^\d*$/.test(formData.numero)) return 'Número deve conter apenas dígitos.';
-    if (!formData.status) return 'Status é obrigatório.';
-    if (!formData.data_inicio) return 'Data de início é obrigatória.';
-    if (!formData.responsavel_tecnico) return 'Responsável técnico é obrigatório.';
-    if (!isEditMode && !formData.alvara) return 'Alvará é obrigatório.';
-    if (!isEditMode && !formData.registro_crea) return 'Registro CREA é obrigatório.';
-    if (!isEditMode && !formData.registro_cal) return 'Registro CAL é obrigatório.';
-    if (!formData.cnpj_empresa) return 'Construtora é obrigatória.';
-    if (empresas.length === 0) return 'Nenhuma construtora disponível.';
+    if (!formData.logradouro) {
+      console.error("POST/PUT /obras - Erro 400: Logradouro é obrigatório");
+      return 'Logradouro é obrigatório.';
+    }
+    if (!formData.cidade) {
+      console.error("POST/PUT /obras - Erro 400: Cidade é obrigatória");
+      return 'Cidade é obrigatória.';
+    }
+    if (!formData.uf || !/^[A-Z]{2}$/.test(formData.uf)) {
+      console.error("POST/PUT /obras - Erro 400: UF inválida");
+      return 'UF inválida (ex.: SP).';
+    }
+    if (formData.cep && !/^\d{5}-\d{3}$/.test(formData.cep)) {
+      console.error("POST/PUT /obras - Erro 400: CEP inválido");
+      return 'CEP inválido (ex.: 12345-678).';
+    }
+    if (formData.numero && !/^\d*$/.test(formData.numero)) {
+      console.error("POST/PUT /obras - Erro 400: Número deve conter apenas dígitos");
+      return 'Número deve conter apenas dígitos.';
+    }
+    if (!formData.status) {
+      console.error("POST/PUT /obras - Erro 400: Status é obrigatório");
+      return 'Status é obrigatório.';
+    }
+    if (!formData.data_inicio) {
+      console.error("POST/PUT /obras - Erro 400: Data de início é obrigatória");
+      return 'Data de início é obrigatória.';
+    }
+    if (!formData.responsavel_tecnico) {
+      console.error("POST/PUT /obras - Erro 400: Responsável técnico é obrigatório");
+      return 'Responsável técnico é obrigatório.';
+    }
+    if (!isEditMode && !formData.alvara) {
+      console.error("POST /obras - Erro 400: Alvará é obrigatório");
+      return 'Alvará é obrigatório.';
+    }
+    if (!isEditMode && !formData.registro_crea) {
+      console.error("POST /obras - Erro 400: Registro CREA é obrigatório");
+      return 'Registro CREA é obrigatório.';
+    }
+    if (!isEditMode && !formData.registro_cal) {
+      console.error("POST /obras - Erro 400: Registro CAL é obrigatório");
+      return 'Registro CAL é obrigatório.';
+    }
+    if (!formData.cnpj_empresa) {
+      console.error("POST/PUT /obras - Erro 400: Construtora é obrigatória");
+      return 'Construtora é obrigatória.';
+    }
+    if (empresas.length === 0) {
+      console.error("POST/PUT /obras - Erro 400: Nenhuma construtora disponível");
+      return 'Nenhuma construtora disponível.';
+    }
 
     const inicio = new Date(formData.data_inicio);
     if (inicio.getFullYear() < 1950 || inicio.getFullYear() > 2050) {
+      console.error("POST/PUT /obras - Erro 400: Data de início fora do intervalo permitido");
       return 'Data de início deve estar entre 1950 e 2050.';
     }
     if (formData.data_termino) {
       const termino = new Date(formData.data_termino);
       if (termino.getFullYear() < 1950 || termino.getFullYear() > 2050) {
+        console.error("POST/PUT /obras - Erro 400: Data de término fora do intervalo permitido");
         return 'Data de término deve estar entre 1950 e 2050.';
       }
       if (termino < inicio) {
+        console.error("POST/PUT /obras - Erro 400: Data de término anterior à data de início");
         return 'Data de término não pode ser anterior à data de início.';
       }
     }
@@ -175,12 +271,23 @@ const Obra = () => {
 
   const uploadFileToSupabase = async (file, fileName) => {
     if (!file) return null;
-    const { data, error } = await supabase.storage
-      .from('documents')
-      .upload(`obras/${fileName}_${Date.now()}.pdf`, file, { contentType: 'application/pdf' });
-    if (error) throw error;
-    const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(data.path);
-    return publicUrlData.publicUrl;
+    console.log(`POST /storage/documents - Fazendo upload do arquivo ${fileName}`);
+    try {
+      const { data, error } = await supabase.storage
+        .from('documents')
+        .upload(`obras/${fileName}_${Date.now()}.pdf`, file, { contentType: 'application/pdf' });
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`POST /storage/documents - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log(`POST /storage/documents - Sucesso, código 201`);
+      const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(data.path);
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error(`POST /storage/documents - Erro ${error.code || 500}:`, error.message);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -189,17 +296,28 @@ const Obra = () => {
     setSuccessMessage('');
 
     const validationError = validateForm();
-    if (validationError) return setErrorMessage(validationError);
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
 
     try {
+      const endpoint = isEditMode ? 'PUT /obras' : 'POST /obras';
+      console.log(`${endpoint} - Iniciando ${isEditMode ? 'atualização' : 'criação'} de obra`, { obraId: isEditMode ? editObraId : null });
+
       const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      const { data: empresaExists } = await supabase
+      console.log("GET /empresas/verify - Verificando empresa", { cnpj: cleanedCnpj });
+      const { data: empresaExists, error: empresaError } = await supabase
         .from('empresa')
         .select('cnpj')
         .eq('cnpj', cleanedCnpj)
         .eq('user_id', user.id)
         .single();
-      if (!empresaExists) throw new Error('Construtora não encontrada ou não pertence ao usuário.');
+      if (empresaError || !empresaExists) {
+        const mappedError = mapSupabaseErrorToHttpCode(empresaError || new Error('Empresa não encontrada'));
+        console.error(`GET /empresas/verify - Erro ${mappedError.code}: Empresa não encontrada ou não pertence ao usuário`);
+        throw new Error('Construtora não encontrada ou não pertence ao usuário.');
+      }
 
       const alvaraUrl = formData.alvara instanceof File
         ? await uploadFileToSupabase(formData.alvara, 'alvara')
@@ -213,9 +331,17 @@ const Obra = () => {
 
       let enderecoId;
       if (isEditMode) {
-        const { data: obraData } = await supabase.from('obra').select('endereco_id').eq('id', editObraId).single();
+        console.log("GET /obras/endereco - Buscando endereço da obra", { obraId: editObraId });
+        const { data: obraData, error: obraError } = await supabase.from('obra').select('endereco_id').eq('id', editObraId).single();
+        if (obraError) {
+          const mappedError = mapSupabaseErrorToHttpCode(obraError);
+          console.error(`GET /obras/endereco - Erro ${mappedError.code}:`, obraError.message);
+          throw new Error(mappedError.message);
+        }
         enderecoId = obraData.endereco_id;
-        await supabase
+
+        console.log("PUT /endereco - Atualizando endereço", { enderecoId });
+        const { error: enderecoError } = await supabase
           .from('endereco')
           .update({
             logradouro: formData.logradouro,
@@ -227,8 +353,15 @@ const Obra = () => {
             cep: formData.cep ? formatCepForDb(formData.cep) : null,
           })
           .eq('id', enderecoId);
+        if (enderecoError) {
+          const mappedError = mapSupabaseErrorToHttpCode(enderecoError);
+          console.error(`PUT /endereco - Erro ${mappedError.code}:`, enderecoError.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("PUT /endereco - Sucesso, código 204");
       } else {
-        const { data: enderecoData } = await supabase
+        console.log("POST /endereco - Criando endereço");
+        const { data: enderecoData, error: enderecoError } = await supabase
           .from('endereco')
           .insert({
             logradouro: formData.logradouro,
@@ -241,6 +374,12 @@ const Obra = () => {
           })
           .select()
           .single();
+        if (enderecoError) {
+          const mappedError = mapSupabaseErrorToHttpCode(enderecoError);
+          console.error(`POST /endereco - Erro ${mappedError.code}:`, enderecoError.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("POST /endereco - Sucesso, código 201");
         enderecoId = enderecoData.id;
       }
 
@@ -255,22 +394,51 @@ const Obra = () => {
 
       let obraId;
       if (isEditMode) {
-        await supabase.from('obra').update(obraPayload).eq('id', editObraId);
+        console.log("PUT /obras - Atualizando obra", { obraId: editObraId });
+        const { error: obraError } = await supabase.from('obra').update(obraPayload).eq('id', editObraId);
+        if (obraError) {
+          const mappedError = mapSupabaseErrorToHttpCode(obraError);
+          console.error(`PUT /obras - Erro ${mappedError.code}:`, obraError.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("PUT /obras - Sucesso, código 204");
         obraId = editObraId;
       } else {
-        const { data: obraData } = await supabase.from('obra').insert(obraPayload).select().single();
+        console.log("POST /obras - Criando obra");
+        const { data: obraData, error: obraError } = await supabase.from('obra').insert(obraPayload).select().single();
+        if (obraError) {
+          const mappedError = mapSupabaseErrorToHttpCode(obraError);
+          console.error(`POST /obras - Erro ${mappedError.code}:`, obraError.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("POST /obras - Sucesso, código 201");
         obraId = obraData.id;
       }
 
       if (alvaraUrl || registroCreaUrl || registroCalUrl) {
         const docPayload = { obra_id: obraId, alvara: alvaraUrl, registro_crea: registroCreaUrl, registro_cal: registroCalUrl };
         if (isEditMode) {
-          await supabase.from('obras_documentos').update(docPayload).eq('obra_id', obraId);
+          console.log("PUT /obras_documentos - Atualizando documentos", { obraId });
+          const { error: docError } = await supabase.from('obras_documentos').update(docPayload).eq('obra_id', obraId);
+          if (docError) {
+            const mappedError = mapSupabaseErrorToHttpCode(docError);
+            console.error(`PUT /obras_documentos - Erro ${mappedError.code}:`, docError.message);
+            throw new Error(mappedError.message);
+          }
+          console.log("PUT /obras_documentos - Sucesso, código 204");
         } else {
-          await supabase.from('obras_documentos').insert(docPayload);
+          console.log("POST /obras_documentos - Criando documentos", { obraId });
+          const { error: docError } = await supabase.from('obras_documentos').insert(docPayload);
+          if (docError) {
+            const mappedError = mapSupabaseErrorToHttpCode(docError);
+            console.error(`POST /obras_documentos - Erro ${mappedError.code}:`, docError.message);
+            throw new Error(mappedError.message);
+          }
+          console.log("POST /obras_documentos - Sucesso, código 201");
         }
       }
 
+      console.log(`${endpoint} - Sucesso, código ${isEditMode ? 204 : 201}`);
       setSuccessMessage(`Obra ${isEditMode ? 'atualizada' : 'cadastrada'} com sucesso!`);
       resetForm();
       fetchObras(user.id);
@@ -279,25 +447,36 @@ const Obra = () => {
         setSuccessMessage('');
       }, 1500);
     } catch (error) {
-      setErrorMessage(`Erro ao ${isEditMode ? 'atualizar' : 'cadastrar'} obra: ${error.message}`);
+      console.error(`${isEditMode ? 'PUT' : 'POST'} /obras - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao ${isEditMode ? 'atualizar' : 'cadastrar'} obra: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const handleDelete = async () => {
+    setErrorMessage('');
+    setSuccessMessage('');
     try {
+      console.log("DELETE /obras - Iniciando exclusão de obra", { obraId: deleteObra.id });
+      console.log("GET /obras/verify - Verificando permissões e documentos", { obraId: deleteObra.id });
       const { data: obraData, error: fetchError } = await supabase
         .from('obra')
         .select('obras_documentos(alvara, registro_crea, registro_cal), cnpj_empresa')
         .eq('id', deleteObra.id)
         .single();
-      if (fetchError) throw new Error('Erro ao buscar documentos da obra.');
+      if (fetchError) {
+        const mappedError = mapSupabaseErrorToHttpCode(fetchError);
+        console.error(`GET /obras/verify - Erro ${mappedError.code}:`, fetchError.message);
+        throw new Error('Erro ao buscar documentos da obra.');
+      }
 
+      console.log("GET /empresas/verify - Verificando permissão da empresa", { cnpj: obraData.cnpj_empresa });
       const { data: empresaData, error: empresaError } = await supabase
         .from('empresa')
         .select('user_id')
         .eq('cnpj', obraData.cnpj_empresa)
         .single();
       if (empresaError || empresaData.user_id !== user.id) {
+        console.error("GET /empresas/verify - Erro 403: Obra não pertence ao usuário");
         throw new Error('Obra não pertence ao usuário.');
       }
 
@@ -309,59 +488,81 @@ const Obra = () => {
         .filter(url => url)
         .map(url => url.split('/').slice(-2).join('/'));
       if (filesToDelete.length > 0) {
+        console.log("DELETE /storage/documents - Removendo documentos", { files: filesToDelete });
         const { error: storageError } = await supabase.storage.from('documents').remove(filesToDelete);
-        if (storageError) throw new Error('Erro ao remover documentos.');
+        if (storageError) {
+          const mappedError = mapSupabaseErrorToHttpCode(storageError);
+          console.error(`DELETE /storage/documents - Erro ${mappedError.code}:`, storageError.message);
+          throw new Error('Erro ao remover documentos.');
+        }
+        console.log("DELETE /storage/documents - Sucesso, código 204");
       }
 
       const { error: deleteError } = await supabase.from('obra').delete().eq('id', deleteObra.id);
-      if (deleteError) throw new Error('Erro ao excluir obra.');
+      if (deleteError) {
+        const mappedError = mapSupabaseErrorToHttpCode(deleteError);
+        console.error(`DELETE /obras - Erro ${mappedError.code}:`, deleteError.message);
+        throw new Error('Erro ao excluir obra.');
+      }
 
+      console.log("DELETE /obras - Sucesso, código 204");
       await fetchObras(user.id);
       setIsDeleteModalOpen(false);
       setSuccessMessage('Obra removida com sucesso!');
       setTimeout(() => setSuccessMessage(''), 1500);
     } catch (error) {
-      setErrorMessage(`Erro ao remover obra: ${error.message}`);
+      console.error(`DELETE /obras - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao remover obra: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const editObra = async (id) => {
-    const { data } = await supabase
-      .from('obra')
-      .select(`
-        *,
-        endereco (logradouro, numero, complemento, bairro, cidade, uf, cep),
-        obras_documentos (alvara, registro_crea, registro_cal),
-        empresa (user_id)
-      `)
-      .eq('id', id)
-      .single();
-
-    if (data.empresa.user_id !== user.id) {
-      setErrorMessage('Acesso não autorizado para editar esta obra.');
-      return;
+    try {
+      console.log("GET /obras/edit - Preparando edição de obra", { obraId: id });
+      const { data, error } = await supabase
+        .from('obra')
+        .select(`
+          *,
+          endereco (logradouro, numero, complemento, bairro, cidade, uf, cep),
+          obras_documentos (alvara, registro_crea, registro_cal),
+          empresa (user_id)
+        `)
+        .eq('id', id)
+        .single();
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /obras/edit - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      if (data.empresa.user_id !== user.id) {
+        console.error("GET /obras/edit - Erro 403: Acesso não autorizado para editar esta obra");
+        throw new Error('Acesso não autorizado para editar esta obra.');
+      }
+      console.log("GET /obras/edit - Sucesso, código 200");
+      setFormData({
+        logradouro: data.endereco?.logradouro || '',
+        numero: data.endereco?.numero?.toString() || '',
+        complemento: data.endereco?.complemento || '',
+        bairro: data.endereco?.bairro || '',
+        cidade: data.endereco?.cidade || '',
+        uf: data.endereco?.uf || '',
+        cep: formatCepForDisplay(data.endereco?.cep || ''),
+        status: data.status || '',
+        data_inicio: data.data_inicio || '',
+        data_termino: data.data_termino || '',
+        responsavel_tecnico: data.responsavel_tecnico || '',
+        alvara: data.obras_documentos?.alvara || null,
+        registro_crea: data.obras_documentos?.registro_crea || null,
+        registro_cal: data.obras_documentos?.registro_cal || null,
+        cnpj_empresa: data.cnpj_empresa || '',
+      });
+      setEditObraId(id);
+      setIsEditMode(true);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error(`GET /obras/edit - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao preparar edição: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
-
-    setFormData({
-      logradouro: data.endereco?.logradouro || '',
-      numero: data.endereco?.numero?.toString() || '',
-      complemento: data.endereco?.complemento || '',
-      bairro: data.endereco?.bairro || '',
-      cidade: data.endereco?.cidade || '',
-      uf: data.endereco?.uf || '',
-      cep: formatCepForDisplay(data.endereco?.cep || ''),
-      status: data.status || '',
-      data_inicio: data.data_inicio || '',
-      data_termino: data.data_termino || '',
-      responsavel_tecnico: data.responsavel_tecnico || '',
-      alvara: data.obras_documentos?.alvara || null,
-      registro_crea: data.obras_documentos?.registro_crea || null,
-      registro_cal: data.obras_documentos?.registro_cal || null,
-      cnpj_empresa: data.cnpj_empresa || '',
-    });
-    setEditObraId(id);
-    setIsEditMode(true);
-    setIsModalOpen(true);
   };
 
   const resetForm = () => {
@@ -397,15 +598,19 @@ const Obra = () => {
     return (!statusFilter || obra.status === statusFilter) && endereco.toLowerCase().includes(filter.toLowerCase());
   });
 
+  const ErrorMessage = ({ message, onRetry }) => (
+    <div className="error-container">
+      <p>{message}</p>
+      <button onClick={onRetry}>Tentar novamente</button>
+    </div>
+  );
+
   return (
     <div className="container">
       {loading ? (
         <LoadingSpinner />
       ) : errorMessage && !user ? (
-        <div className="error-container">
-          <p>{errorMessage}</p>
-          <button onClick={() => window.location.reload()}>Tentar novamente</button>
-        </div>
+        <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
       ) : user ? (
         <div className="dashboard-wrapper">
           <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>

@@ -1,3 +1,6 @@
+// src/epi.jsx
+// Página principal de gerenciamento de EPIs
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from '../src/config/supabaseClient';
@@ -9,6 +12,31 @@ import ModalGerenciarOpcoes from './componentes/opcoesModal';
 import ModalConfirmacao from './componentes/confirmModal';
 import LoadingSpinner from './componentes/carregando';
 import '../src/css/epi.css';
+
+const mapSupabaseErrorToHttpCode = (error) => {
+  if (!error) return { code: 500, message: "Erro interno desconhecido no servidor." };
+
+  const errorMessage = error.message.toLowerCase();
+  if (errorMessage.includes("invalid login") || errorMessage.includes("email not confirmed")) {
+    return { code: 401, message: "Credenciais inválidas ou e-mail não verificado." };
+  }
+  if (errorMessage.includes("duplicate key") || errorMessage.includes("already exists")) {
+    return { code: 409, message: "Recurso já existe." };
+  }
+  if (errorMessage.includes("rate limit")) {
+    return { code: 429, message: "Limite de tentativas excedido. Tente novamente mais tarde." };
+  }
+  if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+    return { code: 503, message: "Erro de rede. Verifique sua conexão e tente novamente." };
+  }
+  if (errorMessage.includes("not found")) {
+    return { code: 404, message: "Recurso não encontrado." };
+  }
+  if (errorMessage.includes("forbidden")) {
+    return { code: 403, message: "Acesso não autorizado." };
+  }
+  return { code: 500, message: "Erro interno do servidor. Tente novamente mais tarde." };
+};
 
 const Epi = () => {
   const navigate = useNavigate();
@@ -57,33 +85,39 @@ const Epi = () => {
       setLoading(true);
       setErro('');
       try {
+        console.log("GET /auth/user - Obtendo dados do usuário");
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
+          console.error("GET /auth/user - Erro 401: Usuário não autenticado", authError?.message);
           setErro('Usuário não está logado. Redirecionando para login...');
           setTimeout(() => navigate('/login', { state: { from: location } }), 2000);
           return;
         }
 
+        console.log("GET /usuarios - Buscando dados do usuário no banco", { userId: user.id });
         const { data, error: userError } = await supabase
           .from('usuarios')
           .select('id, nome, email, tipo, telefone')
           .eq('id', user.id)
           .single();
         if (userError || !data) {
-          console.warn('Documento do usuário não encontrado, usando padrão user');
+          console.warn("GET /usuarios - Erro 404: Documento do usuário não encontrado", userError?.message);
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
           setUserData(data);
+          console.log("GET /usuarios - Sucesso, código 200", { userId: user.id });
         }
 
-        if (data && data.tipo !== 'user') {
+        if (data?.tipo !== 'user') {
           await Promise.all([carregarObras(user.id), carregarEpis(user.id)]);
         } else {
+          console.warn("GET /usuarios - Erro 403: Acesso não autorizado para tipo 'user'");
           setErro('Acesso não autorizado para este usuário.');
           setTimeout(() => navigate('/menu'), 2000);
         }
       } catch (err) {
-        setErro('Erro ao carregar dados do usuário: ' + (err.message || 'Erro desconhecido.'));
+        console.error(`GET /auth/user - Erro ${mapSupabaseErrorToHttpCode(err).code}:`, err.message);
+        setErro(`Erro ao carregar dados do usuário: ${mapSupabaseErrorToHttpCode(err).message}`);
       } finally {
         setLoading(false);
       }
@@ -94,11 +128,16 @@ const Epi = () => {
 
   const carregarObras = async (userId) => {
     try {
+      console.log("GET /obras - Buscando obras", { userId });
       const { data: dadosEmpresas, error: erroEmpresas } = await supabase
         .from('empresa')
         .select('cnpj')
         .eq('user_id', userId);
-      if (erroEmpresas) throw erroEmpresas;
+      if (erroEmpresas) {
+        const mappedError = mapSupabaseErrorToHttpCode(erroEmpresas);
+        console.error(`GET /empresas - Erro ${mappedError.code}:`, erroEmpresas.message);
+        throw new Error(mappedError.message);
+      }
 
       const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
       const { data: dadosObras, error: erroObras } = await supabase
@@ -111,35 +150,49 @@ const Epi = () => {
           endereco:endereco_id (logradouro)
         `)
         .in('cnpj_empresa', cnpjs);
-      if (erroObras) throw erroObras;
+      if (erroObras) {
+        const mappedError = mapSupabaseErrorToHttpCode(erroObras);
+        console.error(`GET /obras - Erro ${mappedError.code}:`, erroObras.message);
+        throw new Error(mappedError.message);
+      }
 
+      console.log("GET /obras - Sucesso, código 200");
       setObras(
         dadosObras?.map((o) => ({
           value: o.id,
-          label: o.endereco?.logradouro || 'Sem Endereço', 
+          label: o.endereco?.logradouro || 'Sem Endereço',
         })) || []
       );
     } catch (err) {
-      console.error('Erro ao carregar obras:', err);
-      setErro('Erro ao carregar obras: ' + (err.message || 'Erro desconhecido.'));
+      console.error(`GET /obras - Erro ${err.code || 500}:`, err.message);
+      setErro(`Erro ao carregar obras: ${mapSupabaseErrorToHttpCode(err).message}`);
       setObras([]);
     }
   };
 
   const carregarEpis = async (userId) => {
     try {
+      console.log("GET /epis - Buscando EPIs", { userId });
       const { data: dadosEmpresas, error: erroEmpresas } = await supabase
         .from('empresa')
         .select('cnpj')
         .eq('user_id', userId);
-      if (erroEmpresas) throw erroEmpresas;
+      if (erroEmpresas) {
+        const mappedError = mapSupabaseErrorToHttpCode(erroEmpresas);
+        console.error(`GET /empresas - Erro ${mappedError.code}:`, erroEmpresas.message);
+        throw new Error(mappedError.message);
+      }
 
       const cnpjs = dadosEmpresas.map(emp => emp.cnpj);
       const { data: dadosObras, error: erroObras } = await supabase
         .from('obra')
         .select('id')
         .in('cnpj_empresa', cnpjs);
-      if (erroObras) throw erroObras;
+      if (erroObras) {
+        const mappedError = mapSupabaseErrorToHttpCode(erroObras);
+        console.error(`GET /obras - Erro ${mappedError.code}:`, erroObras.message);
+        throw new Error(mappedError.message);
+      }
 
       const obraIds = dadosObras.map(obra => obra.id);
 
@@ -160,11 +213,17 @@ const Epi = () => {
       }
 
       const { data, error } = await consulta;
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /epis - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+
+      console.log("GET /epis - Sucesso, código 200");
       setEpis(data || []);
     } catch (err) {
-      console.error('Erro ao carregar EPIs:', err);
-      setErro('Erro ao carregar EPIs: ' + (err.message || 'Erro desconhecido.'));
+      console.error(`GET /epis - Erro ${err.code || 500}:`, err.message);
+      setErro(`Erro ao carregar EPIs: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
   };
 
@@ -174,6 +233,9 @@ const Epi = () => {
 
   const alterarFiltros = (e) => {
     setFiltros({ ...filtros, [e.target.id]: e.target.value });
+    if (userData.id) {
+      carregarEpis(userData.id);
+    }
   };
 
   const abrirModalAdicionarEpi = () => {
@@ -233,6 +295,25 @@ const Epi = () => {
     setFormularioGerenciar({ ...formularioGerenciar, [e.target.id]: e.target.value });
   };
 
+  const validateFormularioEpi = (dados) => {
+    const erros = [];
+    if (!dados.nome) erros.push('Nome/Código é obrigatório.');
+    if (!dados.tipo) erros.push('Tipo de EPI é obrigatório.');
+    if (!dados.condicao) erros.push('Condição é obrigatória.');
+    if (!dados.local_uso) erros.push('Local de uso é obrigatório.');
+    if (!dados.disponibilidade) erros.push('Disponibilidade é obrigatória.');
+    if (!dados.data_aquisicao) erros.push('Data de aquisição é obrigatória.');
+    if (!dados.quantidade || dados.quantidade < 1) erros.push('Quantidade deve ser maior que 0.');
+    if (!dados.obra_id) erros.push('Obra associada é obrigatória.');
+    if (dados.ano_fabricacao && (dados.ano_fabricacao < 1900 || dados.ano_fabricacao > new Date().getFullYear())) {
+      erros.push('Ano de fabricação deve estar entre 1900 e o ano atual.');
+    }
+    if (dados.validade && new Date(dados.validade) < new Date(dados.data_aquisicao)) {
+      erros.push('Validade não pode ser anterior à data de aquisição.');
+    }
+    return erros.length > 0 ? erros.join(' ') : null;
+  };
+
   const enviarFormularioEpi = async (e, ehEdicao = false) => {
     e.preventDefault();
     setErro('');
@@ -252,94 +333,180 @@ const Epi = () => {
       obra_id: dadosFormulario.obra_id,
     };
 
-    const erros = [];
-    if (!dados.nome) erros.push('Nome/Código é obrigatório.');
-    if (!dados.tipo) erros.push('Tipo de EPI é obrigatório.');
-    if (!dados.condicao) erros.push('Condição é obrigatória.');
-    if (!dados.local_uso) erros.push('Local de uso é obrigatório.');
-    if (!dados.disponibilidade) erros.push('Disponibilidade é obrigatória.');
-    if (!dados.data_aquisicao) erros.push('Data de aquisição é obrigatória.');
-    if (!dados.quantidade || dados.quantidade < 1) erros.push('Quantidade deve ser maior que 0.');
-    if (!dados.obra_id) erros.push('Obra associada é obrigatória.');
-
-    if (erros.length > 0) {
-      setErro(erros.join(' '));
+    const validationError = validateFormularioEpi(dados);
+    if (validationError) {
+      console.error(`${ehEdicao ? 'PUT' : 'POST'} /epis - Erro 400: ${validationError}`);
+      setErro(validationError);
       return;
     }
 
     try {
+      const endpoint = ehEdicao ? 'PUT /epis' : 'POST /epis';
+      console.log(`${endpoint} - Iniciando ${ehEdicao ? 'atualização' : 'criação'} de EPI`, { epiId: ehEdicao ? dadosFormulario.id : null });
+      console.log("GET /obras/verify - Verificando obra", { obraId: dados.obra_id });
+      const { data: obraData, error: obraError } = await supabase
+        .from('obra')
+        .select('id, cnpj_empresa')
+        .eq('id', dados.obra_id)
+        .single();
+      if (obraError || !obraData) {
+        const mappedError = mapSupabaseErrorToHttpCode(obraError || new Error('Obra não encontrada'));
+        console.error(`GET /obras/verify - Erro ${mappedError.code}: Obra não encontrada`);
+        throw new Error('Obra não encontrada.');
+      }
+
+      console.log("GET /empresas/verify - Verificando permissão da empresa", { cnpj: obraData.cnpj_empresa });
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresa')
+        .select('user_id')
+        .eq('cnpj', obraData.cnpj_empresa)
+        .single();
+      if (empresaError || empresaData.user_id !== userData.id) {
+        console.error("GET /empresas/verify - Erro 403: Obra não pertence ao usuário");
+        throw new Error('Obra não pertence ao usuário.');
+      }
+
       if (ehEdicao) {
-        await supabase.from('epis').update(dados).eq('id', dadosFormulario.id);
+        console.log("PUT /epis - Atualizando EPI", { epiId: dadosFormulario.id });
+        const { error } = await supabase.from('epis').update(dados).eq('id', dadosFormulario.id);
+        if (error) {
+          const mappedError = mapSupabaseErrorToHttpCode(error);
+          console.error(`PUT /epis - Erro ${mappedError.code}:`, error.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("PUT /epis - Sucesso, código 204");
         setSucesso('EPI atualizado com sucesso!');
       } else {
-        await supabase.from('epis').insert([dados]);
+        console.log("POST /epis - Criando EPI");
+        const { error } = await supabase.from('epis').insert([dados]);
+        if (error) {
+          const mappedError = mapSupabaseErrorToHttpCode(error);
+          console.error(`POST /epis - Erro ${mappedError.code}:`, error.message);
+          throw new Error(mappedError.message);
+        }
+        console.log("POST /epis - Sucesso, código 201");
         setSucesso('EPI adicionado com sucesso!');
       }
+
       await carregarEpis(userData.id);
       setTimeout(() => {
         ehEdicao ? fecharModalEditarEpi() : fecharModalAdicionarEpi();
       }, 1000);
     } catch (err) {
-      setErro('Erro: ' + (err.message || 'Falha ao salvar EPI.'));
+      console.error(`${ehEdicao ? 'PUT' : 'POST'} /epis - Erro ${err.code || 500}:`, err.message);
+      setErro(`Erro ao ${ehEdicao ? 'atualizar' : 'adicionar'} EPI: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
   };
 
   const excluirEpi = async () => {
+    setErro('');
+    setSucesso('');
     try {
-      await supabase.from('epis').delete().eq('id', epiSelecionadoId);
+      console.log("DELETE /epis - Iniciando exclusão de EPI", { epiId: epiSelecionadoId });
+      console.log("GET /epis/verify - Verificando EPI", { epiId: epiSelecionadoId });
+      const { data: epiData, error: fetchError } = await supabase
+        .from('epis')
+        .select('id, obra_id, obra(id, cnpj_empresa)')
+        .eq('id', epiSelecionadoId)
+        .single();
+      if (fetchError || !epiData) {
+        const mappedError = mapSupabaseErrorToHttpCode(fetchError || new Error('EPI não encontrado'));
+        console.error(`GET /epis/verify - Erro ${mappedError.code}: EPI não encontrado`);
+        throw new Error('EPI não encontrado.');
+      }
+
+      console.log("GET /empresas/verify - Verificando permissão da empresa", { cnpj: epiData.obra.cnpj_empresa });
+      const { data: empresaData, error: empresaError } = await supabase
+        .from('empresa')
+        .select('user_id')
+        .eq('cnpj', epiData.obra.cnpj_empresa)
+        .single();
+      if (empresaError || empresaData.user_id !== userData.id) {
+        console.error("GET /empresas/verify - Erro 403: EPI não pertence ao usuário");
+        throw new Error('EPI não pertence ao usuário.');
+      }
+
+      console.log("DELETE /epis - Excluindo EPI", { epiId: epiSelecionadoId });
+      const { error } = await supabase.from('epis').delete().eq('id', epiSelecionadoId);
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`DELETE /epis - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+
+      console.log("DELETE /epis - Sucesso, código 204");
       setEpis(epis.filter((epi) => epi.id !== epiSelecionadoId));
+      setSucesso('EPI excluído com sucesso!');
       fecharModalConfirmarExclusao();
+      setTimeout(() => setSucesso(''), 1500);
     } catch (err) {
-      setErro('Erro ao excluir EPI: ' + (err.message || 'Erro desconhecido.'));
+      console.error(`DELETE /epis - Erro ${err.code || 500}:`, err.message);
+      setErro(`Erro ao excluir EPI: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
   };
 
   const adicionarTipoEpi = async () => {
+    setErro('');
+    setSucesso('');
     const novoTipo = formularioGerenciar.novoTipo.trim();
     if (!novoTipo) {
+      console.error("POST /tipos-epi - Erro 400: Tipo de EPI é obrigatório");
       setErro('Digite um tipo de EPI.');
       return;
     }
     if (tiposEpi.some((t) => t.label.toLowerCase() === novoTipo.toLowerCase())) {
+      console.error("POST /tipos-epi - Erro 409: Tipo de EPI já existe");
       setErro('Este tipo de EPI já existe.');
       return;
     }
+    console.log("POST /tipos-epi - Adicionando novo tipo de EPI", { novoTipo });
     setTiposEpi([...tiposEpi, {
       value: novoTipo.toLowerCase().replace(/\s+/g, '-'),
       label: novoTipo,
     }]);
     setFormularioGerenciar({ ...formularioGerenciar, novoTipo: '' });
+    console.log("POST /tipos-epi - Sucesso, código 201");
     setSucesso('Tipo de EPI adicionado com sucesso!');
     setTimeout(() => setSucesso(''), 2000);
   };
 
   const adicionarLocalUso = async () => {
+    setErro('');
+    setSucesso('');
     const novoLocal = formularioGerenciar.novoLocal.trim();
     if (!novoLocal) {
+      console.error("POST /locais-uso - Erro 400: Local de uso é obrigatório");
       setErro('Digite um local de uso.');
       return;
     }
     if (locaisUso.some((l) => l.label.toLowerCase() === novoLocal.toLowerCase())) {
+      console.error("POST /locais-uso - Erro 409: Local de uso já existe");
       setErro('Este local de uso já existe.');
       return;
     }
+    console.log("POST /locais-uso - Adicionando novo local de uso", { novoLocal });
     setLocaisUso([...locaisUso, {
       value: novoLocal.toLowerCase().replace(/\s+/g, '-'),
       label: novoLocal,
     }]);
     setFormularioGerenciar({ ...formularioGerenciar, novoLocal: '' });
+    console.log("POST /locais-uso - Sucesso, código 201");
     setSucesso('Local de uso adicionado com sucesso!');
     setTimeout(() => setSucesso(''), 2000);
   };
 
   const removerTipoEpi = (indice) => {
+    console.log("DELETE /tipos-epi - Removendo tipo de EPI", { indice });
     setTiposEpi(tiposEpi.filter((_, i) => i !== indice));
+    console.log("DELETE /tipos-epi - Sucesso, código 204");
     setSucesso('Tipo de EPI removido com sucesso!');
     setTimeout(() => setSucesso(''), 2000);
   };
 
   const removerLocalUso = (indice) => {
+    console.log("DELETE /locais-uso - Removendo local de uso", { indice });
     setLocaisUso(locaisUso.filter((_, i) => i !== indice));
+    console.log("DELETE /locais-uso - Sucesso, código 204");
     setSucesso('Local de uso removido com sucesso!');
     setTimeout(() => setSucesso(''), 2000);
   };

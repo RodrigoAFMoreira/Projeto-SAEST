@@ -9,6 +9,31 @@ import LoadingSpinner from './componentes/carregando';
 import './css/menuEsquerdo.css';
 import './css/empresa.css';
 
+const mapSupabaseErrorToHttpCode = (error) => {
+  if (!error) return { code: 500, message: "Erro interno desconhecido no servidor." };
+
+  const errorMessage = error.message.toLowerCase();
+  if (errorMessage.includes("invalid login") || errorMessage.includes("email not confirmed")) {
+    return { code: 401, message: "Credenciais inválidas ou e-mail não verificado." };
+  }
+  if (errorMessage.includes("duplicate key") || errorMessage.includes("already exists")) {
+    return { code: 409, message: "CNPJ já registrado." };
+  }
+  if (errorMessage.includes("rate limit")) {
+    return { code: 429, message: "Limite de tentativas excedido. Tente novamente mais tarde." };
+  }
+  if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+    return { code: 503, message: "Erro de rede. Verifique sua conexão e tente novamente." };
+  }
+  if (errorMessage.includes("not found")) {
+    return { code: 404, message: "Recurso não encontrado." };
+  }
+  if (errorMessage.includes("forbidden")) {
+    return { code: 403, message: "Acesso não autorizado." };
+  }
+  return { code: 500, message: "Erro interno do servidor. Tente novamente mais tarde." };
+};
+
 const Empresa = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
@@ -43,35 +68,40 @@ const Empresa = () => {
       setLoading(true);
       setErrorMessage('');
       try {
+        console.log("GET /auth/user - Obtendo dados do usuário");
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
+          console.error("GET /auth/user - Erro 401: Usuário não autenticado", authError?.message);
           setErrorMessage('Usuário não está logado. Redirecionando para login...');
           setTimeout(() => navigate('/login'), 2000);
           return;
         }
         setUser(user);
 
+        console.log("GET /usuarios - Buscando dados do usuário no banco", { userId: user.id });
         const { data, error: userError } = await supabase
           .from('usuarios')
           .select('id, nome, email, tipo, telefone')
           .eq('id', user.id)
           .single();
         if (userError || !data) {
-          console.warn('Documento do usuário não encontrado, usando padrão user');
+          console.warn("GET /usuarios - Erro 404: Documento do usuário não encontrado", userError?.message);
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
         } else {
           setUserData(data);
+          console.log("GET /usuarios - Sucesso, código 200", { userId: user.id });
         }
 
-        // Only fetch empresas and obras if user type is not 'user'
         if (data && data.tipo !== 'user') {
           await Promise.all([fetchEmpresas(user.id), fetchObras()]);
         } else {
+          console.warn("GET /usuarios - Erro 403: Acesso não autorizado para tipo 'user'");
           setErrorMessage('Acesso não autorizado para este usuário.');
           setTimeout(() => navigate('/menu'), 2000);
         }
       } catch (err) {
-        setErrorMessage('Erro ao carregar dados do usuário. Tente novamente.');
+        console.error(`GET /auth/user - Erro ${mapSupabaseErrorToHttpCode(err).code}:`, err.message);
+        setErrorMessage(`Erro ao carregar dados do usuário: ${mapSupabaseErrorToHttpCode(err).message}`);
       } finally {
         setLoading(false);
       }
@@ -81,19 +111,27 @@ const Empresa = () => {
 
   const fetchEmpresas = async (userId) => {
     try {
+      console.log("GET /empresas - Buscando empresas", { userId });
       const { data, error } = await supabase
         .from('empresa')
         .select('*')
         .eq('user_id', userId);
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /empresas - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("GET /empresas - Sucesso, código 200");
       setEmpresas(data);
     } catch (error) {
-      setErrorMessage(`Erro ao carregar construtoras: ${error.message}`);
+      console.error(`GET /empresas - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao carregar construtoras: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const fetchObras = async () => {
     try {
+      console.log("GET /obras - Buscando obras");
       const { data, error } = await supabase
         .from('obra')
         .select(`
@@ -108,10 +146,16 @@ const Empresa = () => {
             cep
           )
         `);
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /obras - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("GET /obras - Sucesso, código 200");
       setObras(data);
     } catch (error) {
-      setErrorMessage(`Erro ao carregar obras: ${error.message}`);
+      console.error(`GET /obras - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao carregar obras: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
@@ -139,17 +183,54 @@ const Empresa = () => {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!formData.razao_social) return setErrorMessage('Por favor, insira a razão social.');
-    if (!formData.nome_fantasia) return setErrorMessage('Por favor, insira o nome fantasia.');
-    if (!formData.email) return setErrorMessage('Por favor, insira o e-mail.');
-    if (!validateEmail(formData.email)) return setErrorMessage('Por favor, insira um e-mail válido.');
-    if (!formData.porte) return setErrorMessage('Por favor, selecione o porte da construtora.');
-    if (!formData.telefone) return setErrorMessage('Por favor, insira o telefone.');
-    if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.cnpj) return setErrorMessage('Por favor, insira o CNPJ.');
-    if (!validateCNPJ(formData.cnpj)) return setErrorMessage('Por favor, insira um CNPJ válido (ex.: 12345678000190 ou 12.345.678/0001-90).');
+    if (!formData.razao_social) {
+      console.error("POST /empresas - Erro 400: Razão social é obrigatória");
+      setErrorMessage('Por favor, insira a razão social.');
+      return;
+    }
+    if (!formData.nome_fantasia) {
+      console.error("POST /empresas - Erro 400: Nome fantasia é obrigatório");
+      setErrorMessage('Por favor, insira o nome fantasia.');
+      return;
+    }
+    if (!formData.email) {
+      console.error("POST /empresas - Erro 400: E-mail é obrigatório");
+      setErrorMessage('Por favor, insira o e-mail.');
+      return;
+    }
+    if (!validateEmail(formData.email)) {
+      console.error("POST /empresas - Erro 400: E-mail inválido");
+      setErrorMessage('Por favor, insira um e-mail válido.');
+      return;
+    }
+    if (!formData.porte) {
+      console.error("POST /empresas - Erro 400: Porte é obrigatório");
+      setErrorMessage('Por favor, selecione o porte da construtora.');
+      return;
+    }
+    if (!formData.telefone) {
+      console.error("POST /empresas - Erro 400: Telefone é obrigatório");
+      setErrorMessage('Por favor, insira o telefone.');
+      return;
+    }
+    if (!formData.responsavel_tecnico) {
+      console.error("POST /empresas - Erro 400: Responsável técnico é obrigatório");
+      setErrorMessage('Por favor, insira o responsável técnico.');
+      return;
+    }
+    if (!formData.cnpj) {
+      console.error("POST /empresas - Erro 400: CNPJ é obrigatório");
+      setErrorMessage('Por favor, insira o CNPJ.');
+      return;
+    }
+    if (!validateCNPJ(formData.cnpj)) {
+      console.error("POST /empresas - Erro 400: CNPJ inválido");
+      setErrorMessage('Por favor, insira um CNPJ válido (ex.: 12345678000190 ou 12.345.678/0001-90).');
+      return;
+    }
 
     try {
+      console.log("POST /empresas - Iniciando criação de empresa", { cnpj: formData.cnpj });
       const cleanedCnpj = cleanCnpj(formData.cnpj);
       const { error } = await supabase.from('empresa').insert([
         {
@@ -164,7 +245,12 @@ const Empresa = () => {
           user_id: user?.id,
         },
       ]);
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`POST /empresas - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("POST /empresas - Sucesso, código 201");
       setSuccessMessage('Construtora cadastrada com sucesso!');
       setFormData({
         razao_social: '',
@@ -177,13 +263,14 @@ const Empresa = () => {
         nacionalidade: '',
         user_id: user?.id || '',
       });
-      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
+      await fetchEmpresas(user.id);
       setTimeout(() => {
         setIsModalOpen(false);
         setSuccessMessage('');
       }, 1500);
     } catch (error) {
-      setErrorMessage(`Erro ao cadastrar construtora: ${error.message}`);
+      console.error(`POST /empresas - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao cadastrar construtora: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
@@ -192,17 +279,54 @@ const Empresa = () => {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!formData.razao_social) return setErrorMessage('Por favor, insira a razão social.');
-    if (!formData.nome_fantasia) return setErrorMessage('Por favor, insira o nome fantasia.');
-    if (!formData.email) return setErrorMessage('Por favor, insira o e-mail.');
-    if (!validateEmail(formData.email)) return setErrorMessage('Por favor, insira um e-mail válido.');
-    if (!formData.porte) return setErrorMessage('Por favor, selecione o porte da construtora.');
-    if (!formData.telefone) return setErrorMessage('Por favor, insira o telefone.');
-    if (!formData.responsavel_tecnico) return setErrorMessage('Por favor, insira o responsável técnico.');
-    if (!formData.cnpj) return setErrorMessage('Por favor, insira o CNPJ.');
-    if (!validateCNPJ(formData.cnpj)) return setErrorMessage('Por favor, insira um CNPJ válido (ex.: 12345678000190 ou 12.345.678/0001-90).');
+    if (!formData.razao_social) {
+      console.error("PUT /empresas - Erro 400: Razão social é obrigatória");
+      setErrorMessage('Por favor, insira a razão social.');
+      return;
+    }
+    if (!formData.nome_fantasia) {
+      console.error("PUT /empresas - Erro 400: Nome fantasia é obrigatório");
+      setErrorMessage('Por favor, insira o nome fantasia.');
+      return;
+    }
+    if (!formData.email) {
+      console.error("PUT /empresas - Erro 400: E-mail é obrigatório");
+      setErrorMessage('Por favor, insira o e-mail.');
+      return;
+    }
+    if (!validateEmail(formData.email)) {
+      console.error("PUT /empresas - Erro 400: E-mail inválido");
+      setErrorMessage('Por favor, insira um e-mail válido.');
+      return;
+    }
+    if (!formData.porte) {
+      console.error("PUT /empresas - Erro 400: Porte é obrigatório");
+      setErrorMessage('Por favor, selecione o porte da construtora.');
+      return;
+    }
+    if (!formData.telefone) {
+      console.error("PUT /empresas - Erro 400: Telefone é obrigatório");
+      setErrorMessage('Por favor, insira o telefone.');
+      return;
+    }
+    if (!formData.responsavel_tecnico) {
+      console.error("PUT /empresas - Erro 400: Responsável técnico é obrigatório");
+      setErrorMessage('Por favor, insira o responsável técnico.');
+      return;
+    }
+    if (!formData.cnpj) {
+      console.error("PUT /empresas - Erro 400: CNPJ é obrigatório");
+      setErrorMessage('Por favor, insira o CNPJ.');
+      return;
+    }
+    if (!validateCNPJ(formData.cnpj)) {
+      console.error("PUT /empresas - Erro 400: CNPJ inválido");
+      setErrorMessage('Por favor, insira um CNPJ válido (ex.: 12345678000190 ou 12.345.678/0001-90).');
+      return;
+    }
 
     try {
+      console.log("PUT /empresas - Iniciando atualização de empresa", { cnpj: formData.cnpj });
       const cleanedCnpj = cleanCnpj(formData.cnpj);
       const { error } = await supabase
         .from('empresa')
@@ -218,7 +342,12 @@ const Empresa = () => {
           user_id: user?.id,
         })
         .eq('cnpj', editEmpresaCnpj);
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`PUT /empresas - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("PUT /empresas - Sucesso, código 204");
       setSuccessMessage('Construtora atualizada com sucesso!');
       setFormData({
         razao_social: '',
@@ -231,13 +360,14 @@ const Empresa = () => {
         nacionalidade: '',
         user_id: user?.id || '',
       });
-      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
+      await fetchEmpresas(user.id);
       setTimeout(() => {
         setIsEditModalOpen(false);
         setSuccessMessage('');
       }, 1500);
     } catch (error) {
-      setErrorMessage(`Erro ao atualizar construtora: ${error.message}`);
+      console.error(`PUT /empresas - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao atualizar construtora: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
@@ -245,52 +375,72 @@ const Empresa = () => {
     setErrorMessage('');
     setSuccessMessage('');
     try {
-      // Check if the company belongs to the logged-in user
+      console.log("DELETE /empresas - Iniciando exclusão de empresa", { cnpj: deleteEmpresa.cnpj });
+      console.log("GET /empresas/verify - Verificando permissão", { cnpj: deleteEmpresa.cnpj });
       const { data: empresaData, error: fetchError } = await supabase
         .from('empresa')
         .select('user_id')
         .eq('cnpj', deleteEmpresa.cnpj)
         .single();
-      if (fetchError) throw new Error('Erro ao buscar dados da construtora.');
+      if (fetchError) {
+        const mappedError = mapSupabaseErrorToHttpCode(fetchError);
+        console.error(`GET /empresas/verify - Erro ${mappedError.code}:`, fetchError.message);
+        throw new Error('Erro ao buscar dados da construtora.');
+      }
       if (empresaData.user_id !== user.id) {
+        console.error("DELETE /empresas - Erro 403: Acesso não autorizado");
         throw new Error('Acesso não autorizado para excluir esta construtora.');
       }
 
-      // Check for related obras
+      console.log("GET /obras/verify - Verificando obras relacionadas", { cnpj: deleteEmpresa.cnpj });
       const { data: obrasData, error: obrasError } = await supabase
         .from('obra')
         .select('id')
         .eq('cnpj_empresa', deleteEmpresa.cnpj);
-      if (obrasError) throw new Error('Erro ao verificar obras relacionadas.');
+      if (obrasError) {
+        const mappedError = mapSupabaseErrorToHttpCode(obrasError);
+        console.error(`GET /obras/verify - Erro ${mappedError.code}:`, obrasError.message);
+        throw new Error('Erro ao verificar obras relacionadas.');
+      }
       if (obrasData.length > 0) {
+        console.error("DELETE /empresas - Erro 400: Empresa possui obras relacionadas");
         throw new Error('Não é possível excluir a construtora, pois ela possui obras relacionadas.');
       }
-
-      // Delete the company
       const { error: deleteError } = await supabase
         .from('empresa')
         .delete()
         .eq('cnpj', deleteEmpresa.cnpj);
-      if (deleteError) throw new Error('Erro ao excluir construtora.');
+      if (deleteError) {
+        const mappedError = mapSupabaseErrorToHttpCode(deleteError);
+        console.error(`DELETE /empresas - Erro ${mappedError.code}:`, deleteError.message);
+        throw new Error('Erro ao excluir construtora.');
+      }
 
-      // Refresh the company list
-      await fetchEmpresas(user.id); // Pass user.id to ensure user is defined
+      console.log("DELETE /empresas - Sucesso, código 204");
+      await fetchEmpresas(user.id);
       setIsDeleteModalOpen(false);
       setSuccessMessage('Construtora removida com sucesso!');
       setTimeout(() => setSuccessMessage(''), 1500);
     } catch (error) {
-      setErrorMessage(`Erro ao remover construtora: ${error.message}`);
+      console.error(`DELETE /empresas - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao remover construtora: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const editEmpresa = async (cnpj) => {
     try {
+      console.log("GET /empresas/edit - Preparando edição de empresa", { cnpj });
       const { data, error } = await supabase
         .from('empresa')
         .select('*')
         .eq('cnpj', cnpj)
         .single();
-      if (error) throw error;
+      if (error) {
+        const mappedError = mapSupabaseErrorToHttpCode(error);
+        console.error(`GET /empresas/edit - Erro ${mappedError.code}:`, error.message);
+        throw new Error(mappedError.message);
+      }
+      console.log("GET /empresas/edit - Sucesso, código 200");
       setFormData({
         razao_social: data.razao_social || '',
         nome_fantasia: data.nome_fantasia || '',
@@ -305,7 +455,8 @@ const Empresa = () => {
       setEditEmpresaCnpj(cnpj);
       setIsEditModalOpen(true);
     } catch (error) {
-      setErrorMessage(`Erro ao preparar edição: ${error.message}`);
+      console.error(`GET /empresas/edit - Erro ${error.code || 500}:`, error.message);
+      setErrorMessage(`Erro ao preparar edição: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
