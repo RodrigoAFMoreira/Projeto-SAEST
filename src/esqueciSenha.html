@@ -1,0 +1,102 @@
+<!-- public/esqueciSenha.html -->
+ 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar Senha - SAEST</title>
+  <link rel="stylesheet" href="/css/esqueciSenha.css">
+</head>
+<body>
+  <div class="container">
+    <section class="left-section">
+      <h1>SAEST</h1>
+      <p>Protegendo pessoas, fortalecendo negócios</p>
+    </section>
+
+    <section class="right-section">
+      <div class="login-container">
+        <form id="request-reset-form" noValidate aria-describedby="mensagem-erro" style="display: block;">
+          <h2>Recuperar Senha</h2>
+          <p>Digite seu e-mail para receber um link de redefinição de senha:</p>
+
+          <div class="input-group">
+            <label for="email">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="E-mail"
+              required
+              aria-required="true"
+              aria-describedby="email-error"
+            />
+            <span id="email-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive"></div>
+
+          <button type="submit" id="send-reset-btn" aria-label="Enviar e-mail de recuperação">Enviar E-mail</button>
+
+          <p class="register-link">
+            Voltar para o login? <a href="#" id="login-link">Entrar</a>
+          </p>
+        </form>
+
+        <form id="reset-password-form" noValidate aria-describedby="mensagem-erro" style="display: none;">
+          <h2>Redefinir Senha</h2>
+          <p>Digite sua nova senha abaixo:</p>
+
+          <div class="input-group">
+            <label for="new-password">Nova Senha</label>
+            <input
+              type="password"
+              id="new-password"
+              placeholder="Nova senha"
+              required
+              aria-required="true"
+              aria-describedby="senha-status senha-requisitos mensagem-erro"
+            />
+            <span id="new-password-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="senha-status" id="senha-status" style="display: none;" aria-live="polite">
+            <div class="forca-barra" id="forca-barra" aria-hidden="true"></div>
+            <div class="forca-texto" id="forca-texto"></div>
+          </div>
+          <ul class="senha-requisitos" id="senha-requisitos" style="display: none;">
+            <li id="req-min-caracteres">Mínimo de 8 caracteres</li>
+            <li id="req-maiuscula">Letra maiúscula</li>
+            <li id="req-minuscula">Letra minúscula</li>
+            <li id="req-numero">Número</li>
+            <li id="req-especial">Caractere especial</li>
+            <li id="req-repeticao">Sem repetições (ex: aaa)</li>
+          </ul>
+
+          <div class="input-group">
+            <label for="confirm-password">Confirmar Nova Senha</label>
+            <input
+              type="password"
+              id="confirm-password"
+              placeholder="Confirmar nova senha"
+              required
+              aria-required="true"
+              aria-describedby="confirm-password-error mensagem-erro"
+            />
+            <span id="confirm-password-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive"></div>
+
+          <button type="submit" id="reset-password-btn" aria-label="Redefinir senha">Redefinir Senha</button>
+
+          <p class="register-link">
+            Voltar para o login? <a href="#" id="login-link-reset">Entrar</a>
+          </p>
+        </form>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="/esqueciSenha.js"></script>
+</body>
+</html>

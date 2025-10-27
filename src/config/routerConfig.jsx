@@ -1,12 +1,12 @@
 // Elementos de roteamento e proteção de rotas usando React Router e Supabase
-
+// src/config/routerConfig.jsx
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import supabase from './supabaseClient';
 import Login from '../login';
-import Cadastro from '../cadastro';
-import EsqueciSenha from '../esqueciSenha';
-import VerificarEmail from '../verificarEmail';
+//import Cadastro from '../cadastro'; old
+//import EsqueciSenha from '../esqueciSenha';
+//import VerificarEmail from '../verificarEmail'; old 
 import Layout from '../componentes/layout';
 import Dashboard from '../dashboard';
 import Informacao from '../informacao';
@@ -16,7 +16,7 @@ import Carregando from '../componentes/carregando';
 import Empresa from '../empresa';
 import Obra from '../obra';
 import Certifications from '../certificacaoUser';
-//import BuscaObras from '../buscaObra'; 
+//import BuscaObras from '../buscaObra'; old 
 
 const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -49,9 +49,9 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/cadastro" element={<Cadastro />} />
-      <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-      <Route path="/verificar-email" element={<VerificarEmail />} />
+      <Route path="/cadastro" element={<Navigate to="/cadastro.html" replace />} />
+      <Route path="/esqueci-senha" element={<Navigate to="/esqueciSenha.html" replace />} />
+      <Route path="/verificar-email" element={<Navigate to="/verificarEmail.html" replace />} />
       
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>

@@ -1,0 +1,106 @@
+<!-- public/cadastro.html -->
+ 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Conta - SAEST</title>
+  <link rel="stylesheet" href="/css/cadastro.css">
+</head>
+<body>
+  <div class="container">
+    <section class="left-section">
+      <h1>SAEST</h1>
+      <p>Protegendo pessoas, fortalecendo negócios</p>
+    </section>
+
+    <section class="right-section">
+      <div class="login-container">
+        <form id="cadastro-form" noValidate aria-describedby="mensagem-erro">
+          <h2>Criar Conta</h2>
+          <p>Preencha os campos abaixo para criar sua conta:</p>
+
+          <div class="input-group">
+            <select id="tipoUsuario" required aria-required="true" aria-describedby="tipo-error">
+              <option value="" disabled selected hidden>Selecione o tipo de usuário</option>
+              <option value="administrador">Administrador</option>
+              <option value="gestor">Gestor de Segurança</option>
+              <option value="user">Funcionário</option>
+            </select>
+            <span id="tipo-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="nome"
+              placeholder="Nome completo"
+              required
+              aria-required="true"
+              aria-describedby="nome-error"
+            />
+            <span id="nome-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="email"
+              id="email"
+              placeholder="E-mail"
+              required
+              aria-required="true"
+              aria-describedby="email-error"
+            />
+            <span id="email-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="tel"
+              id="telefone"
+              placeholder="Telefone (ex: (11) 91234-5678)"
+              required
+              aria-required="true"
+              aria-describedby="telefone-error"
+            />
+            <span id="telefone-error" class="input-error" aria-live="polite"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="password"
+              id="senha"
+              placeholder="Senha"
+              required
+              aria-required="true"
+              aria-describedby="senha-status senha-requisitos mensagem-erro"
+            />
+            <div class="senha-status" id="senha-status" style="display: none;" aria-live="polite">
+              <div class="forca-barra" id="forca-barra" aria-hidden="true"></div>
+              <div class="forca-texto" id="forca-texto"></div>
+            </div>
+            <ul class="senha-requisitos" id="senha-requisitos" style="display: none;">
+              <li id="req-min-caracteres">Mínimo de 8 caracteres</li>
+              <li id="req-maiuscula">Letra maiúscula</li>
+              <li id="req-minuscula">Letra minúscula</li>
+              <li id="req-numero">Número</li>
+              <li id="req-especial">Caractere especial</li>
+              <li id="req-repeticao">Sem repetições (ex: aaa)</li>
+            </ul>
+          </div>
+
+          <div class="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive"></div>
+
+          <button type="submit" id="submit-btn" aria-label="Cadastrar nova conta">Cadastrar</button>
+
+          <p class="register-link">
+            Já tem uma conta? <a href="#" id="login-link">Entrar</a>
+          </p>
+        </form>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="/cadastro.js"></script>
+</body>
+</html>

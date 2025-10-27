@@ -34,16 +34,17 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
+  
   const handleCadastroClick = (e) => {
     e.preventDefault();
-    console.log("Navigating to /cadastro");
-    navigate("/cadastro");
+    console.log("Navigating to /cadastro.html");
+    window.location.href = "/cadastro.html"; 
   };
 
   const handleForgotPasswordClick = (e) => {
     e.preventDefault();
-    console.log("Navigating to /esqueci-senha");
-    navigate("/esqueci-senha");
+    console.log("Navigating to /esqueciSenha.html");
+    window.location.href = "/esqueciSenha.html"; 
   };
 
   return (

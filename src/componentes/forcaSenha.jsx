@@ -1,7 +1,9 @@
 // em uso em cadastro.jsx, login.jsx, e esqueciSenha.jsx
 // Indicador de força da senha com requisitos
 
-import React, { useState, useEffect } from "react";
+// componente comentado! (obsoleto)
+
+/*import React, { useState, useEffect } from "react";
 
 const PasswordStrengthIndicator = ({ password, email, nome }) => {
   const [strength, setStrength] = useState(0);
@@ -68,4 +70,4 @@ const PasswordStrengthIndicator = ({ password, email, nome }) => {
   );
 };
 
-export default PasswordStrengthIndicator;
+export default PasswordStrengthIndicator; */

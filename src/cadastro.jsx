@@ -1,7 +1,8 @@
 // src/cadastro.jsx
 // Página de cadastro de novos usuários
+//página comentada! (obsoleta)
 
-import React, { useState } from "react";
+/*import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ForcaSenha from "./componentes/forcaSenha";
 import AuthService from "./componentes/authService";
@@ -31,7 +32,7 @@ const Cadastro = () => {
 
     try {
       await AuthService.register(email, senha, nome, tipo, telefone);
-      navigate("/verificar-email");
+      window.location.href = '/verificarEmail.html'; 
     } catch (err) {
       console.error("Erro ao registrar:", err);
       const errorMessage = err.message.includes("409")
@@ -62,7 +63,7 @@ const Cadastro = () => {
         <p>Protegendo pessoas, fortalecendo negócios</p>
       </section>
 
-      <section className="right-section">
+      <section class="right-section">
         <div className="login-container">
           <form id="cadastro-form" onSubmit={handleSubmit} noValidate aria-describedby="mensagem-erro">
             <h2>Criar Conta</h2>
@@ -162,4 +163,4 @@ const Cadastro = () => {
   );
 };
 
-export default Cadastro;
+export default Cadastro;*/

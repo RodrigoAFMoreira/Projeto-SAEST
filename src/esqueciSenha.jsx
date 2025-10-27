@@ -1,6 +1,8 @@
 // Elemento de recuperação e redefinição de senha usando Supabase Auth
 
-import React, { useState, useEffect, useRef } from 'react';
+// página comentada! (obsoleta)
+
+/*import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from './config/supabaseClient';
 import { validatePhoneNumber, validatePassword } from "./componentes/validacao";
@@ -250,4 +252,4 @@ const EsqueciSenha = () => {
   );
 };
 
-export default EsqueciSenha;
+export default EsqueciSenha;*/

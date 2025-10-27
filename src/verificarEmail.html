@@ -1,0 +1,41 @@
+<!-- src/verificarEmail.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificar E-mail - SAEST</title>
+  <link rel="stylesheet" href="./css/verificarEmail.css">
+</head>
+<body>
+  <div class="container">
+    <section class="left-section">
+      <h1>SAEST</h1>
+      <p>Protegendo pessoas, fortalecendo negócios</p>
+    </section>
+
+    <section class="right-section">
+      <div class="login-container">
+        <h2>Verificar E-mail</h2>
+        <p>
+          Um e-mail de verificação foi enviado para sua caixa de entrada. Por favor, clique no link para verificar seu e-mail.
+        </p>
+        <div class="mensagem-erro" id="mensagem-erro" role="alert" aria-live="assertive">
+          Verifique seu e-mail para continuar.
+        </div>
+        <button
+          type="button"
+          id="resend-email-btn"
+          aria-label="Reenviar e-mail de verificação"
+        >
+          Reenviar E-mail
+        </button>
+        <p class="register-link">
+          Voltar para o login? <a href="#" id="login-link">Entrar</a>
+        </p>
+      </div>
+    </section>
+  </div>
+  <script type="module" src="./verificarEmail.js"></script>
+</body>
+</html>

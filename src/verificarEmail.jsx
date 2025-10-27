@@ -1,5 +1,7 @@
 //Elemento de verificação de e-mail e reenvio de e-mail de verificação usando Supabase Auth
+//página comentada! (obsoleta)
 
+/*
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import supabase from './config/supabaseClient';
@@ -102,4 +104,4 @@ const VerificarEmail = () => {
   );
 };
 
-export default VerificarEmail;
+export default VerificarEmail; */
