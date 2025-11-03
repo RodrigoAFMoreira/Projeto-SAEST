@@ -2,7 +2,7 @@
 // Componente de dashboard para administradores
 
 import React, { useState, useEffect } from 'react';
-import { Bell, Building2, Building, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { Bell, Building2, Building, ShieldCheck } from 'lucide-react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -323,13 +323,6 @@ const AdminDashboard = ({ isSidebarMinimized, counts, userId }) => {
         <Bell />
       </header>
       <section className="stats-container">
-        <div className="stat-card">
-          <div className="stat-icon"><LayoutDashboard /></div>
-          <div className="stat-content">
-            <h3>Usuários</h3>
-            <p>{counts.users || 0}</p>
-          </div>
-        </div>
         <div className="stat-card">
           <div className="stat-icon"><Building /></div>
           <div className="stat-content">

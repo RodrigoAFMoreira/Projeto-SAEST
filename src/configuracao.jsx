@@ -42,7 +42,6 @@ const Configuracoes = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -234,10 +233,6 @@ const Configuracoes = () => {
     }
   };
 
-  const handleToggleSidebar = () => {
-    setIsSidebarMinimized(!isSidebarMinimized);
-  };
-
   const ErrorMessage = ({ message, onRetry }) => (
     <div className="error-container">
       <p>{message}</p>
@@ -249,18 +244,12 @@ const Configuracoes = () => {
     <div className="container">
       {loading ? (
         <LoadingSpinner />
-      ) : message && message.includes('Erro') ? (
+      ) : message && message.includes('Erro') && !showConfirmModal ? (
         <ErrorMessage message={message} onRetry={() => window.location.reload()} />
       ) : userData ? (
-        <div className={`dashboard-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-            <Sidebar
-              userType={userData.tipo}
-              userEmail={userData.email}
-              isMinimized={isSidebarMinimized}
-              onToggle={handleToggleSidebar}
-            />
-          </div>
+        <div className="dashboard-wrapper">
+          <Sidebar userType={userData.tipo} userEmail={userData.email} />
+
           <main className="main-content">
             <header className="main-header">
               <div className="header-content">

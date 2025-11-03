@@ -53,7 +53,7 @@
   color: #e63946;
   font-size: 0.9em;
   margin-top: 5px;
-  min-height: 20px; /* Reserva espaço para mensagens de erro */
+  min-height: 20px; 
 }
 
 /* Estilização da barra de força da senha e requisitos */
@@ -95,7 +95,7 @@
   color: #e63946;
   font-size: 1em;
   margin-top: 10px;
-  min-height: 20px; /* Reserva espaço para mensagens */
+  min-height: 20px; 
 }
 
 /* Botões */
@@ -118,12 +118,12 @@ button[type="submit"]:hover {
 }
 
 button[type="button"]:not(.modal-buttons button) {
-  background: #e63946;
+  background: #2a9d8f;
   color: #fff;
 }
 
 button[type="button"]:not(.modal-buttons button):hover {
-  background: #cc2f3a;
+  background: #21867a;
 }
 
 button:disabled {

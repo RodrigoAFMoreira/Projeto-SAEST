@@ -32,7 +32,6 @@ const formatCriadoEm = (date) => {
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [counts, setCounts] = useState({ users: 0, empresas: 0, obras: 0, epis: 0 });
@@ -56,6 +55,7 @@ const Dashboard = () => {
           .select('id, nome, email, tipo, telefone')
           .eq('id', user.id)
           .single();
+
         if (userError || !data) {
           console.warn('Documento do usuário não encontrado, usando padrão user');
           setUserData({ tipo: 'user', nome: '', email: user.email, telefone: '' });
@@ -68,6 +68,7 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
+
     fetchUser();
   }, [navigate]);
 
@@ -114,10 +115,6 @@ const Dashboard = () => {
     }
   }, [loading, userData.tipo, userData.id]);
 
-  const handleToggleSidebar = () => {
-    setIsSidebarMinimized(!isSidebarMinimized);
-  };
-
   const ErrorMessage = ({ message, onRetry }) => (
     <div className="error-container">
       <p>{message}</p>
@@ -133,23 +130,20 @@ const Dashboard = () => {
         <ErrorMessage message={error} onRetry={() => window.location.reload()} />
       ) : user ? (
         <div className="dashboard-wrapper">
-          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-            <Sidebar
-              userType={userData.tipo}
-              userEmail={userData.email}
-              isMinimized={isSidebarMinimized}
-              onToggle={handleToggleSidebar}
-            />
-          </div>
+          <Sidebar
+            userType={userData.tipo}
+            userEmail={userData.email}
+          />
+
           {userData.tipo === 'user' ? (
-            <UserDashboard isSidebarMinimized={isSidebarMinimized} user={userData} />
+            <UserDashboard user={userData} />
           ) : userData.tipo === 'administrador' ? (
-            <AdminDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} userId={userData.id} />
+            <AdminDashboard counts={counts} userId={userData.id} />
           ) : userData.tipo === 'gestor' ? (
             window.location.pathname === '/busca-obras' ? (
-              <BuscaObras isSidebarMinimized={isSidebarMinimized} userData={userData} />
+              <BuscaObras userData={userData} />
             ) : (
-              <GestorDashboard isSidebarMinimized={isSidebarMinimized} counts={counts} />
+              <GestorDashboard counts={counts} />
             )
           ) : (
             <div className="error-container">

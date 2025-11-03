@@ -59,7 +59,6 @@ const Empresa = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -464,10 +463,6 @@ const Empresa = () => {
     setExpandedRow(expandedRow === cnpj ? null : cnpj);
   };
 
-  const handleToggleSidebar = () => {
-    setIsSidebarMinimized(!isSidebarMinimized);
-  };
-
   const filteredEmpresas = empresas.filter((empresa) =>
     empresa.razao_social.toLowerCase().includes(filter.toLowerCase())
   );
@@ -487,14 +482,10 @@ const Empresa = () => {
         <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
       ) : user ? (
         <div className="dashboard-wrapper">
-          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-            <Sidebar
-              userType={userData.tipo}
-              userEmail={userData.email}
-              isMinimized={isSidebarMinimized}
-              onToggle={handleToggleSidebar}
-            />
-          </div>
+          <Sidebar
+            userType={userData.tipo}
+            userEmail={userData.email}
+          />
           <main className="main-content">
             <header className="main-header">
               <i className="ri-notification-3-line"></i>

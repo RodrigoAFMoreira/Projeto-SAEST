@@ -1,12 +1,12 @@
 // Em uso em todos menos em login, cadastro, esqueci-senha, verificar-email
-// Componente Sidebar para navegação lateral
+// Componente Sidebar para navegação lateral (ESTÁTICO)
 
 import { NavLink } from 'react-router-dom';
-import { Info, FileText, Settings, Home, Building, Building2, ShieldCheck, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { Info, FileText, Settings, Home, Building, Building2, ShieldCheck, Search } from 'lucide-react';
 import '../css/menuEsquerdo.css';
 import TipoUser from './TipoUser';
 
-const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
+const Sidebar = ({ userType, userEmail }) => {
   let items;
 
   if (userType === 'user') {
@@ -33,13 +33,10 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
   }
 
   return (
-    <aside className={`sidebar role-${userType} ${isMinimized ? 'minimized' : ''}`}>
+    <aside className={`sidebar role-${userType}`}>
       <div>
         <div className="sidebar-header">
           <div className="logo">SAEST</div>
-          <button className="toggle-button" onClick={onToggle}>
-            {isMinimized ? <ChevronRight /> : <ChevronLeft />}
-          </button>
         </div>
         <nav className="sidebar-nav">
           <ul>
@@ -50,7 +47,7 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                 >
                   {item.icon}
-                  {!isMinimized && <span>{item.text}</span>}
+                  <span>{item.text}</span>
                 </NavLink>
               </li>
             ))}
@@ -59,12 +56,10 @@ const Sidebar = ({ userType, userEmail, isMinimized, onToggle }) => {
       </div>
       <div className="user-profile">
         <div className="user-info">
-          {!isMinimized && (
-            <div className={`name role-${userType}`}>
-              <TipoUser userType={userType} />
-            </div>
-          )}
-          {!isMinimized && <div className="email" id="user-email">{userEmail || 'carregando...'}</div>}
+          <div className={`name role-${userType}`}>
+            <TipoUser userType={userType} />
+          </div>
+          <div className="email" id="user-email">{userEmail || 'carregando...'}</div>
         </div>
       </div>
     </aside>

@@ -76,7 +76,6 @@ const Epi = () => {
   const [sucesso, setSucesso] = useState('');
   const [userData, setUserData] = useState({ tipo: 'user', nome: '', email: '', telefone: '' });
   const [loading, setLoading] = useState(true);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
 
   const hoje = new Date().toISOString().split('T')[0];
 
@@ -225,10 +224,6 @@ const Epi = () => {
       console.error(`GET /epis - Erro ${err.code || 500}:`, err.message);
       setErro(`Erro ao carregar EPIs: ${mapSupabaseErrorToHttpCode(err).message}`);
     }
-  };
-
-  const handleToggleSidebar = () => {
-    setIsSidebarMinimized(!isSidebarMinimized);
   };
 
   const alterarFiltros = (e) => {
@@ -531,15 +526,9 @@ const Epi = () => {
       ) : erro ? (
         <ErrorMessage message={erro} onRetry={() => window.location.reload()} />
       ) : userData ? (
-        <div className={`dashboard-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-            <Sidebar
-              userType={userData.tipo}
-              userEmail={userData.email}
-              isMinimized={isSidebarMinimized}
-              onToggle={handleToggleSidebar}
-            />
-          </div>
+        <div className="dashboard-wrapper">
+          <Sidebar userType={userData.tipo} userEmail={userData.email} />
+
           <main className="main-content">
             <header className="main-header">
               <div className="header-content">
@@ -567,6 +556,7 @@ const Epi = () => {
                 excluirEpi={abrirModalConfirmarExclusao}
               />
             </section>
+
             <ModalFormularioEpi
               estaAberto={exibirModalAdicionar}
               fecharModal={fecharModalAdicionarEpi}

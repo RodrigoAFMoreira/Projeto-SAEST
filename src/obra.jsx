@@ -65,7 +65,6 @@ const Obra = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [expandedRow, setExpandedRow] = useState(null);
-  const [isSidebarMinimized, setIsSidebarMinimized] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -172,74 +171,26 @@ const Obra = () => {
   };
 
   const validateForm = () => {
-    if (!formData.logradouro) {
-      console.error("POST/PUT /obras - Erro 400: Logradouro é obrigatório");
-      return 'Logradouro é obrigatório.';
-    }
-    if (!formData.cidade) {
-      console.error("POST/PUT /obras - Erro 400: Cidade é obrigatória");
-      return 'Cidade é obrigatória.';
-    }
-    if (!formData.uf || !/^[A-Z]{2}$/.test(formData.uf)) {
-      console.error("POST/PUT /obras - Erro 400: UF inválida");
-      return 'UF inválida (ex.: SP).';
-    }
-    if (formData.cep && !/^\d{5}-\d{3}$/.test(formData.cep)) {
-      console.error("POST/PUT /obras - Erro 400: CEP inválido");
-      return 'CEP inválido (ex.: 12345-678).';
-    }
-    if (formData.numero && !/^\d*$/.test(formData.numero)) {
-      console.error("POST/PUT /obras - Erro 400: Número deve conter apenas dígitos");
-      return 'Número deve conter apenas dígitos.';
-    }
-    if (!formData.status) {
-      console.error("POST/PUT /obras - Erro 400: Status é obrigatório");
-      return 'Status é obrigatório.';
-    }
-    if (!formData.data_inicio) {
-      console.error("POST/PUT /obras - Erro 400: Data de início é obrigatória");
-      return 'Data de início é obrigatória.';
-    }
-    if (!formData.responsavel_tecnico) {
-      console.error("POST/PUT /obras - Erro 400: Responsável técnico é obrigatório");
-      return 'Responsável técnico é obrigatório.';
-    }
-    if (!isEditMode && !formData.alvara) {
-      console.error("POST /obras - Erro 400: Alvará é obrigatório");
-      return 'Alvará é obrigatório.';
-    }
-    if (!isEditMode && !formData.registro_crea) {
-      console.error("POST /obras - Erro 400: Registro CREA é obrigatório");
-      return 'Registro CREA é obrigatório.';
-    }
-    if (!isEditMode && !formData.registro_cal) {
-      console.error("POST /obras - Erro 400: Registro CAL é obrigatório");
-      return 'Registro CAL é obrigatório.';
-    }
-    if (!formData.cnpj_empresa) {
-      console.error("POST/PUT /obras - Erro 400: Construtora é obrigatória");
-      return 'Construtora é obrigatória.';
-    }
-    if (empresas.length === 0) {
-      console.error("POST/PUT /obras - Erro 400: Nenhuma construtora disponível");
-      return 'Nenhuma construtora disponível.';
-    }
+    if (!formData.logradouro) return 'Logradouro é obrigatório.';
+    if (!formData.cidade) return 'Cidade é obrigatória.';
+    if (!formData.uf || !/^[A-Z]{2}$/.test(formData.uf)) return 'UF inválida (ex.: SP).';
+    if (formData.cep && !/^\d{5}-\d{3}$/.test(formData.cep)) return 'CEP inválido (ex.: 12345-678).';
+    if (formData.numero && !/^\d*$/.test(formData.numero)) return 'Número deve conter apenas dígitos.';
+    if (!formData.status) return 'Status é obrigatório.';
+    if (!formData.data_inicio) return 'Data de início é obrigatória.';
+    if (!formData.responsavel_tecnico) return 'Responsável técnico é obrigatório.';
+    if (!isEditMode && !formData.alvara) return 'Alvará é obrigatório.';
+    if (!isEditMode && !formData.registro_crea) return 'Registro CREA é obrigatório.';
+    if (!isEditMode && !formData.registro_cal) return 'Registro CAL é obrigatório.';
+    if (!formData.cnpj_empresa) return 'Construtora é obrigatória.';
+    if (empresas.length === 0) return 'Nenhuma construtora disponível.';
 
     const inicio = new Date(formData.data_inicio);
-    if (inicio.getFullYear() < 1950 || inicio.getFullYear() > 2050) {
-      console.error("POST/PUT /obras - Erro 400: Data de início fora do intervalo permitido");
-      return 'Data de início deve estar entre 1950 e 2050.';
-    }
+    if (inicio.getFullYear() < 1950 || inicio.getFullYear() > 2050) return 'Data de início deve estar entre 1950 e 2050.';
     if (formData.data_termino) {
       const termino = new Date(formData.data_termino);
-      if (termino.getFullYear() < 1950 || termino.getFullYear() > 2050) {
-        console.error("POST/PUT /obras - Erro 400: Data de término fora do intervalo permitido");
-        return 'Data de término deve estar entre 1950 e 2050.';
-      }
-      if (termino < inicio) {
-        console.error("POST/PUT /obras - Erro 400: Data de término anterior à data de início");
-        return 'Data de término não pode ser anterior à data de início.';
-      }
+      if (termino.getFullYear() < 1950 || termino.getFullYear() > 2050) return 'Data de término deve estar entre 1950 e 2050.';
+      if (termino < inicio) return 'Data de término não pode ser anterior à data de início.';
     }
     return null;
   };
@@ -276,12 +227,7 @@ const Obra = () => {
       const { data, error } = await supabase.storage
         .from('documents')
         .upload(`obras/${fileName}_${Date.now()}.pdf`, file, { contentType: 'application/pdf' });
-      if (error) {
-        const mappedError = mapSupabaseErrorToHttpCode(error);
-        console.error(`POST /storage/documents - Erro ${mappedError.code}:`, error.message);
-        throw new Error(mappedError.message);
-      }
-      console.log(`POST /storage/documents - Sucesso, código 201`);
+      if (error) throw error;
       const { data: publicUrlData } = supabase.storage.from('documents').getPublicUrl(data.path);
       return publicUrlData.publicUrl;
     } catch (error) {
@@ -306,7 +252,6 @@ const Obra = () => {
       console.log(`${endpoint} - Iniciando ${isEditMode ? 'atualização' : 'criação'} de obra`, { obraId: isEditMode ? editObraId : null });
 
       const cleanedCnpj = cleanCnpj(formData.cnpj_empresa);
-      console.log("GET /empresas/verify - Verificando empresa", { cnpj: cleanedCnpj });
       const { data: empresaExists, error: empresaError } = await supabase
         .from('empresa')
         .select('cnpj')
@@ -314,33 +259,19 @@ const Obra = () => {
         .eq('user_id', user.id)
         .single();
       if (empresaError || !empresaExists) {
-        const mappedError = mapSupabaseErrorToHttpCode(empresaError || new Error('Empresa não encontrada'));
-        console.error(`GET /empresas/verify - Erro ${mappedError.code}: Empresa não encontrada ou não pertence ao usuário`);
         throw new Error('Construtora não encontrada ou não pertence ao usuário.');
       }
 
-      const alvaraUrl = formData.alvara instanceof File
-        ? await uploadFileToSupabase(formData.alvara, 'alvara')
-        : formData.alvara;
-      const registroCreaUrl = formData.registro_crea instanceof File
-        ? await uploadFileToSupabase(formData.registro_crea, 'registro_crea')
-        : formData.registro_crea;
-      const registroCalUrl = formData.registro_cal instanceof File
-        ? await uploadFileToSupabase(formData.registro_cal, 'registro_cal')
-        : formData.registro_cal;
+      const alvaraUrl = formData.alvara instanceof File ? await uploadFileToSupabase(formData.alvara, 'alvara') : formData.alvara;
+      const registroCreaUrl = formData.registro_crea instanceof File ? await uploadFileToSupabase(formData.registro_crea, 'registro_crea') : formData.registro_crea;
+      const registroCalUrl = formData.registro_cal instanceof File ? await uploadFileToSupabase(formData.registro_cal, 'registro_cal') : formData.registro_cal;
 
       let enderecoId;
       if (isEditMode) {
-        console.log("GET /obras/endereco - Buscando endereço da obra", { obraId: editObraId });
         const { data: obraData, error: obraError } = await supabase.from('obra').select('endereco_id').eq('id', editObraId).single();
-        if (obraError) {
-          const mappedError = mapSupabaseErrorToHttpCode(obraError);
-          console.error(`GET /obras/endereco - Erro ${mappedError.code}:`, obraError.message);
-          throw new Error(mappedError.message);
-        }
+        if (obraError) throw obraError;
         enderecoId = obraData.endereco_id;
 
-        console.log("PUT /endereco - Atualizando endereço", { enderecoId });
         const { error: enderecoError } = await supabase
           .from('endereco')
           .update({
@@ -353,14 +284,8 @@ const Obra = () => {
             cep: formData.cep ? formatCepForDb(formData.cep) : null,
           })
           .eq('id', enderecoId);
-        if (enderecoError) {
-          const mappedError = mapSupabaseErrorToHttpCode(enderecoError);
-          console.error(`PUT /endereco - Erro ${mappedError.code}:`, enderecoError.message);
-          throw new Error(mappedError.message);
-        }
-        console.log("PUT /endereco - Sucesso, código 204");
+        if (enderecoError) throw enderecoError;
       } else {
-        console.log("POST /endereco - Criando endereço");
         const { data: enderecoData, error: enderecoError } = await supabase
           .from('endereco')
           .insert({
@@ -374,12 +299,7 @@ const Obra = () => {
           })
           .select()
           .single();
-        if (enderecoError) {
-          const mappedError = mapSupabaseErrorToHttpCode(enderecoError);
-          console.error(`POST /endereco - Erro ${mappedError.code}:`, enderecoError.message);
-          throw new Error(mappedError.message);
-        }
-        console.log("POST /endereco - Sucesso, código 201");
+        if (enderecoError) throw enderecoError;
         enderecoId = enderecoData.id;
       }
 
@@ -394,51 +314,26 @@ const Obra = () => {
 
       let obraId;
       if (isEditMode) {
-        console.log("PUT /obras - Atualizando obra", { obraId: editObraId });
         const { error: obraError } = await supabase.from('obra').update(obraPayload).eq('id', editObraId);
-        if (obraError) {
-          const mappedError = mapSupabaseErrorToHttpCode(obraError);
-          console.error(`PUT /obras - Erro ${mappedError.code}:`, obraError.message);
-          throw new Error(mappedError.message);
-        }
-        console.log("PUT /obras - Sucesso, código 204");
+        if (obraError) throw obraError;
         obraId = editObraId;
       } else {
-        console.log("POST /obras - Criando obra");
         const { data: obraData, error: obraError } = await supabase.from('obra').insert(obraPayload).select().single();
-        if (obraError) {
-          const mappedError = mapSupabaseErrorToHttpCode(obraError);
-          console.error(`POST /obras - Erro ${mappedError.code}:`, obraError.message);
-          throw new Error(mappedError.message);
-        }
-        console.log("POST /obras - Sucesso, código 201");
+        if (obraError) throw obraError;
         obraId = obraData.id;
       }
 
       if (alvaraUrl || registroCreaUrl || registroCalUrl) {
         const docPayload = { obra_id: obraId, alvara: alvaraUrl, registro_crea: registroCreaUrl, registro_cal: registroCalUrl };
         if (isEditMode) {
-          console.log("PUT /obras_documentos - Atualizando documentos", { obraId });
           const { error: docError } = await supabase.from('obras_documentos').update(docPayload).eq('obra_id', obraId);
-          if (docError) {
-            const mappedError = mapSupabaseErrorToHttpCode(docError);
-            console.error(`PUT /obras_documentos - Erro ${mappedError.code}:`, docError.message);
-            throw new Error(mappedError.message);
-          }
-          console.log("PUT /obras_documentos - Sucesso, código 204");
+          if (docError) throw docError;
         } else {
-          console.log("POST /obras_documentos - Criando documentos", { obraId });
           const { error: docError } = await supabase.from('obras_documentos').insert(docPayload);
-          if (docError) {
-            const mappedError = mapSupabaseErrorToHttpCode(docError);
-            console.error(`POST /obras_documentos - Erro ${mappedError.code}:`, docError.message);
-            throw new Error(mappedError.message);
-          }
-          console.log("POST /obras_documentos - Sucesso, código 201");
+          if (docError) throw docError;
         }
       }
 
-      console.log(`${endpoint} - Sucesso, código ${isEditMode ? 204 : 201}`);
       setSuccessMessage(`Obra ${isEditMode ? 'atualizada' : 'cadastrada'} com sucesso!`);
       resetForm();
       fetchObras(user.id);
@@ -447,7 +342,6 @@ const Obra = () => {
         setSuccessMessage('');
       }, 1500);
     } catch (error) {
-      console.error(`${isEditMode ? 'PUT' : 'POST'} /obras - Erro ${error.code || 500}:`, error.message);
       setErrorMessage(`Erro ao ${isEditMode ? 'atualizar' : 'cadastrar'} obra: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
@@ -456,27 +350,19 @@ const Obra = () => {
     setErrorMessage('');
     setSuccessMessage('');
     try {
-      console.log("DELETE /obras - Iniciando exclusão de obra", { obraId: deleteObra.id });
-      console.log("GET /obras/verify - Verificando permissões e documentos", { obraId: deleteObra.id });
       const { data: obraData, error: fetchError } = await supabase
         .from('obra')
         .select('obras_documentos(alvara, registro_crea, registro_cal), cnpj_empresa')
         .eq('id', deleteObra.id)
         .single();
-      if (fetchError) {
-        const mappedError = mapSupabaseErrorToHttpCode(fetchError);
-        console.error(`GET /obras/verify - Erro ${mappedError.code}:`, fetchError.message);
-        throw new Error('Erro ao buscar documentos da obra.');
-      }
+      if (fetchError) throw fetchError;
 
-      console.log("GET /empresas/verify - Verificando permissão da empresa", { cnpj: obraData.cnpj_empresa });
       const { data: empresaData, error: empresaError } = await supabase
         .from('empresa')
         .select('user_id')
         .eq('cnpj', obraData.cnpj_empresa)
         .single();
       if (empresaError || empresaData.user_id !== user.id) {
-        console.error("GET /empresas/verify - Erro 403: Obra não pertence ao usuário");
         throw new Error('Obra não pertence ao usuário.');
       }
 
@@ -484,41 +370,27 @@ const Obra = () => {
         obraData.obras_documentos?.alvara,
         obraData.obras_documentos?.registro_crea,
         obraData.obras_documentos?.registro_cal,
-      ]
-        .filter(url => url)
-        .map(url => url.split('/').slice(-2).join('/'));
+      ].filter(url => url).map(url => url.split('/').slice(-2).join('/'));
+
       if (filesToDelete.length > 0) {
-        console.log("DELETE /storage/documents - Removendo documentos", { files: filesToDelete });
         const { error: storageError } = await supabase.storage.from('documents').remove(filesToDelete);
-        if (storageError) {
-          const mappedError = mapSupabaseErrorToHttpCode(storageError);
-          console.error(`DELETE /storage/documents - Erro ${mappedError.code}:`, storageError.message);
-          throw new Error('Erro ao remover documentos.');
-        }
-        console.log("DELETE /storage/documents - Sucesso, código 204");
+        if (storageError) throw storageError;
       }
 
       const { error: deleteError } = await supabase.from('obra').delete().eq('id', deleteObra.id);
-      if (deleteError) {
-        const mappedError = mapSupabaseErrorToHttpCode(deleteError);
-        console.error(`DELETE /obras - Erro ${mappedError.code}:`, deleteError.message);
-        throw new Error('Erro ao excluir obra.');
-      }
+      if (deleteError) throw deleteError;
 
-      console.log("DELETE /obras - Sucesso, código 204");
       await fetchObras(user.id);
       setIsDeleteModalOpen(false);
       setSuccessMessage('Obra removida com sucesso!');
       setTimeout(() => setSuccessMessage(''), 1500);
     } catch (error) {
-      console.error(`DELETE /obras - Erro ${error.code || 500}:`, error.message);
       setErrorMessage(`Erro ao remover obra: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
 
   const editObra = async (id) => {
     try {
-      console.log("GET /obras/edit - Preparando edição de obra", { obraId: id });
       const { data, error } = await supabase
         .from('obra')
         .select(`
@@ -529,16 +401,9 @@ const Obra = () => {
         `)
         .eq('id', id)
         .single();
-      if (error) {
-        const mappedError = mapSupabaseErrorToHttpCode(error);
-        console.error(`GET /obras/edit - Erro ${mappedError.code}:`, error.message);
-        throw new Error(mappedError.message);
-      }
-      if (data.empresa.user_id !== user.id) {
-        console.error("GET /obras/edit - Erro 403: Acesso não autorizado para editar esta obra");
-        throw new Error('Acesso não autorizado para editar esta obra.');
-      }
-      console.log("GET /obras/edit - Sucesso, código 200");
+      if (error) throw error;
+      if (data.empresa.user_id !== user.id) throw new Error('Acesso não autorizado para editar esta obra.');
+
       setFormData({
         logradouro: data.endereco?.logradouro || '',
         numero: data.endereco?.numero?.toString() || '',
@@ -560,7 +425,6 @@ const Obra = () => {
       setIsEditMode(true);
       setIsModalOpen(true);
     } catch (error) {
-      console.error(`GET /obras/edit - Erro ${error.code || 500}:`, error.message);
       setErrorMessage(`Erro ao preparar edição: ${mapSupabaseErrorToHttpCode(error).message}`);
     }
   };
@@ -613,14 +477,8 @@ const Obra = () => {
         <ErrorMessage message={errorMessage} onRetry={() => window.location.reload()} />
       ) : user ? (
         <div className="dashboard-wrapper">
-          <div className={`sidebar-wrapper ${isSidebarMinimized ? 'minimized' : ''}`}>
-            <Sidebar
-              userType={userData.tipo}
-              userEmail={userData.email}
-              isMinimized={isSidebarMinimized}
-              onToggle={() => setIsSidebarMinimized(!isSidebarMinimized)}
-            />
-          </div>
+          <Sidebar userType={userData.tipo} userEmail={userData.email} />
+
           <main className="main-content">
             <header className="main-header">
               <i className="ri-notification-3-line"></i>

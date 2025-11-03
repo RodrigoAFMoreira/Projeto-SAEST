@@ -1,6 +1,6 @@
 /* menuEsquerdo.css */
 
-/* barra lateral esquerda */
+/* barra lateral esquerda - ESTÁTICA AGORA!!! */
 .sidebar {
   position: fixed;
   top: 0;
@@ -9,81 +9,78 @@
   height: 100%;
   background-color: #1e3a8a;
   color: white;
-  transition: width 0.3s ease;
   z-index: 1000;
 }
 
-/* barra lateral minimizada */
-.sidebar.minimized {
-  width: 60px;
-}
-
-/* cabecalho da barra lateral com botao de toggle */
+/* cabecalho da barra lateral */
 .sidebar-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 10px;
 }
 
-/* botao de toggle para expandir/retrair sidebar */
-.toggle-button {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 5px;
+/* logo */
+.logo {
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
-/* navegacao da barra lateral */
+/* navegação */
 .sidebar-nav ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .sidebar-nav ul li {
   padding: 10px;
 }
 
-/* links da navegacao */
 .sidebar-nav ul li a {
   color: white;
   text-decoration: none;
   display: flex;
   align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.sidebar-nav ul li a:hover {
+  background-color: #2a5caa;
 }
 
 .sidebar-nav ul li a span {
   margin-left: 10px;
 }
 
-/* efeito hover nos links */
-.sidebar-nav ul li a:hover {
-  background-color: #2a5caa;
-}
-
-/* perfil do usuario no final da sidebar */
+/* perfil do usuário */
 .user-profile {
   position: absolute;
   bottom: 0;
   width: 100%;
-  padding: 10px;
+  padding: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info .name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-info .email {
+  font-size: 0.8rem;
+  opacity: 0.9;
 }
 
 /* conteudo principal */
 .main-content {
   margin-left: 250px;
   padding: 20px;
-  transition: margin-left 0.3s ease;
+  min-height: 100vh;
 }
 
-/* conteudo principal ajustado quando sidebar esta minimizada */
-.main-content.shifted-left {
-  margin-left: 60px;
-}
-
-/* responsividade para telas menores */
 @media (max-width: 768px) {
   .sidebar {
     width: 60px;
@@ -91,11 +88,12 @@
   .main-content {
     margin-left: 60px;
   }
-  .sidebar-nav ul li a span {
+  .sidebar-nav ul li a span,
+  .user-info .name,
+  .user-info .email {
     display: none;
   }
-  .user-profile .name,
-  .user-profile .email {
-    display: none;
+  .sidebar-header {
+    justify-content: center;
   }
 }
